@@ -36,3 +36,46 @@ export function print(dials, primitive = 'box') {
     if (dial in dials) out.push(`${dial}:${dials[dial]}`);
   return out.join(', ');
 }
+
+const toDials = (v, prim) => typeof v === 'string' ? parse(v, prim) : { ...v };
+
+export function resolve(doc, registry = {}, seen = new Set()) {
+  let node = { ...doc };
+  const link = node.extends ?? node.$ref;
+  if (link) {
+    if (seen.has(link)) throw new Error(`cycle: ${[...seen, link].join(' -> ')}`);
+    const base = registry[link];
+    if (!base) throw new Error(`unknown id '${link}'`);
+    const parent = resolve(base, registry, new Set([...seen, link]));
+    node = mergeNode(parent, node);
+  }
+  delete node.extends; delete node.$ref; delete node.id;
+  for (const prim of ['box', 'path'])
+    if (node[prim] != null) node[prim] = toDials(node[prim], prim);
+  if (node.content != null && node.children)
+    throw new Error(`content xor children violated${node.name ? ` at '${node.name}'` : ''}`);
+  if (node.children)
+    node.children = node.children.map(c => resolve(c, registry, seen));
+  return node;
+}
+
+function mergeNode(parent, child) {
+  const out = { ...parent, ...child };
+  for (const prim of ['box', 'path'])
+    if (parent[prim] != null && child[prim] != null)
+      out[prim] = { ...toDials(parent[prim], prim), ...toDials(child[prim], prim) };
+  if (child.content != null && !child.children) delete out.children;
+  if (child.children && parent.content != null && child.content == null) delete out.content;
+  return out;
+}
+
+export function diff(a, b, at = '') {
+  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object' || typeof a !== typeof b) {
+    return JSON.stringify(a) !== JSON.stringify(b)
+      ? [`${at}: ${JSON.stringify(a)} ≠ ${JSON.stringify(b)}`] : [];
+  }
+  const out = [];
+  for (const k of new Set([...Object.keys(a), ...Object.keys(b)]))
+    out.push(...diff(a[k], b[k], at ? `${at}.${k}` : k));
+  return out;
+}
