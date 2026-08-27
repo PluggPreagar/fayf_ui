@@ -1,0 +1,24 @@
+{ "id": "screens/anatomy", "box": "stack, fixed, w:640, h:420, solid, rounded, clip, tint0",
+  "children": [
+    { "$ref": "component/app-bar", "box": "w:640, h:32, square, bare" },
+    { "name": "body", "box": "row, fill",
+      "children": [
+        { "$ref": "component/navigation-rail", "box": "h:340, square, bare" },
+        { "name": "work", "box": "stack, fill, pad3, gap2, scroll",
+          "children": [
+            { "box": "row, mid, between",
+              "children": [
+                { "$ref": "component/segmented-control" },
+                { "$ref": "component/search-field" },
+                { "$ref": "atom/button", "content": "New" } ] },
+            { "$ref": "component/inline-banner", "box": "w:520" },
+            { "box": "row, gap2",
+              "children": [
+                { "$ref": "atom/image-placeholder", "box": "w:180, h:110" },
+                { "$ref": "component/chart", "box": "fill, h:110" } ] },
+            { "$ref": "component/data-table", "box": "w:520" },
+            { "$ref": "component/pagination" } ] },
+        { "$ref": "component/scrollbar", "box": "h:340" } ] },
+    { "$ref": "component/status-bar", "box": "w:640, square" },
+    { "$ref": "component/toast", "box": "floating, center, bottom" },
+    { "$ref": "atom/badge", "box": "floating, right, top" } ] }

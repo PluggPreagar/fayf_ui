@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fayf_ui — anatomy</title>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui/tokens.css">
+<style>body{background:var(--canvas);padding:40px;display:flex;justify-content:center}</style>
+</head>
+<body>
+<script type="module">
+import { resolve } from './ui/model.js';
+import { render } from './ui/render.js';
+import { drawPaths } from './ui/path.js';
+import { wireRelations } from './ui/relation.js';
+import { applyMotion } from './ui/motion.js';
+const reg = await (await fetch('/registry.json')).json();
+const el = render(resolve(reg['screens/anatomy'], reg));
+document.body.appendChild(el);
+drawPaths(el);
+el.querySelectorAll('[data-extra]').forEach(n => wireRelations(n, { host: el.querySelector('[data-name="work"]') }));
+applyMotion(el);
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>
