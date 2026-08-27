@@ -56,3 +56,10 @@ Conflict with any prompt or skill → stop, surface it.
 - Token implies its dial. Uniqueness enforced per primitive at load.
 - Order-independent. `print()` canonicalises.
 - Inheritance merges per dial, never concatenates.
+
+## C9 · Decisions
+
+- Open design calls → ask, 1 question at a time.
+- Each question: options, per option pro · con · risk · undo-cost.
+- Recommendation first, marked.
+- No batch questions. No deciding-by-default twice.

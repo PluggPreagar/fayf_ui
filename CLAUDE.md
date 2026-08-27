@@ -6,6 +6,7 @@
 
 C1 output style · C2 vocabulary · C3 simple · C4 no frameworks
 C5 reuse level below · C6 JSON canonical · C7 evidence · C8 parametrization
+· C9 decisions 1-by-1
 
 ## What this is
 
