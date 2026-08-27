@@ -1,0 +1,36 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { parse, print } from '../../ui/model.js';
+
+test('parse enum tokens', () => {
+  assert.deepEqual(parse('row, hug, solid, rounded'),
+    { direction: 'row', size: 'hug', stroke: 'solid', radius: 'rounded' });
+});
+test('parse list form', () => {
+  assert.deepEqual(parse(['stack', 'fill']), { direction: 'stack', size: 'fill' });
+});
+test('padN gapN scale', () => {
+  assert.deepEqual(parse('pad2, gap1'), { pad: 2, gap: 1 });
+});
+test('key:value numerics', () => {
+  assert.deepEqual(parse('w:120, h:22, opacity:0.5'), { w: 120, h: 22, opacity: 0.5 });
+});
+test('place both axes', () => {
+  assert.deepEqual(parse('floating, center, middle'),
+    { position: 'floating', 'place-h': 'center', 'place-v': 'middle' });
+});
+test('unknown token throws', () => {
+  assert.throws(() => parse('centre'), /unknown token 'centre'/);
+});
+test('duplicate dial throws', () => {
+  assert.throws(() => parse('row, stack'), /duplicate dial 'direction'/);
+});
+test('path primitive', () => {
+  assert.deepEqual(parse('curve, dashed, trim-end:0.35', 'path'),
+    { segment: 'curve', dash: 'dashed', 'trim-end': 0.35 });
+});
+test('print canonical + round-trip', () => {
+  const canon = 'row, hug, mid, solid, rounded, pad2, w:80';
+  assert.equal(print(parse('w:80, pad2, rounded, solid, mid, hug, row')), canon);
+  assert.deepEqual(parse(print(parse(canon))), parse(canon));
+});

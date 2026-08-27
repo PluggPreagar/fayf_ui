@@ -1,0 +1,23 @@
+{
+  "box": {
+    "direction":  ["row", "stack", "overlay"],
+    "size":       ["fixed", "fill", "hug", "aspect-locked", "clamped"],
+    "align":      ["start", "mid", "end", "baseline", "stretch"],
+    "distribute": ["packed", "between", "around", "evenly"],
+    "position":   ["in-flow", "docked", "floating", "anchored", "sticky"],
+    "place-h":    ["left", "center", "right"],
+    "place-v":    ["top", "middle", "bottom"],
+    "stroke":     ["bare", "hairline", "solid", "dashed"],
+    "fill-tint":  ["tint0", "tint1", "tint2", "tint3"],
+    "radius":     ["square", "rounded", "pill", "circle"],
+    "overflow":   ["clip", "scroll"],
+    "state":      ["disabled"]
+  },
+  "box_numeric": ["w", "h", "depth", "opacity", "rotate", "t"],
+  "path": {
+    "segment": ["straight", "elbow", "curve", "arc"],
+    "dash":    ["solid", "dashed", "dotted"],
+    "closed":  ["open", "closed"]
+  },
+  "path_numeric": ["weight", "trim-start", "trim-end", "t"]
+}
