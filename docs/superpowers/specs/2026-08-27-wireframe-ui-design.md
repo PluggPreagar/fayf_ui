@@ -1,0 +1,192 @@
+# Spec — fayf_ui wireframe UI library
+
+2026-08-27 · governed by [`CONSTITUTION.md`](../../../CONSTITUTION.md) C1–C8
+
+## Source
+
+Claude Design project `70fcfe2c-96d2-40cf-ac6d-72c1e394d9a7`
+"Wireframe UI components and notation" · read via `DesignSync` MCP.
+
+Key file `Wireframe Component Vocabulary.dc.html`:
+
+| turn | content |
+|---|---|
+| t12 | model — box + path, combinators, layers, 11 dials |
+| t2 | 50 parts — 3 sheets: 13 structure · 14 controls · 23 content/notation |
+| t11 | handles — proximity algorithm in `data-dc-script` |
+| t1 | anatomy screen — 14 parts in place |
+
+`support.js` = Claude Design canvas runtime, pulls React from unpkg → discarded (C4).
+Verbatim copy of the doc → `docs/vocabulary.reference.html`.
+
+## Model
+
+2 primitives (`box` · `path`) → 3 combinators (`row` · `stack` · `overlay`)
+→ 3 layers (`style` · `relation` · `motion`).
+Part = saved preset of dials = JSON file. Never code, never a subclass.
+
+## Ladder
+
+| L | what | from | code |
+|---|---|---|---|
+| L0 | `box` | DOM | `render.js` |
+| L1 | `path` · `relation` · `motion` | L0 | 3 modules |
+| L2 | `handles` | L0 + L1 | `handles.js` |
+| L3 | 50 parts | L0–L2 | JSON only |
+| L4 | screens | L3 | JSON only |
+
+JS stops at L2. Only `render.js` touches the DOM.
+`path` at L1, not L0: anchors to box geometry → depends on box → C5.
+Doc pairs them flat; deviation accepted, reversible.
+
+Handles need no new dial (doc, t11): handle = fixed box anchored to
+edge/corner; reveal = relation layer observing the pointer.
+
+## Vocabulary — box tokens
+
+12 dials. Source of truth at runtime: `ui/vocabulary.json`.
+
+```
+direction   row · stack · overlay
+size        fixed · fill · hug · aspect-locked · clamped
+align       start · mid · end · baseline · stretch
+distribute  packed · between · around · evenly
+position    in-flow · docked · floating · anchored · sticky
+place       left · center · right | top · middle · bottom
+stroke      bare · hairline · solid · dashed
+fill        tint0 · tint1 · tint2 · tint3
+radius      square · rounded · pill · circle
+overflow    clip · scroll
+state       disabled
+pad · gap   pad1–pad4 · gap1–gap4  (scale 4 / 8 / 12 / 16)
+```
+
+Numeric (`key:value`): `t:` `trim:` `rotate:` `opacity:` `depth:` `w:` `h:`.
+
+`place` legal only with `docked · floating · anchored · sticky`, never `in-flow`.
+Validator enforces. `align` = children, axis-relative. `place` = self, absolute.
+
+## Vocabulary — path tokens
+
+```
+anchors     free · edge · center · corner
+segments    straight · elbow · curve · arc
+stroke      solid · dashed · dotted  + weight: · cap: · join:
+ends        start: · end:  of  none · arrow · dot · bar
+closed      open · closed  (closed gains a fill)
+trim        trim:0..1 start/end fraction (spinner, gauge)
+label       a box anchored at t: along the path
+```
+
+## Deviations from doc — 5, all deliberate
+
+| # | doc | ours | why |
+|---|---|---|---|
+| 1 | stroke `none` | `bare` | collides with size `fill`-adjacent set; frees `none` |
+| 2 | fill `none·hairline·solid·dashed` | `tint0–3` | sheets paint tints, not stroke styles |
+| 3 | align `centre` | `mid` | axis-relative triple `start·mid·end` |
+| 4 | `centre` | `center` | one spelling repo-wide (C2) |
+| 5 | 11 dials | +`state` (12th) | `disabled` needed by controls; grow on demand |
+
+## Parametrization (C8)
+
+Token string or list; order-independent; per-primitive uniqueness at load.
+
+```json
+{ "id": "parts/button", "extends": "base/box",
+  "box": "row, mid, hug, pad2, solid, rounded", "content": "Go" }
+```
+
+```json
+{ "id": "parts/segmented-control", "extends": "base/box",
+  "box": "row, gap0, hug",
+  "children": [
+    { "$ref": "parts/button", "box": "square", "content": "A" },
+    { "$ref": "parts/button", "box": "square", "content": "B" },
+    { "$ref": "parts/button", "box": "square", "content": "C" } ] }
+```
+
+`extends` = inheritance · `$ref` = reference + per-instance overrides.
+Merge per dial: child `stack` replaces parent `row`. Never concatenates.
+
+## Verbs (C6)
+
+```
+parse(tokens)  → dials      print(dials) → tokens (canonical order)
+resolve(doc, registry) → flat tree      render(node) → DOM (L0 only)
+capture(el)    → JSON       diff(a, b)  → changes (also the test assertion)
+```
+
+Invariant, every part and screen:
+
+```
+diff(capture(render(resolve(d))), resolve(d)) == empty
+```
+
+## Tokens (visual)
+
+```
+canvas #f0eee9 · paper #fff · ink #222 @1.5px · text #111
+muted #8a8579 · accent #c0392b
+tint0 #f5f3ef · tint1 #ecebe7 · tint2 #e8e6e0 · tint3 #d8d5cf
+dashed #999 · dotted rule #d5d2cc
+Architects Daughter (prose) + ui-monospace (labels)
+radius 3px · space 4/8/12/16
+```
+
+## Handles (t11, verbatim algorithm)
+
+- bands per handle: >84px → 0 · >34px → 10% · >13px → 50% · else targeted red
+- speed EMA 0.72/0.28 · slow gate `1-(speed-0.04)/0.34`
+- dwell: +0.14 / −0.34 per 100ms tick → ~0.7s to arm, fast sweep lights nothing
+- square = resize · pill = move (ghost 15%) · border order R·M·R·M·R
+- hits 44px, centre-to-centre · shed ≥280 R·M·R·M·R → 140–280 R·M·R → <140 R·M
+- keyboard: focus reveals set at 50%; arrows move, modifier+arrows resize
+- exceptions: splitter seam grip (dots = resize) · list left gutter (persistent, no pill)
+
+## Repo
+
+```
+fayf_ui/
+  justfile  server.py  index.html  CONSTITUTION.md  CLAUDE.md
+  ui/      vocabulary.json  model.js  render.js  path.js
+           relation.js  motion.js  handles.js  tokens.css
+  parts/   base/box.json  sheet1/*.json  sheet2/*.json  sheet3/*.json
+  screens/ anatomy.json
+  test/    harness.js  js_runner.js  tracer.js  *_test.js
+  docs/    vocabulary.reference.html  superpowers/specs/
+```
+
+## Server · justfile
+
+`server.py` = python stdlib `http.server`. Ports `infopedia_php/wrapper.php`:
+
+```
+/wrapper?test=X.html    inject test/harness.js + test/X_test.js before </body>
+/wrapper?trace=X.html   inject test/tracer.js
+```
+
+`no-store` on `test/` + `ui/` (stale-asset trap,
+`infopedia_processor/backend/api/server.py:566`).
+
+just recipes: `default` (list) · `serve` · `test PAGE` · `trace PAGE`
+· `ci` · `build` · `validate`.
+`ci`/`validate` headless under node (model layer is host-neutral).
+`test PAGE` in browser via injector.
+
+## Testing
+
+`harness.js` · `js_runner.js` · `tracer.js` verbatim from `infopedia_php/test/`.
+Test-first per module: `model_test.js` (node) · `render_test.js`
+· `handles_test.js` · `parts_test.js` (browser).
+Round-trip invariant over all 50 parts = the drift catcher.
+
+## Stages
+
+1. skeleton — server · justfile · harness · smoke page
+2. `vocabulary.json` + `model.js` (parse/print/resolve/diff) + invariant
+3. `render.js` + `capture` + `tokens.css`
+4. 50 parts as JSON, sheet by sheet
+5. `path` · `relation` · `motion`
+6. `handles.js`
+7. `screens/anatomy.json` — integration demo
