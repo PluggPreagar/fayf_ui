@@ -1,0 +1,1 @@
+{"id":"component/splitter","extends":"base/box","box":"row, mid, fixed, w:160, h:96, gap1","children":[{"box":"fill, solid, rounded"},{"box":"stack, mid, evenly, fixed, w:10, h:28","children":[{"$ref":"cluster/dot","box":"w:3, h:3"},{"$ref":"cluster/dot","box":"w:3, h:3"},{"$ref":"cluster/dot","box":"w:3, h:3"}]},{"box":"fill, solid, rounded"}]}

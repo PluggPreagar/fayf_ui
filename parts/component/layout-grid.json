@@ -1,0 +1,1 @@
+{"id":"component/layout-grid","extends":"base/box","box":"row, fixed, w:160, h:96, gap2","children":[{"box":"fill, dashed, tint0"},{"box":"fill, dashed, tint0"},{"box":"fill, dashed, tint0"},{"box":"fill, dashed, tint0"}]}

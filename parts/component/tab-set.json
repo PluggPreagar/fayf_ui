@@ -1,0 +1,1 @@
+{"id":"component/tab-set","extends":"base/box","box":"row, gap0, hug","children":[{"box":"row, mid, packed, fixed, w:40, h:20, solid, square, tint1","content":"Ho"},{"box":"row, mid, packed, fixed, w:40, h:20, solid, square","content":"Fi"},{"box":"row, mid, packed, fixed, w:40, h:20, solid, square","content":"Do"}]}

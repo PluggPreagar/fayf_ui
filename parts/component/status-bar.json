@@ -1,0 +1,1 @@
+{"id":"component/status-bar","extends":"base/box","box":"row, mid, between, fixed, w:200, h:16, pad1, tint1","children":[{"$ref":"cluster/line","box":"w:48, h:5"},{"$ref":"cluster/line","box":"w:28, h:5"}]}
