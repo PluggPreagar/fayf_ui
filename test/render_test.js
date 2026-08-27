@@ -38,4 +38,17 @@ const pe = render(p);
 host.appendChild(pe);
 assert('path keys survive round-trip', diff(capture(pe), p), []);
 
+suite('path — crossbox and connector');
+const { drawPaths } = await import('../ui/path.js');
+const reg = await (await fetch('/registry.json')).json();
+const ph = render(resolve(reg['atom/image-placeholder'], reg));
+host.appendChild(ph);
+drawPaths(ph);
+const svg = ph.querySelector('svg.px');
+assert('crossbox svg present', !!svg, true);
+const line = svg.querySelector('line, path');
+assert('crossbox stroke drawn', !!line, true);
+drawPaths(ph);
+assert('idempotent — one svg', ph.querySelectorAll('svg.px').length, 1);
+
 harnessFinish();

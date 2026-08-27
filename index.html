@@ -24,6 +24,7 @@
 <script type="module">
 import { resolve } from './ui/model.js';
 import { render } from './ui/render.js';
+import { drawPaths } from './ui/path.js';
 const reg = await (await fetch('/registry.json')).json();
 const grid = document.getElementById('gallery');
 for (const [id, doc] of Object.entries(reg).sort(([a], [b]) => a.localeCompare(b))) {
@@ -32,6 +33,7 @@ for (const [id, doc] of Object.entries(reg).sort(([a], [b]) => a.localeCompare(b
   const label = document.createElement('div'); label.className = 'g-label'; label.textContent = id;
   const stage = document.createElement('div'); stage.className = 'g-stage';
   stage.appendChild(render(resolve(doc, reg)));
+  drawPaths(stage);
   item.append(label, stage);
   grid.append(item);
 }
