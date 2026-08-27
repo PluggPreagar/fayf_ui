@@ -1,0 +1,1 @@
+{ "id": "atom/tooltip", "extends": "base/box", "box": "row, mid, pad1, hug, solid, rounded, tint1", "content": "Tip" }

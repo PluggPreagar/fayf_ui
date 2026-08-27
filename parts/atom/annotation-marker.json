@@ -1,0 +1,1 @@
+{ "id": "atom/annotation-marker", "extends": "base/box", "box": "row, mid, packed, fixed, w:16, h:16, solid, circle, tint0", "content": "3" }

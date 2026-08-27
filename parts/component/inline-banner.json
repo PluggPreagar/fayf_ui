@@ -1,0 +1,2 @@
+{ "id": "component/inline-banner", "extends": "base/box", "box": "row, mid, gap1, fixed, w:160, pad1, solid, rounded, tint0",
+  "children": [ { "box": "hug", "content": "!" }, { "$ref": "cluster/line", "box": "w:104" } ] }

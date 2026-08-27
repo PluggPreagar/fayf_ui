@@ -1,0 +1,4 @@
+{ "id": "component/skeleton", "extends": "base/box", "box": "stack, gap1, hug",
+  "motion": "reveal",
+  "children": [ { "$ref": "cluster/line", "box": "w:120" }, { "$ref": "cluster/line", "box": "w:90" },
+    { "$ref": "cluster/line", "box": "w:60" } ] }

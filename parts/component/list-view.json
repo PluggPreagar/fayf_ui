@@ -1,0 +1,8 @@
+{ "id": "component/list-view", "extends": "base/box", "box": "stack, gap1, fixed, w:120",
+  "children": [
+    { "box": "row, mid, gap1, fixed, h:18, pad1, solid, rounded", "children": [
+      { "$ref": "cluster/dot" }, { "$ref": "cluster/line", "box": "w:72" } ] },
+    { "box": "row, mid, gap1, fixed, h:18, pad1, solid, rounded", "children": [
+      { "$ref": "cluster/dot" }, { "$ref": "cluster/line", "box": "w:56" } ] },
+    { "box": "row, mid, gap1, fixed, h:18, pad1, solid, rounded", "children": [
+      { "$ref": "cluster/dot" }, { "$ref": "cluster/line", "box": "w:64" } ] } ] }

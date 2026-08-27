@@ -1,0 +1,2 @@
+{ "id": "component/progress-indicator", "extends": "base/box", "box": "fixed, w:120, h:6, solid, pill, clip",
+  "children": [ { "box": "fixed, w:70, h:6, tint3" } ] }

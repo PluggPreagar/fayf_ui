@@ -1,0 +1,2 @@
+{ "id": "atom/image-placeholder", "extends": "base/box", "box": "fixed, w:80, h:56, dashed, tint0",
+  "path": "straight, solid", "from": "corner:tl", "to": "corner:br" }

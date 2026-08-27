@@ -1,0 +1,5 @@
+{ "id": "component/tree-view", "extends": "base/box", "box": "stack, gap1, hug",
+  "children": [
+    { "box": "row, mid, gap1", "children": [ { "box": "hug", "content": "▾" }, { "$ref": "cluster/line", "box": "w:56" } ] },
+    { "box": "row, mid, gap1, pad3", "children": [ { "box": "hug", "content": "▾" }, { "$ref": "cluster/line", "box": "w:44" } ] },
+    { "box": "row, mid, gap1, pad6", "children": [ { "box": "hug", "content": "›" }, { "$ref": "cluster/line", "box": "w:36" } ] } ] }

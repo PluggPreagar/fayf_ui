@@ -1,0 +1,2 @@
+{ "id": "atom/flow-connector", "extends": "base/box", "box": "fixed, w:80, h:24",
+  "path": "curve, solid, weight:1.5", "from": "free:0,20", "to": "free:80,6" }

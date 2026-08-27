@@ -1,0 +1,3 @@
+{ "id": "component/chart", "extends": "base/box", "box": "row, end, gap1, fixed, w:100, h:60, pad1, solid, rounded",
+  "children": [ { "box": "fill, h:22, tint2" }, { "box": "fill, h:36, tint3" },
+    { "box": "fill, h:14, tint2" }, { "box": "fill, h:46, tint1" } ] }

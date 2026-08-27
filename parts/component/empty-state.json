@@ -1,0 +1,2 @@
+{ "id": "component/empty-state", "extends": "base/box", "box": "stack, mid, gap1, fixed, w:120, h:80, pad2, dashed, rounded, evenly",
+  "children": [ { "box": "fixed, w:24, h:24, dashed, circle" }, { "box": "hug", "content": "nothing yet" } ] }
