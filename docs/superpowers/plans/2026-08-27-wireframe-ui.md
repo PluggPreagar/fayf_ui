@@ -709,6 +709,14 @@ test('every part resolves, keys reserved, tokens print-stable', () => {
   }
 });
 
+test('variant naming: type.variant extends its type', () => {
+  for (const [id, doc] of Object.entries(reg)) {
+    const i = id.lastIndexOf('.');
+    if (i > id.lastIndexOf('/'))
+      assert.equal(doc.extends, id.slice(0, i), `${id} must extend its type`);
+  }
+});
+
 test('classification rule holds', () => {
   const named = []; // filled task 6-8; rule checked structurally here
   for (const [id, doc] of Object.entries(reg)) {
@@ -901,7 +909,7 @@ await tr.runBlocks();
 ### Task 7: Sheet 2 — 14 action/data-entry parts (L5 + L7)
 
 **Files:**
-- Create: `parts/atom/button.json`, `parts/atom/icon-button.json`, `parts/atom/floating-action-button.json`, 11 files under `parts/component/`
+- Create: `parts/atom/button.json` (+ variants `button.primary.json`, `button.ghost.json`), `parts/atom/icon-button.json`, `parts/atom/floating-action-button.json`, 11 files under `parts/component/`
 - Test: existing sweeps
 
 **Interfaces:**
@@ -911,6 +919,16 @@ await tr.runBlocks();
 
 ```json
 { "id": "atom/button", "extends": "base/box", "box": "row, mid, packed, pad2, solid, rounded", "content": "Go" }
+```
+
+Variants (convention: `type.variant` file extends its type — see spec Variants section). `parts/atom/button.primary.json`, `parts/atom/button.ghost.json`:
+
+```json
+{ "id": "atom/button.primary", "extends": "atom/button", "box": "tint3" }
+```
+
+```json
+{ "id": "atom/button.ghost", "extends": "atom/button", "box": "dashed" }
 ```
 
 ```json

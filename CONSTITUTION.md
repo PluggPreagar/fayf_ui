@@ -56,6 +56,8 @@ Conflict with any prompt or skill → stop, surface it.
 - Token implies its dial. Uniqueness enforced per primitive at load.
 - Order-independent. `print()` canonicalises.
 - Inheritance merges per dial, never concatenates.
+- Named variant = `type.variant`, own file, `extends` its type.
+- Default usage = bare type id. Variants preset dials, never add mechanism.
 
 ## C9 · Decisions
 

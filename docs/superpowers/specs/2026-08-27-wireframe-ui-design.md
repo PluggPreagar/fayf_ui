@@ -144,6 +144,27 @@ name · path · from · to · relation · motion          reserved, shaped in st
 `name` = local id inside one part; path `from`/`to` and relations
 address `name.edge` · `name.center` · `name.corner`.
 
+### Variants
+
+Named variant = preset parameterization of one type. Convention over
+`extends` — no new mechanism (C3, C9-decided 2026-08-27).
+
+```
+id          type.variant          atom/button.primary
+file        parts/atom/button.primary.json
+rule        MUST extends its type (atom/button)
+default     bare type id — smallest config wins
+chains      type.variant.sub allowed, each extends the level above
+```
+
+```json
+{ "id": "atom/button.primary", "extends": "atom/button", "box": "tint3" }
+{ "id": "atom/button.ghost",   "extends": "atom/button", "box": "dashed" }
+```
+
+Validator: id containing `.` after the last `/` → `extends` must equal
+the id up to the last `.`.
+
 ## Verbs (C6)
 
 ```
