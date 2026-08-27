@@ -1,0 +1,48 @@
+/* fayf_ui palette + box classes. One class per token: bx-<token>. */
+:root {
+  --canvas:#f0eee9; --paper:#fff; --ink:#222; --text:#111;
+  --muted:#8a8579; --accent:#c0392b;
+  --tint0:#f5f3ef; --tint1:#ecebe7; --tint2:#e8e6e0; --tint3:#d8d5cf;
+  --dash:#999; --rule:#d5d2cc;
+  --prose:'Architects Daughter',cursive;
+  --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+.bx { box-sizing:border-box; position:relative; display:flex; flex-direction:row;
+      min-width:0; min-height:0; font:12px/1.3 var(--prose); color:var(--text); }
+/* direction */
+.bx-row{flex-direction:row} .bx-stack{flex-direction:column}
+.bx-overlay{display:grid} .bx-overlay>.bx{grid-area:1/1}
+/* size */
+.bx-fixed{flex:none} .bx-hug{flex:none;width:fit-content;height:fit-content}
+.bx-fill{flex:1 1 auto;align-self:stretch}
+.bx-aspect-locked{aspect-ratio:1} .bx-clamped{flex:1 1 auto;max-width:max-content}
+/* align (children, cross axis) */
+.bx-start{align-items:flex-start} .bx-mid{align-items:center} .bx-end{align-items:flex-end}
+.bx-baseline{align-items:baseline} .bx-stretch{align-items:stretch}
+/* distribute (children, main axis) */
+.bx-packed{justify-content:flex-start} .bx-between{justify-content:space-between}
+.bx-around{justify-content:space-around} .bx-evenly{justify-content:space-evenly}
+/* position + place. Rule: docked pairs with exactly one side token. */
+.bx-docked,.bx-floating,.bx-anchored{position:absolute}
+.bx-sticky{position:sticky;top:0}
+.bx-docked.bx-left{left:0;top:0;bottom:0}  .bx-docked.bx-right{right:0;top:0;bottom:0}
+.bx-docked.bx-top{top:0;left:0;right:0}    .bx-docked.bx-bottom{bottom:0;left:0;right:0}
+.bx-floating.bx-left,.bx-anchored.bx-left{left:0}
+.bx-floating.bx-right,.bx-anchored.bx-right{right:0}
+.bx-floating.bx-top,.bx-anchored.bx-top{top:0}
+.bx-floating.bx-bottom,.bx-anchored.bx-bottom{bottom:0}
+.bx-center{left:50%;--tx:-50%} .bx-middle{top:50%;--ty:-50%}
+.bx-center,.bx-middle{transform:translate(var(--tx,0),var(--ty,0))}
+/* stroke */
+.bx-bare{border:none} .bx-hairline{border:1px solid var(--ink)}
+.bx-solid{border:1.5px solid var(--ink)} .bx-dashed{border:1.5px dashed var(--dash)}
+/* fill-tint */
+.bx-tint0{background:var(--tint0)} .bx-tint1{background:var(--tint1)}
+.bx-tint2{background:var(--tint2)} .bx-tint3{background:var(--tint3)}
+/* radius */
+.bx-square{border-radius:0} .bx-rounded{border-radius:3px}
+.bx-pill{border-radius:999px} .bx-circle{border-radius:50%}
+/* overflow */
+.bx-clip{overflow:hidden} .bx-scroll{overflow:auto}
+/* state */
+.bx-disabled{opacity:.45;pointer-events:none}
