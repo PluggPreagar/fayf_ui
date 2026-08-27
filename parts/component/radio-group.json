@@ -1,0 +1,7 @@
+{ "id": "component/radio-group", "extends": "base/box", "box": "stack, gap1, hug",
+  "children": [
+    { "box": "row, mid, gap1", "children": [
+      { "box": "row, mid, packed, fixed, w:10, h:10, solid, circle", "children": [ { "$ref": "cluster/dot", "box": "w:4, h:4" } ] },
+      { "$ref": "cluster/line", "box": "w:48" } ] },
+    { "box": "row, mid, gap1", "children": [
+      { "box": "fixed, w:10, h:10, solid, circle" }, { "$ref": "cluster/line", "box": "w:36" } ] } ] }

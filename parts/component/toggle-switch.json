@@ -1,0 +1,2 @@
+{ "id": "component/toggle-switch", "extends": "base/box", "box": "row, mid, fixed, w:26, h:14, solid, pill, tint1, pad0",
+  "children": [ { "box": "fill" }, { "box": "fixed, w:10, h:10, tint3, circle" } ] }

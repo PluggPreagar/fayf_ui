@@ -1,0 +1,3 @@
+{ "id": "component/checkbox", "extends": "base/box", "box": "row, mid, gap1, hug",
+  "children": [ { "box": "row, mid, packed, fixed, w:12, h:12, solid, square", "content": "✓" },
+    { "$ref": "cluster/line", "box": "w:48" } ] }

@@ -1,0 +1,4 @@
+{ "id": "component/numeric-stepper", "extends": "base/box", "box": "row, mid, gap0, hug",
+  "children": [ { "$ref": "atom/icon-button", "box": "square", "content": "−" },
+    { "box": "row, mid, packed, fixed, w:26, h:22, hairline, square", "content": "3" },
+    { "$ref": "atom/icon-button", "box": "square", "content": "+" } ] }

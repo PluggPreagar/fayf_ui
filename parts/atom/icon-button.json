@@ -1,0 +1,1 @@
+{ "id": "atom/icon-button", "extends": "base/box", "box": "row, mid, packed, fixed, w:22, h:22, solid, rounded", "content": "+" }
