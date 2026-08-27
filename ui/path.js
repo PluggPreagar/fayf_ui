@@ -64,15 +64,23 @@ function anchor(ref, el, root, hostRect) {
   const [k, arg] = kind.split(':');
   if (k === 'free') { const [x, y] = arg.split(',').map(Number); return { x, y }; }
   if (k === 'center') return { x: rel.x + rel.w / 2, y: rel.y + rel.h / 2 };
-  if (k === 'edge') return {
-    left:   { x: rel.x, y: rel.y + rel.h / 2 },
-    right:  { x: rel.x + rel.w, y: rel.y + rel.h / 2 },
-    top:    { x: rel.x + rel.w / 2, y: rel.y },
-    bottom: { x: rel.x + rel.w / 2, y: rel.y + rel.h },
-  }[arg];
-  if (k === 'corner') return {
-    tl: { x: rel.x, y: rel.y }, tr: { x: rel.x + rel.w, y: rel.y },
-    bl: { x: rel.x, y: rel.y + rel.h }, br: { x: rel.x + rel.w, y: rel.y + rel.h },
-  }[arg];
-  return null;
+  if (k === 'edge') {
+    const pt = {
+      left:   { x: rel.x, y: rel.y + rel.h / 2 },
+      right:  { x: rel.x + rel.w, y: rel.y + rel.h / 2 },
+      top:    { x: rel.x + rel.w / 2, y: rel.y },
+      bottom: { x: rel.x + rel.w / 2, y: rel.y + rel.h },
+    }[arg];
+    if (!pt) throw new Error(`unknown anchor '${ref}'`);
+    return pt;
+  }
+  if (k === 'corner') {
+    const pt = {
+      tl: { x: rel.x, y: rel.y }, tr: { x: rel.x + rel.w, y: rel.y },
+      bl: { x: rel.x, y: rel.y + rel.h }, br: { x: rel.x + rel.w, y: rel.y + rel.h },
+    }[arg];
+    if (!pt) throw new Error(`unknown anchor '${ref}'`);
+    return pt;
+  }
+  throw new Error(`unknown anchor '${ref}'`);
 }

@@ -25,6 +25,15 @@ test('unknown token throws', () => {
 test('duplicate dial throws', () => {
   assert.throws(() => parse('row, stack'), /duplicate dial 'direction'/);
 });
+test('place with legal position ok', () => {
+  assert.deepEqual(parse('floating, center'), { position: 'floating', 'place-h': 'center' });
+});
+test('place without position throws', () => {
+  assert.throws(() => parse('center'), /requires position/);
+});
+test('place with in-flow position throws', () => {
+  assert.throws(() => parse('in-flow, center'), /requires position/);
+});
 test('path primitive', () => {
   assert.deepEqual(parse('curve, dashed, trim-end:0.35', 'path'),
     { segment: 'curve', dash: 'dashed', 'trim-end': 0.35 });

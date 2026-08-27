@@ -35,10 +35,10 @@ for (const [id, doc] of Object.entries(reg).sort(([a], [b]) => a.localeCompare(b
   const label = document.createElement('div'); label.className = 'g-label'; label.textContent = id;
   const stage = document.createElement('div'); stage.className = 'g-stage';
   stage.appendChild(render(resolve(doc, reg)));
-  drawPaths(stage);
-  wireRelations(stage.firstChild); applyMotion(stage.firstChild);
   item.append(label, stage);
   grid.append(item);
+  drawPaths(stage);
+  wireRelations(stage.firstChild); applyMotion(stage.firstChild);
 }
 document.body.dataset.ready = '1';
 </script>

@@ -10,6 +10,13 @@ export function parse(tokens, primitive = 'box') {
     if (dial in dials) throw new Error(`duplicate dial '${dial}': '${tok}' vs '${dials[dial]}'`);
     dials[dial] = value;
   }
+  if (primitive === 'box' && (dials['place-h'] != null || dials['place-v'] != null)) {
+    const legal = ['docked', 'floating', 'anchored', 'sticky'];
+    if (!legal.includes(dials.position)) {
+      const tok = dials['place-h'] ?? dials['place-v'];
+      throw new Error(`place token '${tok}' requires position docked|floating|anchored|sticky`);
+    }
+  }
   return dials;
 }
 

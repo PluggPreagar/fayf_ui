@@ -15,6 +15,8 @@ export function wireRelations(el, external = {}) {
       };
       src.addEventListener('scroll', update, { passive: true });
       update();
+    } else {
+      throw new Error(`unknown measure '${rel.measure}'`);
     }
   }
 }

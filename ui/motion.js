@@ -16,13 +16,18 @@ function ensureCss() {
   document.head.appendChild(s); injected = true;
 }
 
+const PRESETS = ['enter', 'exit', 'move', 'reveal', 'spin'];
+function checkMotion(m) {
+  if (!PRESETS.includes(m)) throw new Error(`unknown motion '${m}'`);
+}
+
 export function applyMotion(el) {
   ensureCss();
   const extra = el.dataset.extra ? JSON.parse(el.dataset.extra) : {};
-  if (extra.motion) el.classList.add(`mx-${extra.motion}`);
+  if (extra.motion) { checkMotion(extra.motion); el.classList.add(`mx-${extra.motion}`); }
   el.querySelectorAll('[data-extra]').forEach(c => {
     const e = JSON.parse(c.dataset.extra);
-    if (e.motion) { ensureCss(); c.classList.add(`mx-${e.motion}`); }
+    if (e.motion) { checkMotion(e.motion); ensureCss(); c.classList.add(`mx-${e.motion}`); }
   });
 }
 

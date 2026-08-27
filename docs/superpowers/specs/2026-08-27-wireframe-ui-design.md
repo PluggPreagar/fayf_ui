@@ -51,7 +51,9 @@ viewport → screen.
 Doc pairs box+path flat; deviation accepted, reversible.
 
 `relation` data flow: reads **rendered** measures (rect, scroll) after
-render, subscribes, writes dials back through render. Never raw DOM writes.
+render, subscribes, writes EPHEMERAL style state only — `data-box` dials
+stay untouched, so the capture boundary holds. Same rule for motion and
+handles.
 
 Handles need no new dial (doc, t11): handle = fixed box anchored to
 edge/corner; reveal = relation observing the pointer.
