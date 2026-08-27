@@ -60,6 +60,7 @@ suite('relation — scrollbar thumb follows scroll');
   host.append(scroller, bar);
   wireRelations(bar, { host: scroller });
   scroller.scrollTop = 160;                       // 160 / (400-80) = 0.5
+  scroller.dispatchEvent(new Event('scroll'));     // explicit — native scroll dispatch is suppressed on hidden panes
   await new Promise(r => setTimeout(r, 50));
   const thumb = bar.querySelector('[data-name="thumb"]');
   assert('thumb offset = 50% of free track (33px)', thumb.style.top, '33px');
