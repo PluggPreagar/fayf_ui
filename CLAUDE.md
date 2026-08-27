@@ -24,15 +24,21 @@ Spec: `docs/superpowers/specs/2026-08-27-wireframe-ui-design.md`.
 
 ## Ladder
 
-| L | What | From |
-|---|---|---|
-| L0 | `box` | DOM |
-| L1 | `path` · `relation` · `motion` | L0 |
-| L2 | `handles` | L0 + L1 |
-| L3 | 50 parts (JSON) | L0–L2 |
-| L4 | screens (JSON) | L3 |
+One sequence, Ln uses < n (C5).
 
-JS stops at L2.
+| L | what | form |
+|---|---|---|
+| L0 | vocabulary · parse · print | pure JS |
+| L1 | resolve · diff | pure JS |
+| L2 | render · capture | JS + DOM (only writer) |
+| L3 | path · relation · motion | JS |
+| L4 | handles | JS |
+| L5 | atom — 1 box, no children | JSON |
+| L6 | cluster — sub-assembly, not in the 50 | JSON |
+| L7 | component — named part, children | JSON |
+| L8 | screen | JSON |
+
+JS stops at L4. L0–L1 test under node, L2+ in browser.
 
 ## Commands
 

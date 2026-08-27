@@ -27,20 +27,34 @@ Part = saved preset of dials = JSON file. Never code, never a subclass.
 
 ## Ladder
 
-| L | what | from | code |
-|---|---|---|---|
-| L0 | `box` | DOM | `render.js` |
-| L1 | `path` · `relation` · `motion` | L0 | 3 modules |
-| L2 | `handles` | L0 + L1 | `handles.js` |
-| L3 | 50 parts | L0–L2 | JSON only |
-| L4 | screens | L3 | JSON only |
+One sequence. Ln uses < n only (C5). Decided 2026-08-27 (C9, 3 questions).
 
-JS stops at L2. Only `render.js` touches the DOM.
-`path` at L1, not L0: anchors to box geometry → depends on box → C5.
-Doc pairs them flat; deviation accepted, reversible.
+| L | what | from | form |
+|---|---|---|---|
+| L0 | vocabulary · `parse` · `print` | tokens | `vocabulary.json` + `model.js` (pure) |
+| L1 | `resolve` · `diff` | L0 | `model.js` (pure) |
+| L2 | `render` · `capture` | L1 + DOM | `render.js` + `tokens.css` — **only DOM writer** |
+| L3 | `path` · `relation` · `motion` | L2 | 3 modules |
+| L4 | `handles` | L2 + L3 | `handles.js` |
+| L5 | atom — single box, no children | L0–L4 | JSON — button, badge, avatar, tag… |
+| L6 | cluster — shared sub-assembly, not one of the 50 | L5 | JSON — labeled-row, cell, thumb+track… |
+| L7 | component — named part with children | L5–L6 | JSON — field, table, scrollbar… |
+| L8 | screen — viewport composition | L5–L7 | JSON — anatomy, gallery |
+
+JS stops at L4. L0–L1 host-neutral → node tests. L2+ browser tests.
+
+Classification rule (mechanical, no judgment): no children → atom;
+children + not in the 50 → cluster; children + in the 50 → component;
+viewport → screen.
+
+`path` at L3: anchors to rendered box geometry → depends on render → C5.
+Doc pairs box+path flat; deviation accepted, reversible.
+
+`relation` data flow: reads **rendered** measures (rect, scroll) after
+render, subscribes, writes dials back through render. Never raw DOM writes.
 
 Handles need no new dial (doc, t11): handle = fixed box anchored to
-edge/corner; reveal = relation layer observing the pointer.
+edge/corner; reveal = relation observing the pointer.
 
 ## Vocabulary — box tokens
 
@@ -58,7 +72,7 @@ fill        tint0 · tint1 · tint2 · tint3
 radius      square · rounded · pill · circle
 overflow    clip · scroll
 state       disabled
-pad · gap   pad1–pad4 · gap1–gap4  (scale 4 / 8 / 12 / 16)
+pad · gap   padN · gapN  =  N × 4px, any N  (pad2 = 8px)
 ```
 
 Numeric (`key:value`): `t:` `trim:` `rotate:` `opacity:` `depth:` `w:` `h:`.
@@ -78,15 +92,26 @@ trim        trim:0..1 start/end fraction (spinner, gauge)
 label       a box anchored at t: along the path
 ```
 
-## Deviations from doc — 5, all deliberate
+## Dial mapping — doc's 11 → ours, complete ledger
 
-| # | doc | ours | why |
-|---|---|---|---|
-| 1 | stroke `none` | `bare` | collides with size `fill`-adjacent set; frees `none` |
-| 2 | fill `none·hairline·solid·dashed` | `tint0–3` | sheets paint tints, not stroke styles |
-| 3 | align `centre` | `mid` | axis-relative triple `start·mid·end` |
-| 4 | `centre` | `center` | one spelling repo-wide (C2) |
-| 5 | 11 dials | +`state` (12th) | `disabled` needed by controls; grow on demand |
+| doc dial | ours | note |
+|---|---|---|
+| child | dropped | was a summary row of pad·gap·direction |
+| direction | direction | = |
+| size | size | = |
+| align | align | `centre` → `mid` (axis-relative triple `start·mid·end`) |
+| distribute | distribute | = |
+| pad · gap | `padN` · `gapN` | rule N×4px, open-ended like doc's scale |
+| position | position | = |
+| depth | `depth:` numeric | **scrim: deferred** — add with modal (stage 4, sheet 3) |
+| stroke·fill | split: stroke + fill | stroke `none` → `bare`; fill → `tint0–3` (sheets paint tints) |
+| radius | radius | = |
+| overflow | overflow | = |
+| content | JSON key, not token | `nothing · text run · child boxes` |
+| — | + `place` | 6 tokens, parameterizes docked/floating/anchored/sticky |
+| — | + `state` | `disabled` only; grow on demand |
+
+Spelling repo-wide: `center`, never `centre` (C2).
 
 ## Parametrization (C8)
 
@@ -109,6 +134,16 @@ Token string or list; order-independent; per-primitive uniqueness at load.
 `extends` = inheritance · `$ref` = reference + per-instance overrides.
 Merge per dial: child `stack` replaces parent `row`. Never concatenates.
 
+Reserved node keys, fixed at stage 2 so stage-4 parts never get rewritten:
+
+```
+id · extends · $ref · box · content · children      in use from stage 2
+name · path · from · to · relation · motion          reserved, shaped in stage 5
+```
+
+`name` = local id inside one part; path `from`/`to` and relations
+address `name.edge` · `name.center` · `name.corner`.
+
 ## Verbs (C6)
 
 ```
@@ -122,6 +157,11 @@ Invariant, every part and screen:
 ```
 diff(capture(render(resolve(d))), resolve(d)) == empty
 ```
+
+Honesty note: `render` stamps dials on the DOM, `capture` reads them back →
+the invariant catches resolver/merge/serialization drift, **not** visual
+correctness. Complement in `render_test.js`: computed-style spot checks —
+`hug` → no fixed width · `docked,left` → inset 0 · `gap2` → 8px.
 
 ## Tokens (visual)
 
@@ -151,7 +191,7 @@ fayf_ui/
   justfile  server.py  index.html  CONSTITUTION.md  CLAUDE.md
   ui/      vocabulary.json  model.js  render.js  path.js
            relation.js  motion.js  handles.js  tokens.css
-  parts/   base/box.json  sheet1/*.json  sheet2/*.json  sheet3/*.json
+  parts/   base/box.json  atom/*.json  cluster/*.json  component/*.json
   screens/ anatomy.json
   test/    harness.js  js_runner.js  tracer.js  *_test.js
   docs/    vocabulary.reference.html  superpowers/specs/
@@ -184,9 +224,15 @@ Round-trip invariant over all 50 parts = the drift catcher.
 ## Stages
 
 1. skeleton — server · justfile · harness · smoke page
-2. `vocabulary.json` + `model.js` (parse/print/resolve/diff) + invariant
-3. `render.js` + `capture` + `tokens.css`
-4. 50 parts as JSON, sheet by sheet
-5. `path` · `relation` · `motion`
-6. `handles.js`
-7. `screens/anatomy.json` — integration demo
+2. L0–L1 — `vocabulary.json` + `model.js` (parse/print/resolve/diff)
+   + invariant + reserved keys
+3. L2 — `render.js` + `capture` + `tokens.css` + computed-style checks
+4. L5–L7 — 50 parts as JSON, sheet by sheet, filed by classification rule
+   (`sheet` kept as metadata field)
+5. L3 — `path` · `relation` · `motion` (shapes the reserved keys)
+6. L4 — `handles.js`
+7. L8 — `screens/anatomy.json` — integration demo
+
+Sequencing note: stage 4 before stage 5 → parts needing paths/relations
+(scrollbar thumb, crossbox, spinner) land in two passes — boxes in 4,
+paths/relations wired in 5.
