@@ -4,8 +4,38 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>fayf_ui</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui/tokens.css">
+<style>
+  body{margin:0;background:var(--canvas);padding:28px;font-family:var(--mono)}
+  h1{font:400 22px var(--prose);color:var(--text);margin:0 0 20px}
+  .g-grid{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+  .g-item{display:flex;flex-direction:column;gap:7px}
+  .g-label{font:600 10px var(--mono);color:var(--muted)}
+  .g-stage{position:relative;background:var(--paper);border:1px solid var(--rule);
+           border-radius:6px;padding:14px;min-width:60px;min-height:40px}
+</style>
 </head>
 <body>
-<h1 id="smoke">fayf_ui</h1>
+<h1 id="smoke">fayf_ui — parts</h1>
+<div class="g-grid" id="gallery"></div>
+<script type="module">
+import { resolve } from './ui/model.js';
+import { render } from './ui/render.js';
+const reg = await (await fetch('/registry.json')).json();
+const grid = document.getElementById('gallery');
+for (const [id, doc] of Object.entries(reg).sort(([a], [b]) => a.localeCompare(b))) {
+  if (id.startsWith('base/')) continue;
+  const item = document.createElement('div'); item.className = 'g-item';
+  const label = document.createElement('div'); label.className = 'g-label'; label.textContent = id;
+  const stage = document.createElement('div'); stage.className = 'g-stage';
+  stage.appendChild(render(resolve(doc, reg)));
+  item.append(label, stage);
+  grid.append(item);
+}
+document.body.dataset.ready = '1';
+</script>
 </body>
 </html>
