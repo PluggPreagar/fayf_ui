@@ -25,6 +25,8 @@
 import { resolve } from './ui/model.js';
 import { render } from './ui/render.js';
 import { drawPaths } from './ui/path.js';
+import { wireRelations } from './ui/relation.js';
+import { applyMotion } from './ui/motion.js';
 const reg = await (await fetch('/registry.json')).json();
 const grid = document.getElementById('gallery');
 for (const [id, doc] of Object.entries(reg).sort(([a], [b]) => a.localeCompare(b))) {
@@ -34,6 +36,7 @@ for (const [id, doc] of Object.entries(reg).sort(([a], [b]) => a.localeCompare(b
   const stage = document.createElement('div'); stage.className = 'g-stage';
   stage.appendChild(render(resolve(doc, reg)));
   drawPaths(stage);
+  wireRelations(stage.firstChild); applyMotion(stage.firstChild);
   item.append(label, stage);
   grid.append(item);
 }

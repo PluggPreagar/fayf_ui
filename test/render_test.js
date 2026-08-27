@@ -51,4 +51,26 @@ assert('crossbox stroke drawn', !!line, true);
 drawPaths(ph);
 assert('idempotent — one svg', ph.querySelectorAll('svg.px').length, 1);
 
+suite('relation — scrollbar thumb follows scroll');
+{
+  const { wireRelations } = await import('../ui/relation.js');
+  const scroller = render(resolve({ box: 'stack, fixed, w:60, h:80, scroll', children:
+    [{ box: 'fixed, h:400, tint0' }] }));
+  const bar = render(resolve(reg['component/scrollbar'], reg));
+  host.append(scroller, bar);
+  wireRelations(bar, { host: scroller });
+  scroller.scrollTop = 160;                       // 160 / (400-80) = 0.5
+  await new Promise(r => setTimeout(r, 50));
+  const thumb = bar.querySelector('[data-name="thumb"]');
+  assert('thumb offset = 50% of free track (33px)', thumb.style.top, '33px');
+}
+suite('motion — reveal + draw-on');
+{
+  const { applyMotion, drawOn } = await import('../ui/motion.js');
+  const sk = render(resolve(reg['component/skeleton'], reg));
+  host.appendChild(sk);
+  applyMotion(sk);
+  assert('reveal class applied', sk.classList.contains('mx-reveal'), true);
+}
+
 harnessFinish();
