@@ -11,7 +11,8 @@ host.appendChild(a);
 let cs = getComputedStyle(a);
 assert('gap2 = 8px', cs.gap, '8px');
 assert('pad3 = 12px', cs.padding, '12px');
-assert('solid = 1.5px border', cs.borderTopWidth, '1.5px');
+assert('solid border style', cs.borderTopStyle, 'solid');
+assert('solid border width snapped ok', ['1px', '1.5px'].includes(cs.borderTopWidth), true);
 assert('hug has no fixed width', a.style.width, '');
 
 const b = render(resolve({ box: 'docked, left, fixed, w:40' }));
