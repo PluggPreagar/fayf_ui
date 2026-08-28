@@ -28,9 +28,9 @@ el.querySelectorAll('[data-extra]').forEach(n => wireRelations(n, { host: el.que
 applyMotion(el);
 mountIcons(el);
 mountStyleToggle(el, { inline: true });
-wireAction(el.querySelector('[data-name="primary-action"]'), 'start-next-lecture');
-wireAction(el.querySelector('[data-name="nav-shop"]'), 'nav-shop');
-wireAction(el.querySelector('[data-name="nav-training"]'), 'nav-training');
+wireAction(el.querySelector('[data-name="primary-action"]'), 'start-next-lecture', { reg });
+wireAction(el.querySelector('[data-name="nav-shop"]'), 'nav-shop', { reg });
+wireAction(el.querySelector('[data-name="nav-training"]'), 'nav-training', { reg });
 document.body.dataset.ready = '1';
 </script>
 </body>
