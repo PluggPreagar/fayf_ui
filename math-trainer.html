@@ -29,8 +29,8 @@ applyMotion(el);
 mountIcons(el);
 mountStyleToggle(el, { inline: true });
 wireAction(el.querySelector('[data-name="primary-action"]'), 'start-next-lecture', { reg });
-wireAction(el.querySelector('[data-name="nav-shop"]'), 'nav-shop', { reg });
-wireAction(el.querySelector('[data-name="nav-training"]'), 'nav-training', { reg });
+wireAction(el.querySelector('[data-name="nav-shop"]'), 'nav-shop', { reg, tipSide: 'right' });
+wireAction(el.querySelector('[data-name="nav-training"]'), 'nav-training', { reg, tipSide: 'right' });
 document.body.dataset.ready = '1';
 </script>
 </body>
