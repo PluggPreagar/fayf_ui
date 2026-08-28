@@ -1,2 +1,2 @@
-{ "id": "component/search-field", "extends": "base/box", "box": "row, mid, gap1, fixed, w:120, h:22, pad1, solid, pill",
+{ "extends": "base/box", "box": "row, mid, gap1, fixed, w:120, h:22, pad1, solid, pill",
   "children": [ { "box": "hug", "content": "⌕" }, { "$ref": "cluster/line", "box": "w:64, h:5" } ] }

@@ -1,1 +1,1 @@
-{"id":"component/app-bar","extends":"base/box","box":"row, mid, between, fixed, w:200, h:26, pad2, solid, rounded","children":[{"box":"fixed, w:56, h:8, tint3, rounded"},{"box":"row, gap1","children":[{"$ref":"cluster/dot"},{"$ref":"cluster/dot"}]}]}
+{"extends":"base/box","box":"row, mid, between, fixed, w:200, h:26, pad2, solid, rounded","children":[{"box":"fixed, w:56, h:8, tint3, rounded"},{"box":"row, gap1","children":[{"$ref":"cluster/dot"},{"$ref":"cluster/dot"}]}]}

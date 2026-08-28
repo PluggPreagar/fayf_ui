@@ -1,4 +1,4 @@
-{ "id": "screens/math-trainer-dashboard", "box": "stack, fill, clip, tint0",
+{ "box": "stack, fill, clip, tint0",
   "children": [
     { "name": "topbar", "box": "row, mid, between, fixed, h:44, pad1, solid, tint1",
       "children": [

@@ -1,4 +1,4 @@
-{ "id": "component/diagram", "extends": "base/box", "box": "row, mid, between, fixed, w:130, h:50, pad1",
+{ "extends": "base/box", "box": "row, mid, between, fixed, w:130, h:50, pad1",
   "children": [ { "name": "n1", "box": "fixed, w:26, h:18, solid, rounded" },
     { "name": "n2", "box": "fixed, w:26, h:18, solid, rounded, tint1" },
     { "name": "n3", "box": "fixed, w:26, h:18, solid, rounded" } ],

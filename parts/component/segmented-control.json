@@ -1,4 +1,4 @@
-{ "id": "component/segmented-control", "extends": "base/box", "box": "row, gap0, hug",
+{ "extends": "base/box", "box": "row, gap0, hug",
   "children": [ { "$ref": "atom/button", "box": "square", "content": "A" },
     { "$ref": "atom/button", "box": "square, tint1", "content": "B" },
     { "$ref": "atom/button", "box": "square", "content": "C" } ] }

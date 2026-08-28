@@ -1,4 +1,4 @@
-{ "id": "screens/anatomy", "box": "stack, fixed, w:640, h:420, solid, rounded, clip, tint0",
+{ "box": "stack, fixed, w:640, h:420, solid, rounded, clip, tint0",
   "children": [
     { "$ref": "component/app-bar", "box": "w:640, h:32, square, bare" },
     { "name": "body", "box": "row, fill",

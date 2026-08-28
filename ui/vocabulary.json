@@ -13,11 +13,11 @@
     "overflow":   ["clip", "scroll"],
     "state":      ["disabled"]
   },
-  "box_numeric": ["w", "h", "depth", "opacity", "rotate", "t"],
+  "box_numeric": ["w", "h", "depth", "opacity", "rotate"],
   "path": {
     "segment": ["straight", "elbow", "curve", "arc"],
     "dash":    ["solid", "dashed", "dotted"],
     "closed":  ["open", "closed"]
   },
-  "path_numeric": ["weight", "trim-start", "trim-end", "t"]
+  "path_numeric": ["weight", "trim-start", "trim-end"]
 }

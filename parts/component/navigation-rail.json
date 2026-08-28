@@ -1,1 +1,1 @@
-{"id":"component/navigation-rail","extends":"base/box","box":"stack, fixed, w:36, h:120, pad1, gap1, solid, rounded","children":[{"box":"fixed, h:20, tint3, rounded"},{"box":"fixed, h:20, tint1, rounded"},{"box":"fixed, h:20, tint1, rounded"},{"box":"fixed, h:20, tint1, rounded"}]}
+{"extends":"base/box","box":"stack, fixed, w:36, h:120, pad1, gap1, solid, rounded","children":[{"box":"fixed, h:20, tint3, rounded"},{"box":"fixed, h:20, tint1, rounded"},{"box":"fixed, h:20, tint1, rounded"},{"box":"fixed, h:20, tint1, rounded"}]}

@@ -1,1 +1,1 @@
-{"id":"component/card","extends":"base/box","box":"stack, fixed, w:120, pad1, gap1, solid, rounded, clip","children":[{"box":"fixed, h:30, tint1"},{"$ref":"cluster/line","box":"w:84"},{"$ref":"cluster/line","box":"w:56"}]}
+{"extends":"base/box","box":"stack, fixed, w:120, pad1, gap1, solid, rounded, clip","children":[{"box":"fixed, h:30, tint1"},{"$ref":"cluster/line","box":"w:84"},{"$ref":"cluster/line","box":"w:56"}]}

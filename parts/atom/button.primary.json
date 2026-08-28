@@ -1,1 +1,1 @@
-{ "id": "atom/button.primary", "extends": "atom/button", "box": "tint3" }
+{ "extends": "atom/button", "box": "tint3" }

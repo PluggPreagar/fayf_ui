@@ -1,1 +1,1 @@
-{"id":"component/breadcrumb-trail","extends":"base/box","box":"row, mid, gap1, hug","children":[{"box":"hug","content":"Home"},{"box":"hug","content":"/"},{"box":"hug","content":"Files"},{"box":"hug","content":"/"},{"box":"hug","content":"Doc"}]}
+{"extends":"base/box","box":"row, mid, gap1, hug","children":[{"box":"hug","content":"Home"},{"box":"hug","content":"/"},{"box":"hug","content":"Files"},{"box":"hug","content":"/"},{"box":"hug","content":"Doc"}]}

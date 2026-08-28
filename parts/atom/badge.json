@@ -1,1 +1,1 @@
-{ "id": "atom/badge", "extends": "base/box", "box": "row, mid, packed, fixed, w:14, h:14, tint3, circle", "content": "4" }
+{ "extends": "base/box", "box": "row, mid, packed, fixed, w:14, h:14, tint3, circle", "content": "4" }

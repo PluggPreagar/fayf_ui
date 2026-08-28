@@ -1,3 +1,3 @@
-{ "id": "component/drawer", "extends": "base/box", "box": "overlay, fixed, w:160, h:104, solid, rounded, clip",
+{ "extends": "base/box", "box": "overlay, fixed, w:160, h:104, solid, rounded, clip",
   "children": [ { "box": "fill, tint0" },
     { "box": "docked, right, fixed, w:56, tint1, hairline" } ] }

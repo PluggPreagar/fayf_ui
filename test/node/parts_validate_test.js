@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { resolve, parse, print } from '../../ui/model.js';
 import { loadRegistry } from './registry.js';
 
-const RESERVED = new Set(['id', 'extends', '$ref', 'box', 'content', 'children',
+const RESERVED = new Set(['extends', '$ref', 'box', 'content', 'children',
   'name', 'path', 'from', 'to', 'relation', 'motion']);
 
 function walkKeys(node, id) {
@@ -15,11 +15,6 @@ function walkKeys(node, id) {
 const reg = loadRegistry();
 
 test('registry non-empty', () => assert.ok(Object.keys(reg).length >= 3));
-
-test('every id matches its file path', () => {
-  for (const [id, doc] of Object.entries(reg))
-    if (doc.id !== undefined) assert.equal(doc.id, id, `id mismatch in ${id}`);
-});
 
 test('every part resolves, keys reserved, tokens print-stable', () => {
   for (const [id, doc] of Object.entries(reg)) {

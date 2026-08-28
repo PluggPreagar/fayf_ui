@@ -1,1 +1,1 @@
-{ "id": "atom/floating-action-button", "extends": "base/box", "box": "row, mid, packed, fixed, w:28, h:28, solid, circle, tint1", "content": "+" }
+{ "extends": "base/box", "box": "row, mid, packed, fixed, w:28, h:28, solid, circle, tint1", "content": "+" }

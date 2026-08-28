@@ -1,3 +1,3 @@
-{ "id": "component/toolbar", "extends": "base/box", "box": "row, mid, gap1, pad1, hug, solid, rounded",
+{ "extends": "base/box", "box": "row, mid, gap1, pad1, hug, solid, rounded",
   "children": [ { "$ref": "atom/icon-button" }, { "$ref": "atom/icon-button", "content": "×" },
     { "box": "fixed, w:1, h:16, tint3" }, { "$ref": "atom/icon-button", "content": "▾" } ] }

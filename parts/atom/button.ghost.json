@@ -1,1 +1,1 @@
-{ "id": "atom/button.ghost", "extends": "atom/button", "box": "dashed" }
+{ "extends": "atom/button", "box": "dashed" }

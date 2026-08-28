@@ -1,3 +1,3 @@
-{ "id": "component/slider", "extends": "base/box", "box": "overlay, mid, fixed, w:120, h:14",
+{ "extends": "base/box", "box": "overlay, mid, fixed, w:120, h:14",
   "children": [ { "box": "fixed, w:120, h:4, tint2, pill" },
     { "box": "floating, center, middle, fixed, w:10, h:10, solid, circle, tint0" } ] }

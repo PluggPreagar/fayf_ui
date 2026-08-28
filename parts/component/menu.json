@@ -1,1 +1,1 @@
-{"id":"component/menu","extends":"base/box","box":"stack, fixed, w:90, pad1, gap1, solid, rounded","children":[{"box":"row, mid, fixed, h:16, pad1, tint1","content":"Cut"},{"box":"row, mid, fixed, h:16, pad1","content":"Copy"},{"box":"row, mid, fixed, h:16, pad1","content":"Paste"}]}
+{"extends":"base/box","box":"stack, fixed, w:90, pad1, gap1, solid, rounded","children":[{"box":"row, mid, fixed, h:16, pad1, tint1","content":"Cut"},{"box":"row, mid, fixed, h:16, pad1","content":"Copy"},{"box":"row, mid, fixed, h:16, pad1","content":"Paste"}]}

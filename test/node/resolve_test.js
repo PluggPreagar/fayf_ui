@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { resolve, diff } from '../../ui/model.js';
 
 const reg = {
-  'base/box': { id: 'base/box', box: 'stack, hug, bare, square' },
-  'atom/button': { id: 'atom/button', extends: 'base/box',
+  'base/box': { box: 'stack, hug, bare, square' },
+  'atom/button': { extends: 'base/box',
     box: 'row, mid, packed, pad2, solid, rounded', content: 'Go' },
 };
 
@@ -14,7 +14,6 @@ test('extends merges per dial', () => {
   assert.equal(n.box.size, 'hug');           // parent survives
   assert.equal(n.content, 'Go');
   assert.equal(n.extends, undefined);
-  assert.equal(n.id, undefined);
 });
 test('$ref with per-instance override', () => {
   const n = resolve({ $ref: 'atom/button', box: 'square', content: 'A' }, reg);
@@ -27,7 +26,7 @@ test('children resolve and replace wholesale', () => {
   assert.equal(n.children[0].box.stroke, 'solid');
 });
 test('cycle throws', () => {
-  const bad = { a: { id: 'a', extends: 'b' }, b: { id: 'b', extends: 'a' } };
+  const bad = { a: { extends: 'b' }, b: { extends: 'a' } };
   assert.throws(() => resolve(bad.a, bad), /cycle/);
 });
 test('unknown id throws', () => {
