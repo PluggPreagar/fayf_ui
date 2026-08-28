@@ -42,6 +42,7 @@ export function print(dials, primitive = 'box') {
 const toDials = (v, prim) => typeof v === 'string' ? parse(v, prim) : { ...v };
 
 export function resolve(doc, registry = {}, seen = new Set()) {
+  if (typeof doc === 'string') doc = { box: 'hug', content: doc };
   let node = { ...doc };
   const link = node.extends;
   if (link) {

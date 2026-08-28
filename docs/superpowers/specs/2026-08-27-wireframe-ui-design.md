@@ -141,6 +141,17 @@ Merge per dial: child `stack` replaces parent `row`. Never concatenates.
 registry key is the file path; `base/box` inlined — every part states its
 own dials, defaults live nowhere.)
 
+A bare string inside `children` is shorthand for plain decorative text —
+`"Score"` resolves identically to `{ "box": "hug", "content": "Score" }`
+(amended 2026-08-28). Only for anonymous, content-only nodes: anything
+needing a `name` (relation/motion/lookup target) keeps the full object
+form — the shorthand carries no way to attach one, by design, so it can
+never silently hide an identity a screen actually depends on.
+
+```json
+{ "box": "stack, gap:1", "children": [ "Score", "128 pts" ] }
+```
+
 Reserved node keys, fixed at stage 2 so stage-4 parts never get rewritten:
 
 ```

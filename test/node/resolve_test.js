@@ -25,6 +25,14 @@ test('children resolve and replace wholesale', () => {
   const n = resolve({ box: 'row', children: [{ extends: 'atom/button' }] }, reg);
   assert.equal(n.children[0].box.stroke, 'solid');
 });
+test('bare string child is shorthand for hug + content', () => {
+  const n = resolve({ box: 'stack', children: ['Score', '128 pts'] }, reg);
+  assert.deepEqual(n.children[0], resolve({ box: 'hug', content: 'Score' }, reg));
+  assert.equal(n.children[1].content, '128 pts');
+});
+test('bare string as the whole doc resolves the same way', () => {
+  assert.deepEqual(resolve('Score', reg), resolve({ box: 'hug', content: 'Score' }, reg));
+});
 test('cycle throws', () => {
   const bad = { a: { extends: 'b' }, b: { extends: 'a' } };
   assert.throws(() => resolve(bad.a, bad), /cycle/);

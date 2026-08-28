@@ -5,42 +5,38 @@
         { "extends": "component/breadcrumb-trail",
           "children": [
             { "name": "crumb-home", "box": "hug", "content": "Home" },
-            { "box": "hug", "content": ">" },
+            ">",
             { "name": "crumb-dashboard", "box": "hug", "content": "Dashboard" } ] },
         { "name": "actions", "box": "row, mid, gap:2, hug",
           "children": [
             { "name": "primary-action", "extends": "atom/button.primary", "box": "gap:1",
               "children": [
                 { "name": "icon-run", "box": "hug, w:14, h:14, circle, hairline, tint0" },
-                { "box": "hug", "content": "Start next lecture" } ] },
+                "Start next lecture" ] },
             { "name": "user", "box": "row, mid, gap:1, hug",
               "children": [
                 { "extends": "atom/avatar", "content": "J" },
-                { "box": "hug", "content": "Jamie" } ] } ] } ] },
+                "Jamie" ] } ] } ] },
     { "name": "body", "box": "row, fill",
       "children": [
         { "name": "nav-rail", "extends": "component/app-nav-rail" },
         { "name": "work", "box": "stack, fill, pad:3, gap:2, scroll, solid, rounded",
           "children": [
-            { "box": "hug", "content": "Welcome back, Jamie" },
+            "Welcome back, Jamie",
             { "box": "row, gap:2, fixed",
               "children": [
                 { "name": "tile-score", "box": "stack, fill, pad:2, gap:1, solid, tint1, rounded",
-                  "children": [
-                    { "box": "hug", "content": "Score" },
-                    { "box": "hug", "content": "128 pts" } ] },
+                  "children": [ "Score", "128 pts" ] },
                 { "name": "tile-progress", "box": "stack, fill, pad:2, gap:1, solid, tint1, rounded",
                   "children": [
-                    { "box": "hug", "content": "Progress" },
+                    "Progress",
                     { "extends": "component/progress-indicator" },
-                    { "box": "hug", "content": "62% of course" } ] },
+                    "62% of course" ] },
                 { "name": "tile-time", "box": "stack, fill, pad:2, gap:1, solid, tint1, rounded",
-                  "children": [
-                    { "box": "hug", "content": "Time left to examine" },
-                    { "box": "hug", "content": "14 days" } ] } ] },
+                  "children": [ "Time left to examine", "14 days" ] } ] },
             { "box": "stack, gap:1, fill",
               "children": [
-                { "box": "hug", "content": "Weekly progress" },
+                "Weekly progress",
                 { "box": "row, end, gap:1, fill, pad:1, bare, rounded",
                   "children": [
                     { "box": "fill, h:22, tint2" }, { "box": "fill, h:36, tint3" },

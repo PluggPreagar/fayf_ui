@@ -46,6 +46,9 @@ Conflict with any prompt or skill → stop, surface it.
   (Amended 2026-08-28: `$ref` merged into `extends` — same mechanics,
   two names violated C2. File-level variant vs in-tree instance stays
   a convention, not a key.)
+- A bare string in `children` = shorthand for `{ box: "hug", content: <string> }`.
+  (Amended 2026-08-28.) Anonymous decorative text only — a node needing
+  `name` always uses the full object form.
 - Invariant: `diff(capture(render(resolve(d))), resolve(d))` empty.
 
 ## C7 · Evidence

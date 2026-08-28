@@ -7,6 +7,7 @@ const RESERVED = new Set(['extends', 'box', 'content', 'children',
   'name', 'path', 'from', 'to', 'relation', 'motion']);
 
 function walkKeys(node, id) {
+  if (typeof node === 'string') return;
   for (const k of Object.keys(node))
     assert.ok(RESERVED.has(k), `${id}: unknown key '${k}'`);
   for (const c of node.children ?? []) walkKeys(c, id);
