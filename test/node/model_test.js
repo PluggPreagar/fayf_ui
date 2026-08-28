@@ -34,6 +34,10 @@ test('place without position throws', () => {
 test('place with in-flow position throws', () => {
   assert.throws(() => parse('in-flow, center'), /requires position/);
 });
+test('job-lifecycle state values', () => {
+  for (const s of ['running', 'paused', 'blocked', 'cancelled', 'done'])
+    assert.deepEqual(parse(s), { state: s });
+});
 test('path primitive', () => {
   assert.deepEqual(parse('curve, dashed, trim-end:0.35', 'path'),
     { segment: 'curve', dash: 'dashed', 'trim-end': 0.35 });

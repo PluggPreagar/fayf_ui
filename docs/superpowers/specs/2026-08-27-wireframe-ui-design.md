@@ -73,7 +73,7 @@ stroke      bare · hairline · solid · dashed
 fill        tint0 · tint1 · tint2 · tint3
 radius      square · rounded · pill · circle
 overflow    clip · scroll
-state       disabled
+state       disabled · running · paused · blocked · cancelled · done
 pad · gap   pad:N · gap:N  =  N × 4px, any N  (pad:2 = 8px)
 ```
 
@@ -115,7 +115,7 @@ label       a box anchored at t: along the path
 | overflow | overflow | = |
 | content | JSON key, not token | `nothing · text run · child boxes` |
 | — | + `place` | 6 tokens, parameterizes docked/floating/anchored/sticky |
-| — | + `state` | `disabled` only; grow on demand |
+| — | + `state` | `disabled` · job-lifecycle (`running`·`paused`·`blocked`·`cancelled`·`done`, 2026-08-28); grow on demand |
 
 Spelling repo-wide: `center`, never `centre` (C2).
 

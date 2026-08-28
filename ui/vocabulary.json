@@ -11,7 +11,7 @@
     "fill-tint":  ["tint0", "tint1", "tint2", "tint3"],
     "radius":     ["square", "rounded", "pill", "circle"],
     "overflow":   ["clip", "scroll"],
-    "state":      ["disabled"]
+    "state":      ["disabled", "running", "paused", "blocked", "cancelled", "done"]
   },
   "box_numeric": ["w", "h", "pad", "gap", "depth", "opacity", "rotate"],
   "path": {
