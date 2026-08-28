@@ -58,6 +58,9 @@
 :root[data-style="mockup"] .bx-hairline{border:1px solid var(--rule)}
 :root[data-style="mockup"] .bx-solid{border:1px solid var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06)}
 :root[data-style="mockup"] .bx-dashed{border:1px dashed var(--dash)}
+/* resizable/movable (handles.js, t11): no static border in mockup --
+   the proximity-revealed handles are the resize/move affordance, not the box edge. */
+:root[data-style="mockup"] [data-handles="1"]{border:none;box-shadow:none}
 
 /* style toggle -- fixed corner control, mounted by ui/style-mode.js */
 .style-toggle{

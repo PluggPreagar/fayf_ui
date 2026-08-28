@@ -11,6 +11,9 @@
 import { resolve } from './ui/model.js';
 import { render } from './ui/render.js';
 import { attachHandles } from './ui/handles.js';
+import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
+initStyleMode();
+mountStyleToggle();
 for (const w of [330, 200, 120]) {
   const el = render(resolve({ box: `stack, fixed, w:${w}, h:140, solid, pad3, gap2`,
     children: [ { box: 'fixed, h:7, tint2, rounded' }, { box: 'fixed, w:120, h:7, tint2, rounded' } ] }));
