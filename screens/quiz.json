@@ -1,0 +1,13 @@
+{ "box": "stack, fill, clip, tint0, pad:3, gap:2",
+  "children": [
+    { "name": "prompt", "box": "hug", "content": "" },
+    { "name": "answers", "box": "stack, gap:1, hug" },
+    { "name": "hint-panel", "box": "row, mid, gap:1, fixed, w:280, pad:1, solid, rounded, tint0",
+      "children": [
+        { "box": "hug", "content": "!" },
+        { "name": "hint-text", "box": "hug", "content": "" } ] },
+    { "name": "controls", "box": "row, mid, gap:2, hug",
+      "children": [
+        { "name": "btn-hint", "extends": "atom/button", "content": "Hint" },
+        { "name": "btn-lock", "extends": "atom/button.primary", "box": "disabled", "content": "Lock answer in" },
+        { "name": "btn-next", "extends": "atom/button.primary", "box": "disabled", "content": "Next" } ] } ] }

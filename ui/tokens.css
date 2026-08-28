@@ -1,7 +1,7 @@
 /* fayf_ui palette + box classes. One class per token: bx-<token>. */
 :root {
   --canvas:#f0eee9; --paper:#fff; --ink:#222; --text:#111;
-  --muted:#8a8579; --accent:#c0392b;
+  --muted:#8a8579; --accent:#c0392b; --ok:#2f7d4f;
   --tint0:#f5f3ef; --tint1:#ecebe7; --tint2:#e8e6e0; --tint3:#d8d5cf;
   --dash:#999; --rule:#d5d2cc;
   --prose:'Architects Daughter',cursive;
@@ -115,3 +115,10 @@
    token needed, C2: hover isn't a box dial). */
 .bx-actionable:hover{filter:brightness(.94)}
 
+/* quiz answer states -- page-mount concern (ui/quiz.js), not a box
+   dial: selection/result aren't part of the vocabulary model, same
+   precedent as .bx-actionable above. Tints, not solid fills, per
+   explicit "eye-friendly" correction during design. */
+.bx-selected{outline:2px solid var(--ink);outline-offset:-2px}
+.bx-correct{background:rgba(47,125,79,.16)}
+.bx-wrong{background:rgba(192,57,43,.16)}
