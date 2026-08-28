@@ -1,6 +1,6 @@
 { "box": "stack, fill, mid, clip, tint0, pad:3",
   "children": [
-    { "name": "quiz-body", "box": "stack, fill, w:280, between, gap:2",
+    { "name": "quiz-body", "box": "stack, fill, w:280, around, gap:2",
       "children": [
         { "name": "prompt", "box": "hug", "content": "" },
         { "name": "answers", "box": "stack, gap:1, hug" },
