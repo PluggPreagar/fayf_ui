@@ -51,10 +51,8 @@ function enterAnswering(ctx, send) {
     ctx.answersEl.appendChild(row);
     const onClick = (e) => {
       if (q.mode === 'single') {
-        e.stopPropagation(); // about to enter 'revealed', which arms a click-to-continue
-        // listener on root -- without this, the same bubbling click fires it immediately.
         ctx.selected = new Set([i]);
-        send('lockIn');
+        send('lockIn', e); // pass the triggering event through -- see enterRevealed.
       } else {
         if (ctx.selected.has(i)) ctx.selected.delete(i); else ctx.selected.add(i);
         row.classList.toggle('bx-selected', ctx.selected.has(i));
@@ -67,10 +65,7 @@ function enterAnswering(ctx, send) {
   ctx.onHint = () => { ctx.hintPanelEl.style.display = ''; };
   ctx.hintBtn.addEventListener('click', ctx.onHint);
 
-  ctx.onLock = q.mode === 'multiple' ? (e) => {
-    e.stopPropagation(); // see the 'single' branch above -- same reason.
-    send('lockIn');
-  } : null;
+  ctx.onLock = q.mode === 'multiple' ? (e) => send('lockIn', e) : null;
   if (ctx.onLock) ctx.btnLock.addEventListener('click', ctx.onLock);
 }
 
@@ -80,7 +75,7 @@ function exitAnswering(ctx) {
   if (ctx.onLock) ctx.btnLock.removeEventListener('click', ctx.onLock);
 }
 
-function enterRevealed(ctx, send) {
+function enterRevealed(ctx, send, triggerEvent) {
   const q = ctx.quizData.questions[ctx.qIndex];
   const rows = [...ctx.answersEl.children];
   q.answers.forEach((a, i) => {
@@ -96,8 +91,16 @@ function enterRevealed(ctx, send) {
   mountIcons(ctx.answersEl);
 
   ctx.timer = setTimeout(() => send('paused'), PAUSE_MS);
-  ctx.onContinue = () => send('paused');
-  ctx.root.addEventListener('click', ctx.onContinue, { once: true });
+  // The click that just caused the answering -> revealed transition (lock-in,
+  // or a single-mode answer) is still bubbling toward root when this runs, so
+  // attaching a plain listener here would let that same click immediately
+  // re-trigger it, skipping the PAUSE_MS reveal window entirely. Rather than
+  // guessing at a timing gap to dodge that one event, ignore it by identity
+  // (the DOM dispatches the exact same Event object to every listener along
+  // one bubble path) -- any other click, including one issued a moment
+  // later, is a different Event object and continues as normal.
+  ctx.onContinue = (e) => { if (e !== triggerEvent) send('paused'); };
+  ctx.root.addEventListener('click', ctx.onContinue);
 }
 
 function exitRevealed(ctx) {

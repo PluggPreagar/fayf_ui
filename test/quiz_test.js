@@ -1,4 +1,8 @@
 // test/quiz_test.js
+import { resolve } from '../ui/model.js';
+import { render } from '../ui/render.js';
+import { mountQuiz } from '../ui/quiz.js';
+
 const tr = new TestRunner({ stopOnError: false });
 
 tr.addBlock('quiz: hint reveal and multiple-choice flow', (r) => {
@@ -54,6 +58,54 @@ tr.addBlock('quiz: pause gate then next, click-to-continue skips the timer', (r)
     root.querySelector('[data-name="btn-next"]').click();
     r.check(root.querySelector('[data-name="btn-next"]').classList.contains('bx-disabled'),
       'next disabled again -- lesson1 has only 1 question, so this was "finish"');
+  });
+});
+
+// content/quiz/lesson1.json (Task 3, already reviewed/approved, asserted verbatim by
+// test/node/quiz_content_test.js) only has a "multiple" question -- single mode has
+// never been driven through a real click. Build a synthetic single-mode quizData
+// inline instead of touching that fixture, and mount a second, independent
+// screens/quiz shell for it (kept off `body > .bx` so it can't collide with the
+// two blocks above, which key off that exact selector).
+let synthetic = null;
+
+tr.addBlock('quiz: single-mode answer click transitions straight to revealed', (r) => {
+  r.run(() => {
+    (async () => {
+      const reg = await (await fetch('/registry.json')).json();
+      const container = document.createElement('div');
+      container.id = 'synthetic-single-mode-quiz';
+      document.body.appendChild(container);
+      const freshRoot = render(resolve(reg['screens/quiz'], reg));
+      container.appendChild(freshRoot);
+      const quizData = {
+        id: 'quiz/synthetic-single', questions: [
+          { prompt: 'Pick the right one', mode: 'single',
+            answers: [
+              { text: 'A', correct: false },
+              { text: 'B', correct: true },
+              { text: 'C', correct: false } ],
+            hint: 'synthetic single-mode hint' } ] };
+      mountQuiz(freshRoot, quizData);
+      synthetic = { container, freshRoot };
+    })();
+  })
+  .waitFor(() => synthetic !== null, 3000, 50, 'synthetic single-mode quiz mounted')
+  .run(() => {
+    const { freshRoot, container } = synthetic;
+    const answers = [...freshRoot.querySelectorAll('[data-name^="answer-"]')];
+    r.check(answers.length === 3, 'renders 3 answers for the synthetic single-mode question');
+
+    const nextBtn = freshRoot.querySelector('[data-name="btn-next"]');
+    answers[1].click(); // "B", the single correct answer -- no separate lock-in click in single mode
+    r.check(answers[1].classList.contains('bx-correct'),
+      'single-mode click transitions straight to revealed (correct answer colorized)');
+    r.check(!!answers[1].querySelector('use[href="#icon-done"]'),
+      'single-mode correct answer got the done icon');
+    r.check(nextBtn.classList.contains('bx-disabled'),
+      'next stays disabled immediately after single-mode reveal -- proves the click-to-continue race is fixed for single mode too');
+
+    container.remove();
   });
 });
 
