@@ -2,10 +2,10 @@
   "children": [
     { "name": "prompt", "box": "hug", "content": "" },
     { "name": "answers", "box": "stack, gap:1, hug" },
-    { "name": "hint-panel", "box": "row, mid, gap:1, fixed, w:280, pad:1, solid, rounded, tint0",
+    { "name": "hint-panel", "box": "row, mid, gap:1, fixed, w:280, h:40, pad:1, solid, rounded, tint0, clip",
       "children": [
         "!",
-        { "name": "hint-text", "box": "hug", "content": "" } ] },
+        { "name": "hint-text", "box": "fill", "content": "" } ] },
     { "name": "controls", "box": "row, mid, gap:2, hug",
       "children": [
         { "name": "btn-hint", "extends": "atom/button", "content": "Hint" },

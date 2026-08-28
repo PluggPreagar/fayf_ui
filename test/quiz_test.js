@@ -12,9 +12,9 @@ tr.addBlock('quiz: hint reveal and multiple-choice flow', (r) => {
      r.check(!!root, 'screen mounted');
 
      const hintPanel = root.querySelector('[data-name="hint-panel"]');
-     r.check(getComputedStyle(hintPanel).display === 'none', 'hint starts hidden');
+     r.check(getComputedStyle(hintPanel).visibility === 'hidden', 'hint starts hidden');
      root.querySelector('[data-name="btn-hint"]').click();
-     r.check(getComputedStyle(hintPanel).display !== 'none', 'hint reveals on click');
+     r.check(getComputedStyle(hintPanel).visibility === 'visible', 'hint reveals on click');
      r.check(hintPanel.textContent.includes('divisors'), 'hint shows the real hint text');
 
      const answers = [...root.querySelectorAll('[data-name^="answer-"]')];
@@ -23,13 +23,20 @@ tr.addBlock('quiz: hint reveal and multiple-choice flow', (r) => {
      const lockBtn = root.querySelector('[data-name="btn-lock"]');
      r.check(!lockBtn.classList.contains('bx-disabled'), 'lock button enabled in multiple mode');
 
+     const selector0 = root.querySelector('[data-name="selector-0"]');
+     const selector1 = root.querySelector('[data-name="selector-1"]');
+     r.check(selector0.textContent === '', 'checkbox starts unticked');
+
      answers[0].click(); // "2", correct
      answers[1].click(); // "4", wrong
      r.check(answers[0].classList.contains('bx-selected'), 'answer 0 marked selected');
      r.check(answers[1].classList.contains('bx-selected'), 'answer 1 marked selected');
+     r.check(selector0.textContent === '✓', 'checkbox 0 ticks on click');
+     r.check(selector1.textContent === '✓', 'checkbox 1 ticks on click');
 
      answers[1].click(); // deselect "4"
      r.check(!answers[1].classList.contains('bx-selected'), 'answer 1 deselect works');
+     r.check(selector1.textContent === '', 'checkbox 1 unticks on deselect');
 
      answers[2].click(); // "5", correct -- now selected = {0, 2}, the exact correct set
      lockBtn.click();
@@ -217,7 +224,7 @@ tr.addBlock('quiz: next -> answering re-entry loads the second question correctl
     r.check(!selector0.classList.contains('bx-square'), 'question 2 selector is no longer square');
 
     const hintPanel = freshRoot.querySelector('[data-name="hint-panel"]');
-    r.check(getComputedStyle(hintPanel).display === 'none', 'hint panel hidden again on re-entry');
+    r.check(getComputedStyle(hintPanel).visibility === 'hidden', 'hint panel hidden again on re-entry');
 
     const nextBtn = freshRoot.querySelector('[data-name="btn-next"]');
     r.check(nextBtn.classList.contains('bx-disabled'), 'next disabled again on re-entry into answering');

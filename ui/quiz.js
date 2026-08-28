@@ -26,7 +26,7 @@ function answerNode(index, text, mode) {
     name: `answer-${index}`,
     box: 'row, mid, gap:1, hug, solid, rounded, pad:1',
     children: [
-      { name: `selector-${index}`, box: `fixed, w:12, h:12, solid, ${selectorShape(mode)}` },
+      { name: `selector-${index}`, box: `fixed, w:12, h:12, solid, mid, evenly, ${selectorShape(mode)}` },
       { box: 'hug', content: text },
     ],
   };
@@ -42,7 +42,10 @@ function enterAnswering(ctx, send) {
   ctx.promptEl.textContent = q.prompt;
   ctx.promptEl.classList.remove('bx-correct', 'bx-wrong');
   ctx.hintTextEl.textContent = q.hint;
-  ctx.hintPanelEl.style.display = 'none';
+  // visibility, not display: this keeps hint-panel's own footprint
+  // reserved in the layout at all times, so revealing it never
+  // shifts anything below (e.g. "controls") -- fixed as possible.
+  ctx.hintPanelEl.style.visibility = 'hidden';
   ctx.answersEl.replaceChildren();
   ctx.btnNext.classList.add('bx-disabled');
   ctx.btnLock.classList.toggle('bx-disabled', q.mode !== 'multiple');
@@ -56,14 +59,16 @@ function enterAnswering(ctx, send) {
         send('lockIn', e); // pass the triggering event through -- see enterRevealed.
       } else {
         if (ctx.selected.has(i)) ctx.selected.delete(i); else ctx.selected.add(i);
-        row.classList.toggle('bx-selected', ctx.selected.has(i));
+        const isSelected = ctx.selected.has(i);
+        row.classList.toggle('bx-selected', isSelected);
+        row.querySelector(`[data-name="selector-${i}"]`).textContent = isSelected ? '✓' : '';
       }
     };
     row.addEventListener('click', onClick);
     return [row, onClick];
   });
 
-  ctx.onHint = () => { ctx.hintPanelEl.style.display = ''; };
+  ctx.onHint = () => { ctx.hintPanelEl.style.visibility = 'visible'; };
   ctx.hintBtn.addEventListener('click', ctx.onHint);
 
   ctx.onLock = q.mode === 'multiple' ? (e) => send('lockIn', e) : null;
