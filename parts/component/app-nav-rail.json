@@ -1,5 +1,5 @@
 { "id": "component/app-nav-rail", "extends": "base/box",
-  "box": "stack, fixed, w:40, h:144, pad1, gap1, solid, rounded",
+  "box": "stack, fixed, w:40, pad1, gap1, solid, rounded",
   "children": [
     { "box": "row, mid, packed, fixed, w:32, h:24, tint3, rounded",
       "children": [ { "$ref": "cluster/dot", "name": "icon-dashboard", "box": "w:16, h:16, circle, tint0" } ] },
