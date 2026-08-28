@@ -23,7 +23,7 @@ export function wireAction(el, label, { reg, tipSide } = {}) {
 let toast = null;
 export function raiseToast(reg, doc = document) {
   dismissToast();
-  const node = resolve({ $ref: 'component/toast', box: 'floating, center, bottom' }, reg);
+  const node = resolve({ extends: 'component/toast', box: 'floating, center, bottom' }, reg);
   const el = render(node, doc);
   el.addEventListener('click', dismissToast);
   doc.body.appendChild(el);
@@ -47,7 +47,7 @@ export function wireHoverTip(el, reg, text, { side } = {}) {
   if (!el) return;
   const doc = el.ownerDocument;
   el.addEventListener('mouseenter', () => {
-    const node = resolve({ $ref: 'atom/tooltip', content: text }, reg);
+    const node = resolve({ extends: 'atom/tooltip', content: text }, reg);
     tip = render(node, doc);
     tip.style.position = 'fixed';
     doc.body.appendChild(tip);

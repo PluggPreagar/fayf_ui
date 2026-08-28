@@ -1,4 +1,4 @@
-# Spec — conditional resolve (env-scoped `$ref`/`box` switch)
+# Spec — conditional resolve (env-scoped `extends`/`box` switch)
 
 2026-08-28 · governed by [`CONSTITUTION.md`](../../../CONSTITUTION.md) C1–C10
 · addendum to [2026-08-27-wireframe-ui-design.md](2026-08-27-wireframe-ui-design.md)
@@ -32,12 +32,12 @@ Two, added to `RESERVED` in `test/node/parts_validate_test.js` alongside
 - `condition` — array of tokens on one candidate node. Missing = unconditioned
   default (matches any env).
 - `conditional` — array of candidate node-objects (same shape as any
-  `children` entry: `$ref`/`box`/`content`/`name` all valid), sibling-level
+  `children` entry: `extends`/`box`/`content`/`name` all valid), sibling-level
   concept to `children`. `children` = all render, always. `conditional` =
   exactly one wins per env.
 
-`$ref` itself is untouched — always a plain string, everywhere, no
-polymorphism. `conditional` entries use `$ref` normally.
+`extends` itself is untouched — always a plain string, everywhere, no
+polymorphism. `conditional` entries use `extends` normally.
 
 ## Resolve algorithm
 
@@ -70,9 +70,9 @@ effort on minimal/canonical keys (explicitly out of scope for v1).
 
 ```json
 { "name": "button", "conditional": [
-  { "condition": ["mobile","dark"], "$ref": "component/fab.dark", "box": "w:20" },
-  { "condition": ["mobile"], "$ref": "component/floating-action-button" },
-  { "$ref": "atom/button.primary" } ] }
+  { "condition": ["mobile","dark"], "extends": "component/fab.dark", "box": "w:20" },
+  { "condition": ["mobile"], "extends": "component/floating-action-button" },
+  { "extends": "atom/button.primary" } ] }
 ```
 
 | env | superset | winner |
@@ -91,11 +91,11 @@ effort on minimal/canonical keys (explicitly out of scope for v1).
   reads as "these N render" but means "pick 1 of N" — misleading shape.
   Rejected for the same reason `switch`/`select` lost to `conditional`/`cases`:
   syntax must say what it does.
-- **`$ref` string as object key** (`{"component/fab.dark": ["mobile","dark"]}`)
-  — makes `$ref` a second way to say "$ref" (C2 violation), leaves no room
+- **`extends` string as object key** (`{"component/fab.dark": ["mobile","dark"]}`)
+  — makes `extends` a second way to say "extends" (C2 violation), leaves no room
   for a candidate's own `box`/`content` overrides, and breaks the uniform
   `RESERVED`-key validation (keys become arbitrary ref strings). Rejected.
-  Same objection compounds if `$ref` itself is made polymorphic (string vs
+  Same objection compounds if `extends` itself is made polymorphic (string vs
   array-of-maps) — two meanings for one field name, silently switched by
   JSON type. Rejected harder.
 - **`variants` / `switch` / `options` as the key name** — `variants` collides

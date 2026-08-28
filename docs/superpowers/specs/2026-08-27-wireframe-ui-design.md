@@ -132,18 +132,20 @@ Token string or list; order-independent; per-primitive uniqueness at load.
 { "id": "parts/segmented-control", "extends": "base/box",
   "box": "row, gap0, hug",
   "children": [
-    { "$ref": "parts/button", "box": "square", "content": "A" },
-    { "$ref": "parts/button", "box": "square", "content": "B" },
-    { "$ref": "parts/button", "box": "square", "content": "C" } ] }
+    { "extends": "parts/button", "box": "square", "content": "A" },
+    { "extends": "parts/button", "box": "square", "content": "B" },
+    { "extends": "parts/button", "box": "square", "content": "C" } ] }
 ```
 
-`extends` = inheritance · `$ref` = reference + per-instance overrides.
+`extends` = the one link key: resolve target + merge overrides.
 Merge per dial: child `stack` replaces parent `row`. Never concatenates.
+(Amended 2026-08-28 with C6: `$ref` merged into `extends`; `id` dropped —
+registry key is the file path.)
 
 Reserved node keys, fixed at stage 2 so stage-4 parts never get rewritten:
 
 ```
-id · extends · $ref · box · content · children      in use from stage 2
+extends · box · content · children                   in use from stage 2
 name · path · from · to · relation · motion          reserved, shaped in stage 5
 ```
 

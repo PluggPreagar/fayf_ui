@@ -3,12 +3,12 @@
     { "box": "row, mid, between, fixed, w:96", "children": [
       { "box": "hug", "content": "‹" }, { "box": "hug", "content": "May" }, { "box": "hug", "content": "›" } ] },
     { "box": "row, gap:1", "children": [
-      { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" },
-      { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "$ref": "cluster/dot", "box": "w:9, h:9, tint3, square" },
-      { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" },
-      { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" } ] },
+      { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" },
+      { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "extends": "cluster/dot", "box": "w:9, h:9, tint3, square" },
+      { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" },
+      { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" } ] },
     { "box": "row, gap:1", "children": [
-      { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" },
-      { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" },
-      { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" },
-      { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" } ] } ] }
+      { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" },
+      { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" },
+      { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" },
+      { "extends": "cluster/dot", "box": "w:9, h:9, tint1, square" } ] } ] }

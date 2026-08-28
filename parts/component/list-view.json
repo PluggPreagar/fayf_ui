@@ -1,8 +1,8 @@
 { "extends": "base/box", "box": "stack, gap:1, fixed, w:120",
   "children": [
     { "box": "row, mid, gap:1, fixed, h:18, pad:1, solid, rounded", "children": [
-      { "$ref": "cluster/dot" }, { "$ref": "cluster/line", "box": "w:72" } ] },
+      { "extends": "cluster/dot" }, { "extends": "cluster/line", "box": "w:72" } ] },
     { "box": "row, mid, gap:1, fixed, h:18, pad:1, solid, rounded", "children": [
-      { "$ref": "cluster/dot" }, { "$ref": "cluster/line", "box": "w:56" } ] },
+      { "extends": "cluster/dot" }, { "extends": "cluster/line", "box": "w:56" } ] },
     { "box": "row, mid, gap:1, fixed, h:18, pad:1, solid, rounded", "children": [
-      { "$ref": "cluster/dot" }, { "$ref": "cluster/line", "box": "w:64" } ] } ] }
+      { "extends": "cluster/dot" }, { "extends": "cluster/line", "box": "w:64" } ] } ] }

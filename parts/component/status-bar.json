@@ -1,1 +1,1 @@
-{"extends":"base/box","box":"row, mid, between, fixed, w:200, h:16, pad:1, tint1","children":[{"$ref":"cluster/line","box":"w:48, h:5"},{"$ref":"cluster/line","box":"w:28, h:5"}]}
+{"extends":"base/box","box":"row, mid, between, fixed, w:200, h:16, pad:1, tint1","children":[{"extends":"cluster/line","box":"w:48, h:5"},{"extends":"cluster/line","box":"w:28, h:5"}]}

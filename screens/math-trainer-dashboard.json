@@ -5,14 +5,14 @@
         { "box": "hug", "content": "Math Trainer · Dashboard" },
         { "name": "actions", "box": "row, mid, gap:2, hug",
           "children": [
-            { "name": "primary-action", "$ref": "atom/button.primary", "content": "Start next lecture" },
+            { "name": "primary-action", "extends": "atom/button.primary", "content": "Start next lecture" },
             { "name": "user", "box": "row, mid, gap:1, hug",
               "children": [
-                { "$ref": "atom/avatar", "content": "J" },
+                { "extends": "atom/avatar", "content": "J" },
                 { "box": "hug", "content": "Jamie" } ] } ] } ] },
     { "name": "body", "box": "row, fill",
       "children": [
-        { "$ref": "component/app-nav-rail" },
+        { "extends": "component/app-nav-rail" },
         { "name": "work", "box": "stack, fill, pad:3, gap:2, scroll, solid, rounded",
           "children": [
             { "box": "hug", "content": "Welcome back, Jamie" },
@@ -25,7 +25,7 @@
                 { "name": "tile-progress", "box": "stack, fill, pad:2, gap:1, solid, tint1, rounded",
                   "children": [
                     { "box": "hug", "content": "Progress" },
-                    { "$ref": "component/progress-indicator" },
+                    { "extends": "component/progress-indicator" },
                     { "box": "hug", "content": "62% of course" } ] },
                 { "name": "tile-time", "box": "stack, fill, pad:2, gap:1, solid, tint1, rounded",
                   "children": [
@@ -40,4 +40,4 @@
                     { "box": "fill, h:14, tint2" }, { "box": "fill, h:46, tint1" } ] } ] } ] } ] },
     { "name": "statusbar", "box": "row, mid, between, fixed, h:16, pad:1, tint1",
       "children": [
-        { "$ref": "cluster/line", "box": "w:48, h:5" } ] } ] }
+        { "extends": "cluster/line", "box": "w:48, h:5" } ] } ] }

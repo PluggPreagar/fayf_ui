@@ -3,21 +3,21 @@
   "children": [
     { "box": "row, mid, gap:1, packed, fixed, w:124, h:24, tint3, rounded",
       "children": [
-        { "$ref": "cluster/dot", "name": "icon-dashboard", "box": "w:16, h:16, circle, hairline, tint0" },
+        { "extends": "cluster/dot", "name": "icon-dashboard", "box": "w:16, h:16, circle, hairline, tint0" },
         { "box": "hug", "content": "Dashboard" } ] },
     { "name": "nav-shop", "box": "row, mid, gap:1, packed, fixed, w:124, h:24, tint1, rounded",
       "children": [
-        { "$ref": "cluster/dot", "name": "icon-shop", "box": "w:16, h:16, circle, hairline, tint2" },
+        { "extends": "cluster/dot", "name": "icon-shop", "box": "w:16, h:16, circle, hairline, tint2" },
         { "box": "hug", "content": "Shop" } ] },
     { "name": "nav-training", "box": "row, mid, gap:1, packed, fixed, w:124, h:24, tint1, rounded",
       "children": [
-        { "$ref": "cluster/dot", "name": "icon-training", "box": "w:16, h:16, circle, hairline, tint2" },
+        { "extends": "cluster/dot", "name": "icon-training", "box": "w:16, h:16, circle, hairline, tint2" },
         { "box": "hug", "content": "Training" } ] },
     { "box": "row, mid, gap:1, packed, fixed, w:124, h:24, tint1, rounded, disabled",
       "children": [
-        { "$ref": "cluster/dot", "name": "icon-lecture", "box": "w:16, h:16, circle, hairline, tint2" },
+        { "extends": "cluster/dot", "name": "icon-lecture", "box": "w:16, h:16, circle, hairline, tint2" },
         { "box": "hug", "content": "Lecture" } ] },
     { "box": "row, mid, gap:1, packed, fixed, w:124, h:24, tint1, rounded, disabled",
       "children": [
-        { "$ref": "cluster/dot", "name": "icon-free", "box": "w:16, h:16, circle, hairline, tint2" },
+        { "extends": "cluster/dot", "name": "icon-free", "box": "w:16, h:16, circle, hairline, tint2" },
         { "box": "hug", "content": "Free Learning" } ] } ] }

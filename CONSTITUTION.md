@@ -42,7 +42,10 @@ Conflict with any prompt or skill → stop, surface it.
 ## C6 · JSON canonical
 
 - Verbs: `parse` · `print` · `resolve` · `render` · `capture` · `diff`.
-- `extends` = inheritance. `$ref` = reference.
+- `extends` = the one link key: resolve target + merge overrides.
+  (Amended 2026-08-28: `$ref` merged into `extends` — same mechanics,
+  two names violated C2. File-level variant vs in-tree instance stays
+  a convention, not a key.)
 - Invariant: `diff(capture(render(resolve(d))), resolve(d))` empty.
 
 ## C7 · Evidence

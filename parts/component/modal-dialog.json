@@ -1,5 +1,5 @@
 { "extends": "base/box", "box": "overlay, fixed, w:160, h:104, clip, rounded",
   "children": [ { "box": "fill, tint3, opacity:0.55" },
     { "box": "floating, center, middle, stack, fixed, w:100, pad:2, gap:1, solid, rounded, tint0",
-      "children": [ { "$ref": "cluster/line", "box": "w:64" }, { "$ref": "cluster/line", "box": "w:48" },
-        { "box": "row, gap:1, end", "children": [ { "$ref": "atom/button", "content": "OK" } ] } ] } ] }
+      "children": [ { "extends": "cluster/line", "box": "w:64" }, { "extends": "cluster/line", "box": "w:48" },
+        { "box": "row, gap:1, end", "children": [ { "extends": "atom/button", "content": "OK" } ] } ] } ] }

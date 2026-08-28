@@ -15,14 +15,14 @@ test('extends merges per dial', () => {
   assert.equal(n.content, 'Go');
   assert.equal(n.extends, undefined);
 });
-test('$ref with per-instance override', () => {
-  const n = resolve({ $ref: 'atom/button', box: 'square', content: 'A' }, reg);
+test('extends with per-instance override', () => {
+  const n = resolve({ extends: 'atom/button', box: 'square', content: 'A' }, reg);
   assert.equal(n.box.radius, 'square');
   assert.equal(n.box.direction, 'row');
   assert.equal(n.content, 'A');
 });
 test('children resolve and replace wholesale', () => {
-  const n = resolve({ box: 'row', children: [{ $ref: 'atom/button' }] }, reg);
+  const n = resolve({ box: 'row', children: [{ extends: 'atom/button' }] }, reg);
   assert.equal(n.children[0].box.stroke, 'solid');
 });
 test('cycle throws', () => {

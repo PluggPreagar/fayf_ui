@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { resolve, parse, print } from '../../ui/model.js';
 import { loadRegistry } from './registry.js';
 
-const RESERVED = new Set(['extends', '$ref', 'box', 'content', 'children',
+const RESERVED = new Set(['extends', 'box', 'content', 'children',
   'name', 'path', 'from', 'to', 'relation', 'motion']);
 
 function walkKeys(node, id) {

@@ -1,2 +1,2 @@
 { "extends": "base/box", "box": "row, mid, gap:1, fixed, w:120, h:22, pad:1, solid, pill",
-  "children": [ { "box": "hug", "content": "⌕" }, { "$ref": "cluster/line", "box": "w:64, h:5" } ] }
+  "children": [ { "box": "hug", "content": "⌕" }, { "extends": "cluster/line", "box": "w:64, h:5" } ] }

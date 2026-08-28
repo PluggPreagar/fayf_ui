@@ -43,7 +43,7 @@ const toDials = (v, prim) => typeof v === 'string' ? parse(v, prim) : { ...v };
 
 export function resolve(doc, registry = {}, seen = new Set()) {
   let node = { ...doc };
-  const link = node.extends ?? node.$ref;
+  const link = node.extends;
   if (link) {
     if (seen.has(link)) throw new Error(`cycle: ${[...seen, link].join(' -> ')}`);
     const base = registry[link];
@@ -51,7 +51,7 @@ export function resolve(doc, registry = {}, seen = new Set()) {
     const parent = resolve(base, registry, new Set([...seen, link]));
     node = mergeNode(parent, node);
   }
-  delete node.extends; delete node.$ref;
+  delete node.extends;
   for (const prim of ['box', 'path'])
     if (node[prim] != null) node[prim] = toDials(node[prim], prim);
   if (node.content != null && node.children)
