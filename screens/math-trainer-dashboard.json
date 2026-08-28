@@ -2,7 +2,11 @@
   "children": [
     { "name": "topbar", "box": "row, mid, between, fixed, h:44, pad:1, solid, tint1",
       "children": [
-        { "box": "hug", "content": "Math Trainer · Dashboard" },
+        { "extends": "component/breadcrumb-trail",
+          "children": [
+            { "box": "hug", "content": "Home" },
+            { "box": "hug", "content": ">" },
+            { "box": "hug", "content": "Dashboard" } ] },
         { "name": "actions", "box": "row, mid, gap:2, hug",
           "children": [
             { "name": "primary-action", "extends": "atom/button.primary", "content": "Start next lecture" },
