@@ -1,0 +1,23 @@
+{ "id": "component/app-nav-rail.expanded", "extends": "component/app-nav-rail",
+  "box": "stack, fixed, w:132, h:144, pad1, gap1, solid, rounded",
+  "children": [
+    { "box": "row, mid, gap1, packed, fixed, w:124, h:24, tint3, rounded",
+      "children": [
+        { "$ref": "cluster/dot", "name": "icon-dashboard", "box": "w:16, h:16, circle, tint0" },
+        { "box": "hug", "content": "Dashboard" } ] },
+    { "box": "row, mid, gap1, packed, fixed, w:124, h:24, tint1, rounded, disabled",
+      "children": [
+        { "$ref": "cluster/dot", "name": "icon-shop", "box": "w:16, h:16, circle, tint2" },
+        { "box": "hug", "content": "Shop" } ] },
+    { "box": "row, mid, gap1, packed, fixed, w:124, h:24, tint1, rounded, disabled",
+      "children": [
+        { "$ref": "cluster/dot", "name": "icon-training", "box": "w:16, h:16, circle, tint2" },
+        { "box": "hug", "content": "Training" } ] },
+    { "box": "row, mid, gap1, packed, fixed, w:124, h:24, tint1, rounded, disabled",
+      "children": [
+        { "$ref": "cluster/dot", "name": "icon-lecture", "box": "w:16, h:16, circle, tint2" },
+        { "box": "hug", "content": "Lecture" } ] },
+    { "box": "row, mid, gap1, packed, fixed, w:124, h:24, tint1, rounded, disabled",
+      "children": [
+        { "$ref": "cluster/dot", "name": "icon-free", "box": "w:16, h:16, circle, tint2" },
+        { "box": "hug", "content": "Free Learning" } ] } ] }

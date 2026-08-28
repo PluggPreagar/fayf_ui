@@ -1,1 +1,1 @@
-{ "id": "atom/avatar", "extends": "base/box", "box": "row, mid, packed, fixed, w:20, h:20, solid, circle, tint2", "content": "M" }
+{ "id": "atom/avatar", "extends": "base/box", "box": "row, mid, packed, aspect-locked, w:20, solid, circle, tint2", "content": "M" }

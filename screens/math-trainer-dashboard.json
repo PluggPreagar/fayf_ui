@@ -1,0 +1,38 @@
+{ "id": "screens/math-trainer-dashboard", "box": "stack, fixed, w:760, h:480, solid, rounded, clip, tint0",
+  "children": [
+    { "name": "topbar", "box": "row, mid, between, fixed, w:760, h:44, pad1, solid, tint1",
+      "children": [
+        { "box": "hug", "content": "Math Trainer · Dashboard" },
+        { "name": "actions", "box": "row, mid, gap2, hug",
+          "children": [
+            { "$ref": "atom/button.primary", "content": "Start next lecture" },
+            { "name": "user", "box": "row, mid, gap1, hug",
+              "children": [
+                { "$ref": "atom/avatar", "content": "J" },
+                { "box": "hug", "content": "Jamie" } ] } ] } ] },
+    { "name": "body", "box": "row, start, fill",
+      "children": [
+        { "$ref": "component/app-nav-rail", "box": "h:418" },
+        { "name": "work", "box": "stack, fill, pad3, gap2, scroll",
+          "children": [
+            { "box": "hug", "content": "Welcome back, Jamie" },
+            { "box": "row, gap2, fixed",
+              "children": [
+                { "box": "stack, fill, pad2, gap1, solid, rounded",
+                  "children": [
+                    { "box": "hug", "content": "Score" },
+                    { "box": "hug", "content": "128 pts" } ] },
+                { "box": "stack, fill, pad2, gap1, solid, rounded",
+                  "children": [
+                    { "box": "hug", "content": "Progress" },
+                    { "$ref": "component/progress-indicator" },
+                    { "box": "hug", "content": "62% of course" } ] },
+                { "box": "stack, fill, pad2, gap1, solid, rounded",
+                  "children": [
+                    { "box": "hug", "content": "Time left to examine" },
+                    { "box": "hug", "content": "14 days" } ] } ] },
+            { "box": "stack, gap1, fill",
+              "children": [
+                { "box": "hug", "content": "Weekly progress" },
+                { "$ref": "component/chart", "box": "fill, w:694" } ] } ] } ] },
+    { "$ref": "component/status-bar", "box": "w:760, square" } ] }
