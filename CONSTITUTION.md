@@ -11,6 +11,7 @@ Conflict with any prompt or skill → stop, surface it.
 - No filler, no hedging, no restating.
 - Lists + tables over paragraphs.
 - Code, paths, numbers > description of them.
+- Every explanation → keywords + a concrete example. Never keywords alone.
 
 ## C2 · Vocabulary
 
@@ -65,3 +66,11 @@ Conflict with any prompt or skill → stop, surface it.
 - Each question: options, per option pro · con · risk · undo-cost.
 - Recommendation first, marked.
 - No batch questions. No deciding-by-default twice.
+
+## C10 · Fit checklist
+
+- Nested BBox never exceeds parent BBox. Always.
+- Before shipping any screen/L5-L8 change → check `docs/checklist.md`.
+- User input reports a rendering/layout defect → match against it first.
+- Matches a row → apply its rule. New failure class → fix, then append a row.
+- Checklist append-only. Never deleted, only extended. Not amendment-gated.

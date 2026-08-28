@@ -6,7 +6,9 @@
 
 C1 output style · C2 vocabulary · C3 simple · C4 no frameworks
 C5 reuse level below · C6 JSON canonical · C7 evidence · C8 parametrization
-· C9 decisions 1-by-1
+· C9 decisions 1-by-1 · C10 fit checklist
+
+Fit/layout bug reported → check [`docs/checklist.md`](docs/checklist.md) first (C10).
 
 ## What this is
 
@@ -39,6 +41,11 @@ One sequence, Ln uses < n (C5).
 | L8 | screen | JSON |
 
 JS stops at L4. L0–L1 test under node, L2+ in browser.
+
+## Conventions
+
+- Screens built in steps. Unbuilt section/action → `state:disabled` mockup.
+- Nav/action stays visible, just inert. Never hidden. Tracked in `.ai/todo.md`.
 
 ## Commands
 
