@@ -517,12 +517,18 @@ export function grade(answers, selectedIndices) {
 
 const PAUSE_MS = 900;
 
+function selectorShape(mode) {
+  if (mode === 'single') return 'circle';
+  if (mode === 'multiple') return 'square';
+  throw new Error(`unknown quiz mode '${mode}'`);
+}
+
 function answerNode(index, text, mode) {
   return {
     name: `answer-${index}`,
     box: 'row, mid, gap:1, hug, solid, rounded, pad:1',
     children: [
-      { name: `selector-${index}`, box: `fixed, w:12, h:12, solid, ${mode === 'single' ? 'circle' : 'square'}` },
+      { name: `selector-${index}`, box: `fixed, w:12, h:12, solid, ${selectorShape(mode)}` },
       { box: 'hug', content: text },
     ],
   };
