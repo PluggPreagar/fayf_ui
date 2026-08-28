@@ -19,6 +19,7 @@ import { applyMotion } from './ui/motion.js';
 import { mountIcons } from './ui/icons.js';
 import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
 import { wireAction, wireBreadcrumbs } from './ui/actions.js';
+import { createMachine } from './ui/state-machine.js';
 initStyleMode();
 const reg = await (await fetch('/registry.json')).json();
 const el = render(resolve(reg['screens/math-trainer-dashboard'], reg));
@@ -32,7 +33,21 @@ wireBreadcrumbs(el, reg);
 const primaryAction = el.querySelector('[data-name="primary-action"]');
 primaryAction.classList.add('bx-actionable');
 primaryAction.style.cursor = 'pointer';
-primaryAction.addEventListener('click', () => location.href = 'quiz.html');
+createMachine({
+  states: {
+    idle: {
+      enter(ctx, send) {
+        ctx.onStart = () => send('start');
+        ctx.primaryAction.addEventListener('click', ctx.onStart);
+      },
+      exit(ctx) { ctx.primaryAction.removeEventListener('click', ctx.onStart); },
+      on: { start: 'navigating' },
+    },
+    navigating: { enter: () => { location.href = 'quiz.html'; } },
+  },
+  initial: 'idle',
+  context: { primaryAction },
+});
 wireAction(el.querySelector('[data-name="nav-shop"]'), 'nav-shop', { reg, tipSide: 'right' });
 wireAction(el.querySelector('[data-name="nav-training"]'), 'nav-training', { reg, tipSide: 'right' });
 document.body.dataset.ready = '1';
