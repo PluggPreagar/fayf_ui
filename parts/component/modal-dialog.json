@@ -1,4 +1,4 @@
-{ "extends": "base/box", "box": "overlay, fixed, w:160, h:104, clip, rounded",
+{ "box": "bare, overlay, fixed, w:160, h:104, clip, rounded",
   "children": [ { "box": "fill, tint3, opacity:0.55" },
     { "box": "floating, center, middle, stack, fixed, w:100, pad:2, gap:1, solid, rounded, tint0",
       "children": [ { "extends": "cluster/line", "box": "w:64" }, { "extends": "cluster/line", "box": "w:48" },

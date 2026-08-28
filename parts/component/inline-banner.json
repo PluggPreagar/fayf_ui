@@ -1,2 +1,2 @@
-{ "extends": "base/box", "box": "row, mid, gap:1, fixed, w:160, pad:1, solid, rounded, tint0",
+{ "box": "row, mid, gap:1, fixed, w:160, pad:1, solid, rounded, tint0",
   "children": [ { "box": "hug", "content": "!" }, { "extends": "cluster/line", "box": "w:104" } ] }

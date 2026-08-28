@@ -124,23 +124,22 @@ Spelling repo-wide: `center`, never `centre` (C2).
 Token string or list; order-independent; per-primitive uniqueness at load.
 
 ```json
-{ "id": "parts/button", "extends": "base/box",
-  "box": "row, mid, hug, pad:2, solid, rounded", "content": "Go" }
+{ "box": "row, mid, hug, pad:2, solid, rounded", "content": "Go" }
 ```
 
 ```json
-{ "id": "parts/segmented-control", "extends": "base/box",
-  "box": "row, gap0, hug",
+{ "box": "row, hug, gap:0, bare, square",
   "children": [
-    { "extends": "parts/button", "box": "square", "content": "A" },
-    { "extends": "parts/button", "box": "square", "content": "B" },
-    { "extends": "parts/button", "box": "square", "content": "C" } ] }
+    { "extends": "atom/button", "box": "square", "content": "A" },
+    { "extends": "atom/button", "box": "square", "content": "B" },
+    { "extends": "atom/button", "box": "square", "content": "C" } ] }
 ```
 
 `extends` = the one link key: resolve target + merge overrides.
 Merge per dial: child `stack` replaces parent `row`. Never concatenates.
 (Amended 2026-08-28 with C6: `$ref` merged into `extends`; `id` dropped —
-registry key is the file path.)
+registry key is the file path; `base/box` inlined — every part states its
+own dials, defaults live nowhere.)
 
 Reserved node keys, fixed at stage 2 so stage-4 parts never get rewritten:
 
@@ -166,8 +165,8 @@ chains      type.variant.sub allowed, each extends the level above
 ```
 
 ```json
-{ "id": "atom/button.primary", "extends": "atom/button", "box": "tint3" }
-{ "id": "atom/button.ghost",   "extends": "atom/button", "box": "dashed" }
+{ "extends": "atom/button", "box": "tint3" }
+{ "extends": "atom/button", "box": "dashed" }
 ```
 
 Validator: id containing `.` after the last `/` → `extends` must equal
@@ -220,7 +219,7 @@ fayf_ui/
   justfile  server.py  index.html  CONSTITUTION.md  CLAUDE.md
   ui/      vocabulary.json  model.js  render.js  path.js
            relation.js  motion.js  handles.js  tokens.css
-  parts/   base/box.json  atom/*.json  cluster/*.json  component/*.json
+  parts/   atom/*.json  cluster/*.json  component/*.json
   screens/ anatomy.json
   test/    harness.js  js_runner.js  tracer.js  *_test.js
   docs/    vocabulary.reference.html  superpowers/specs/

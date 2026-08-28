@@ -1,4 +1,4 @@
-{ "extends": "base/box", "box": "stack, gap:1, pad:1, hug, solid, rounded",
+{ "box": "stack, gap:1, pad:1, hug, solid, rounded",
   "children": [
     { "box": "row, mid, between, fixed, w:96", "children": [
       { "box": "hug", "content": "‹" }, { "box": "hug", "content": "May" }, { "box": "hug", "content": "›" } ] },

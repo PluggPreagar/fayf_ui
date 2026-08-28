@@ -1,4 +1,4 @@
-{ "extends": "base/box", "box": "row, gap:0, hug",
+{ "box": "bare, square, row, gap:0, hug",
   "children": [ { "extends": "atom/button", "box": "square", "content": "A" },
     { "extends": "atom/button", "box": "square, tint1", "content": "B" },
     { "extends": "atom/button", "box": "square", "content": "C" } ] }

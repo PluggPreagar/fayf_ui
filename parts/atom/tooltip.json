@@ -1,1 +1,1 @@
-{ "extends": "base/box", "box": "row, mid, pad:1, hug, solid, rounded, tint1", "content": "Tip" }
+{ "box": "row, mid, pad:1, hug, solid, rounded, tint1", "content": "Tip" }

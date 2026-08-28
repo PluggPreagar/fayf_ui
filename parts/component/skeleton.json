@@ -1,4 +1,4 @@
-{ "extends": "base/box", "box": "stack, gap:1, hug",
+{ "box": "bare, square, stack, gap:1, hug",
   "motion": "reveal",
   "children": [ { "extends": "cluster/line", "box": "w:120" }, { "extends": "cluster/line", "box": "w:90" },
     { "extends": "cluster/line", "box": "w:60" } ] }

@@ -1,1 +1,1 @@
-{"extends":"base/box","box":"row, mid, gap:1, hug","children":[{"box":"hug","content":"Home"},{"box":"hug","content":"/"},{"box":"hug","content":"Files"},{"box":"hug","content":"/"},{"box":"hug","content":"Doc"}]}
+{"box":"bare, square, row, mid, gap:1, hug","children":[{"box":"hug","content":"Home"},{"box":"hug","content":"/"},{"box":"hug","content":"Files"},{"box":"hug","content":"/"},{"box":"hug","content":"Doc"}]}

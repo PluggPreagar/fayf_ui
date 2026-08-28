@@ -1,1 +1,1 @@
-{"extends":"base/box","box":"row, mid, between, fixed, w:200, h:26, pad:2, solid, rounded","children":[{"box":"fixed, w:56, h:8, tint3, rounded"},{"box":"row, gap:1","children":[{"extends":"cluster/dot"},{"extends":"cluster/dot"}]}]}
+{"box":"row, mid, between, fixed, w:200, h:26, pad:2, solid, rounded","children":[{"box":"fixed, w:56, h:8, tint3, rounded"},{"box":"row, gap:1","children":[{"extends":"cluster/dot"},{"extends":"cluster/dot"}]}]}

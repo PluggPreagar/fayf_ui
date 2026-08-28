@@ -1,3 +1,3 @@
-{ "extends": "base/box", "box": "row, mid, gap:1, pad:1, hug, solid, rounded",
+{ "box": "row, mid, gap:1, pad:1, hug, solid, rounded",
   "children": [ { "extends": "atom/icon-button" }, { "extends": "atom/icon-button", "content": "×" },
     { "box": "fixed, w:1, h:16, tint3" }, { "extends": "atom/icon-button", "content": "▾" } ] }

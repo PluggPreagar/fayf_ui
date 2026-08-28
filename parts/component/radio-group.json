@@ -1,4 +1,4 @@
-{ "extends": "base/box", "box": "stack, gap:1, hug",
+{ "box": "bare, square, stack, gap:1, hug",
   "children": [
     { "box": "row, mid, gap:1", "children": [
       { "box": "row, mid, packed, fixed, w:10, h:10, solid, circle", "children": [ { "extends": "cluster/dot", "box": "w:4, h:4" } ] },

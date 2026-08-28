@@ -1,4 +1,4 @@
-{ "extends": "base/box", "box": "stack, gap:1, hug",
+{ "box": "bare, square, stack, gap:1, hug",
   "children": [ { "extends": "atom/button", "name": "anchor", "content": "?" },
     { "name": "bubble", "box": "stack, pad:1, gap:1, solid, rounded, tint0, hug",
       "children": [ { "extends": "cluster/line", "box": "w:56" }, { "extends": "cluster/line", "box": "w:40" } ] } ] }

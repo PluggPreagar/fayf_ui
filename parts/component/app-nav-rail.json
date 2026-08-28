@@ -1,5 +1,4 @@
-{ "extends": "base/box",
-  "box": "stack, fixed, w:40, pad:1, gap:1, solid, rounded",
+{ "box": "stack, fixed, w:40, pad:1, gap:1, solid, rounded",
   "children": [
     { "box": "row, mid, evenly, fixed, w:32, h:24, tint3, rounded",
       "children": [ { "extends": "cluster/dot", "name": "icon-dashboard", "box": "w:16, h:16, circle, hairline, tint0" } ] },

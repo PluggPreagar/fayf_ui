@@ -1,1 +1,1 @@
-{ "extends": "base/box", "box": "fixed, w:8, h:8, tint3, circle" }
+{ "box": "stack, bare, fixed, w:8, h:8, tint3, circle" }
