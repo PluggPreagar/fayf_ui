@@ -13,7 +13,7 @@ import urllib.parse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-NO_STORE = ('/test/', '/ui/', '/parts/', '/screens/', '/wrapper', '/registry.json')
+NO_STORE = ('/test/', '/ui/', '/parts/', '/screens/', '/content/', '/wrapper', '/registry.json')
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):

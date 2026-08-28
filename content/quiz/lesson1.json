@@ -1,0 +1,8 @@
+{ "id": "quiz/lesson1", "questions": [
+  { "prompt": "Which of these are prime numbers?", "mode": "multiple",
+    "answers": [
+      { "text": "2", "correct": true },
+      { "text": "4", "correct": false },
+      { "text": "5", "correct": true },
+      { "text": "9", "correct": false } ],
+    "hint": "A prime number has exactly two divisors: 1 and itself." } ] }
