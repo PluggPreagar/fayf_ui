@@ -15,9 +15,12 @@ tr.addBlock('math trainer dashboard renders and matches model', (r) => {
      const rail = root.querySelectorAll('[data-name^="icon-"]');
      r.check(rail.length === 5, 'nav rail has 5 sections');
      const dashboardRow = root.querySelector('[data-name="icon-dashboard"]');
-     r.check(!!dashboardRow.querySelector('use'), 'dashboard row got a real icon');
+     const dashboardUse = dashboardRow.querySelector('use');
+     r.check(!!dashboardUse, 'dashboard row got a real icon');
+     r.check(dashboardUse.getAttribute('href') === '#icon-dashboard', 'dashboard row got its own icon, not the placeholder');
      const shopRow = root.querySelector('[data-name="icon-shop"]');
-     r.check(!shopRow.querySelector('use'), 'shop row still falls back to dot placeholder');
+     const shopUse = shopRow.querySelector('use');
+     r.check(!!shopUse && shopUse.getAttribute('href') === '#icon-placeholder', 'shop row falls back to the shared placeholder glyph');
      r.check(shopRow.closest('.bx-disabled') !== null, 'shop nav item is disabled');
      r.check(dashboardRow.closest('.bx-disabled') === null, 'dashboard nav item is active');
    });
