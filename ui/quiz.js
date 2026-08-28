@@ -49,8 +49,10 @@ function enterAnswering(ctx, send) {
   ctx.rowListeners = q.answers.map((a, i) => {
     const row = render(resolve(answerNode(i, a.text, q.mode)));
     ctx.answersEl.appendChild(row);
-    const onClick = () => {
+    const onClick = (e) => {
       if (q.mode === 'single') {
+        e.stopPropagation(); // about to enter 'revealed', which arms a click-to-continue
+        // listener on root -- without this, the same bubbling click fires it immediately.
         ctx.selected = new Set([i]);
         send('lockIn');
       } else {
@@ -65,7 +67,10 @@ function enterAnswering(ctx, send) {
   ctx.onHint = () => { ctx.hintPanelEl.style.display = ''; };
   ctx.hintBtn.addEventListener('click', ctx.onHint);
 
-  ctx.onLock = q.mode === 'multiple' ? () => send('lockIn') : null;
+  ctx.onLock = q.mode === 'multiple' ? (e) => {
+    e.stopPropagation(); // see the 'single' branch above -- same reason.
+    send('lockIn');
+  } : null;
   if (ctx.onLock) ctx.btnLock.addEventListener('click', ctx.onLock);
 }
 
