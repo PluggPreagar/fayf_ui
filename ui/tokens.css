@@ -46,3 +46,23 @@
 .bx-clip{overflow:hidden} .bx-scroll{overflow:auto}
 /* state */
 .bx-disabled{opacity:.45;pointer-events:none}
+
+/* mockup skin -- same tokens, realistic rendering. Switched via ui/style-mode.js
+   ([data-style] lives on <html>, state kept in the URL, default = wireframe). */
+:root[data-style="mockup"] {
+  --canvas:#eef0f3; --paper:#fff; --ink:#c9ccd2; --text:#1b1f27;
+  --muted:#6b7280; --tint0:#f8f9fb; --tint1:#f1f2f5; --tint2:#e7e9ee; --tint3:#dadde3;
+  --dash:#b5b9c2; --rule:#e2e4e9;
+  --prose:-apple-system,'Segoe UI',Roboto,system-ui,sans-serif;
+}
+:root[data-style="mockup"] .bx-hairline{border:1px solid var(--rule)}
+:root[data-style="mockup"] .bx-solid{border:1px solid var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+:root[data-style="mockup"] .bx-dashed{border:1px dashed var(--dash)}
+
+/* style toggle -- fixed corner control, mounted by ui/style-mode.js */
+.style-toggle{
+  position:fixed; top:10px; right:10px; z-index:9999;
+  font:11px var(--mono); padding:4px 10px; border:1px solid var(--rule);
+  border-radius:4px; background:var(--paper); color:var(--muted); cursor:pointer;
+}
+.style-toggle:hover{color:var(--text); border-color:var(--dash)}

@@ -27,6 +27,9 @@ import { render } from './ui/render.js';
 import { drawPaths } from './ui/path.js';
 import { wireRelations } from './ui/relation.js';
 import { applyMotion } from './ui/motion.js';
+import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
+initStyleMode();
+mountStyleToggle();
 const reg = await (await fetch('/registry.json')).json();
 const grid = document.getElementById('gallery');
 for (const [id, doc] of Object.entries(reg).sort(([a], [b]) => a.localeCompare(b))) {
