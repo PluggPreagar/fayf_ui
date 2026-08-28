@@ -144,15 +144,6 @@ const states = {
 };
 
 export function mountQuiz(root, quizData) {
-  // box.size:fill sets align-self:stretch as a side effect (checklist
-  // #11) -- correct for "grow to fill available height" (needed so
-  // distribute:around has room to spread quiz-body's own children),
-  // wrong for the parent's own mid (center) request: stretch pins the
-  // fixed-width box to the cross-axis start instead of centering it.
-  // Override just the alignment, not the sizing -- inline style always
-  // wins over the class, no vocabulary dial models "align: self".
-  const quizBody = root.querySelector('[data-name="quiz-body"]');
-  if (quizBody) quizBody.style.alignSelf = 'center';
   const ctx = {
     quizData, qIndex: 0, root,
     promptEl: root.querySelector('[data-name="prompt"]'),
