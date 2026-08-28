@@ -12,7 +12,7 @@ tr.addBlock('math trainer dashboard renders and matches model', (r) => {
      const d = diff(capture(root), n);
      r.check(d.length === 0, 'screen invariant', `screen invariant: ${d.slice(0, 3).join('; ')}`);
 
-     const rail = root.querySelectorAll('[data-name^="icon-"]');
+     const rail = root.querySelector('[data-name="nav-rail"]').querySelectorAll('[data-name^="icon-"]');
      r.check(rail.length === 5, 'nav rail has 5 sections');
      const dashboardRow = root.querySelector('[data-name="icon-dashboard"]');
      const dashboardUse = dashboardRow.querySelector('use');

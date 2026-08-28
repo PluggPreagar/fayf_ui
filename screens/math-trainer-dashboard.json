@@ -19,7 +19,7 @@
                 { "box": "hug", "content": "Jamie" } ] } ] } ] },
     { "name": "body", "box": "row, fill",
       "children": [
-        { "extends": "component/app-nav-rail" },
+        { "name": "nav-rail", "extends": "component/app-nav-rail" },
         { "name": "work", "box": "stack, fill, pad:3, gap:2, scroll, solid, rounded",
           "children": [
             { "box": "hug", "content": "Welcome back, Jamie" },
