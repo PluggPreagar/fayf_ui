@@ -34,6 +34,5 @@ export function mountIcons(root, doc = document) {
     dot.insertAdjacentHTML('beforeend',
       `<svg class="ic" viewBox="0 0 24 24" width="12" height="12"><use href="#icon-${id}"></use></svg>`);
     dot.style.background = 'none';
-    dot.style.color = getComputedStyle(dot).borderColor || 'currentColor';
   }
 }

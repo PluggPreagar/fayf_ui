@@ -50,9 +50,9 @@
 /* mockup skin -- same tokens, realistic rendering. Switched via ui/style-mode.js
    ([data-style] lives on <html>, state kept in the URL, default = wireframe). */
 :root[data-style="mockup"] {
-  --canvas:#eef0f3; --paper:#fff; --ink:#c9ccd2; --text:#1b1f27;
+  --canvas:#eef0f3; --paper:#fff; --ink:#9aa0ab; --text:#1b1f27;
   --muted:#6b7280; --tint0:#f8f9fb; --tint1:#f1f2f5; --tint2:#e7e9ee; --tint3:#dadde3;
-  --dash:#b5b9c2; --rule:#e2e4e9;
+  --dash:#aeb3bc; --rule:#c7cbd3;
   --prose:-apple-system,'Segoe UI',Roboto,system-ui,sans-serif;
 }
 /* border follows stroke, same rule in every mode: bare = none (below),
