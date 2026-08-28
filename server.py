@@ -4,7 +4,10 @@
 /wrapper?test=X.html   serve X.html + test/harness.js + test/js_runner.js + test/X_test.js
 /wrapper?trace=X.html  serve X.html + test/tracer.js
 /registry.json         {id: doc} for every parts/**.json and screens/**.json
-no-store on test/ ui/ parts/ screens/ wrapper registry.json (stale-asset trap)
+no-store on every response (dev server, no reason to ever cache --
+top-level pages bit this once: editing math-trainer.html served stale
+until a cache-busting reload, because only specific path prefixes were
+covered before; unconditional is simpler and closes it for good)
 """
 import argparse
 import http.server
@@ -13,7 +16,6 @@ import urllib.parse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-NO_STORE = ('/test/', '/ui/', '/parts/', '/screens/', '/content/', '/wrapper', '/registry.json')
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -21,8 +23,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*a, directory=str(ROOT), **kw)
 
     def end_headers(self):
-        if self.path.split('?')[0].startswith(NO_STORE):
-            self.send_header('Cache-Control', 'no-store')
+        self.send_header('Cache-Control', 'no-store')
         super().end_headers()
 
     def do_GET(self):

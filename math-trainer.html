@@ -55,6 +55,13 @@ function exitDashboard(ctx) {
 
 async function enterQuiz(ctx, send) {
   work.replaceChildren();
+  // screens/quiz.json centers its content within its own root box
+  // (mid+evenly); embedding here only takes that root's *children*
+  // (mountQuiz looks them up by name regardless of nesting depth), so
+  // "work" needs the same centering applied directly while quiz
+  // content is the sole child -- reverted in exitQuiz for dashboard
+  // content, which has its own top-packed multi-child layout.
+  work.classList.add('bx-mid', 'bx-evenly');
   resolve(reg['screens/quiz'], reg).children.forEach(c => work.appendChild(render(c)));
   const quizData = await (await fetch('/content/quiz/lesson1.json')).json();
   mountQuiz(work, quizData);
@@ -74,6 +81,7 @@ function exitQuiz(ctx) {
   breadcrumb.lastChild.remove();
   breadcrumb.lastChild.remove();
   navDashboard.classList.replace('bx-tint1', 'bx-tint3');
+  work.classList.remove('bx-mid', 'bx-evenly');
   work.replaceChildren(...dashboardBody);
 }
 

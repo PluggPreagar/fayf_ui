@@ -1,13 +1,15 @@
-{ "box": "stack, fill, clip, tint0, pad:3, gap:2",
+{ "box": "stack, fill, mid, evenly, clip, tint0, pad:3",
   "children": [
-    { "name": "prompt", "box": "hug", "content": "" },
-    { "name": "answers", "box": "stack, gap:1, hug" },
-    { "name": "controls", "box": "row, mid, gap:2, hug",
+    { "name": "quiz-body", "box": "stack, hug, gap:2",
       "children": [
-        { "name": "btn-hint", "extends": "atom/button", "content": "Hint" },
-        { "name": "btn-lock", "extends": "atom/button.primary", "box": "disabled", "content": "Lock answer in" },
-        { "name": "btn-next", "extends": "atom/button.primary", "box": "disabled", "content": "Next" } ] },
-    { "name": "hint-panel", "box": "row, start, gap:1, fill, w:280, pad:1, solid, rounded, tint0, clip",
-      "children": [
-        "!",
-        { "name": "hint-text", "box": "fill", "content": "" } ] } ] }
+        { "name": "prompt", "box": "hug", "content": "" },
+        { "name": "answers", "box": "stack, gap:1, hug" },
+        { "name": "controls", "box": "row, mid, gap:2, hug",
+          "children": [
+            { "name": "btn-hint", "extends": "atom/button", "content": "Hint" },
+            { "name": "btn-lock", "extends": "atom/button.primary", "box": "disabled", "content": "Lock answer in" },
+            { "name": "btn-next", "extends": "atom/button.primary", "box": "disabled", "content": "Next" } ] },
+        { "name": "hint-panel", "box": "row, mid, gap:1, hug, w:280, pad:1, bare, rounded, tint0",
+          "children": [
+            "!",
+            { "name": "hint-text", "box": "fill", "content": "" } ] } ] } ] }
