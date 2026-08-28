@@ -27,9 +27,9 @@ export function setStyleMode(mode) {
   history.replaceState(null, '', url);
 }
 
-export function mountStyleToggle(doc = document) {
-  const btn = doc.createElement('button');
-  btn.className = 'style-toggle';
+export function mountStyleToggle(target = document.body, { inline = false } = {}) {
+  const btn = target.ownerDocument.createElement('button');
+  btn.className = inline ? 'style-toggle style-toggle-inline' : 'style-toggle';
   const sync = () => {
     btn.textContent = document.documentElement.dataset.style === 'mockup' ? 'wireframe' : 'mockup';
   };
@@ -38,6 +38,6 @@ export function mountStyleToggle(doc = document) {
     setStyleMode(document.documentElement.dataset.style === 'mockup' ? 'wireframe' : 'mockup');
     sync();
   });
-  doc.body.appendChild(btn);
+  target.appendChild(btn);
   return btn;
 }

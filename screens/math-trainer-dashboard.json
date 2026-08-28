@@ -5,7 +5,7 @@
         { "box": "hug", "content": "Math Trainer · Dashboard" },
         { "name": "actions", "box": "row, mid, gap2, hug",
           "children": [
-            { "$ref": "atom/button.primary", "content": "Start next lecture" },
+            { "name": "primary-action", "$ref": "atom/button.primary", "content": "Start next lecture" },
             { "name": "user", "box": "row, mid, gap1, hug",
               "children": [
                 { "$ref": "atom/avatar", "content": "J" },
@@ -38,7 +38,6 @@
                   "children": [
                     { "box": "fill, h:22, tint2" }, { "box": "fill, h:36, tint3" },
                     { "box": "fill, h:14, tint2" }, { "box": "fill, h:46, tint1" } ] } ] } ] } ] },
-    { "box": "row, mid, between, fixed, h:16, pad1, tint1",
+    { "name": "statusbar", "box": "row, mid, between, fixed, h:16, pad1, tint1",
       "children": [
-        { "$ref": "cluster/line", "box": "w:48, h:5" },
-        { "$ref": "cluster/line", "box": "w:28, h:5" } ] } ] }
+        { "$ref": "cluster/line", "box": "w:48, h:5" } ] } ] }

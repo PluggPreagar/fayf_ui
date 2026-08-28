@@ -3,9 +3,9 @@
   "children": [
     { "box": "row, mid, evenly, fixed, w:32, h:24, tint3, rounded",
       "children": [ { "$ref": "cluster/dot", "name": "icon-dashboard", "box": "w:16, h:16, circle, hairline, tint0" } ] },
-    { "box": "row, mid, evenly, fixed, w:32, h:24, tint1, rounded, disabled",
+    { "name": "nav-shop", "box": "row, mid, evenly, fixed, w:32, h:24, tint1, rounded",
       "children": [ { "$ref": "cluster/dot", "name": "icon-shop", "box": "w:16, h:16, circle, hairline, tint2" } ] },
-    { "box": "row, mid, evenly, fixed, w:32, h:24, tint1, rounded, disabled",
+    { "name": "nav-training", "box": "row, mid, evenly, fixed, w:32, h:24, tint1, rounded",
       "children": [ { "$ref": "cluster/dot", "name": "icon-training", "box": "w:16, h:16, circle, hairline, tint2" } ] },
     { "box": "row, mid, evenly, fixed, w:32, h:24, tint1, rounded, disabled",
       "children": [ { "$ref": "cluster/dot", "name": "icon-lecture", "box": "w:16, h:16, circle, hairline, tint2" } ] },

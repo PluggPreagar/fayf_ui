@@ -99,3 +99,13 @@
   border-radius:4px; background:var(--paper); color:var(--muted); cursor:pointer;
 }
 .style-toggle:hover{color:var(--text); border-color:var(--dash)}
+/* inline variant -- a non-modeled overlay (appended to the screen root, a
+   sibling of the resolved tree, same trick as the fixed-corner default)
+   positioned to sit over the status bar instead of a page corner; shrunk
+   to fit its compact height. Never nested inside a modeled node -- that
+   would leak this button's text into capture()'s content, breaking the
+   screen/model round-trip invariant (test/math-trainer_test.js). */
+.style-toggle.style-toggle-inline{
+  position:absolute; top:auto; left:auto; right:4px; bottom:2px; z-index:1;
+  font-size:8px; line-height:1; padding:1px 5px; border-radius:2px;
+}
