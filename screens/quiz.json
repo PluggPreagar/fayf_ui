@@ -4,12 +4,15 @@
       "children": [
         { "name": "prompt", "box": "hug", "content": "" },
         { "name": "answers", "box": "stack, gap:1, hug" },
-        { "name": "controls", "box": "row, mid, gap:2, hug",
+        { "box": "fixed, w:280, h:1, hairline" },
+        { "name": "controls", "box": "row, mid, between, hug, w:280",
           "children": [
             { "name": "btn-hint", "extends": "atom/button", "content": "Hint" },
-            { "name": "btn-lock", "extends": "atom/button.primary", "box": "disabled", "content": "Lock answer in" },
-            { "name": "btn-next", "extends": "atom/button.primary", "box": "disabled", "content": "Next" } ] },
-        { "name": "hint-panel", "box": "row, mid, gap:1, hug, w:280, pad:1, bare, rounded, tint0",
+            { "box": "row, mid, gap:2, hug",
+              "children": [
+                { "name": "btn-lock", "extends": "atom/button.primary", "box": "disabled", "content": "Lock answer in" },
+                { "name": "btn-next", "extends": "atom/button.primary", "box": "disabled", "content": "Next" } ] } ] },
+        { "name": "hint-panel", "box": "row, mid, gap:1, hug, w:280",
           "children": [
             "!",
             { "name": "hint-text", "box": "fill", "content": "" } ] } ] } ] }
