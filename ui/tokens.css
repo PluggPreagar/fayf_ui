@@ -68,10 +68,24 @@
 :root[data-style="mockup"] .bx-solid{border-color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06)}
 :root[data-style="mockup"] .bx-dashed{border-color:var(--dash)}
 
-/* wireframe (default, not mockup): force a faint structure guide even on
-   stroke:bare boxes, so the full sketch layout is visible. Mockup leaves
-   bare = truly no border (base .bx-bare rule, untouched). */
-:root:not([data-style="mockup"]) .bx-bare{border:1px dotted var(--rule)}
+/* wireframe (default, not mockup): force a faint structure guide on every
+   box that has no stroke of its own (bare, or no stroke dial at all), so
+   the full sketch layout is visible. Mockup leaves those truly borderless. */
+:root:not([data-style="mockup"]) .bx:not(.bx-hairline):not(.bx-solid):not(.bx-dashed){
+  border:1px dotted var(--rule);
+}
+
+/* mockup: a few boxes carry stroke:solid only as a wireframe grouping
+   convention (topbar/work/stat-tiles), not because they're meaningful
+   bounded units -- hide, don't remove, so border-width stays reserved
+   and hug-sized neighbors can't shift. */
+:root[data-style="mockup"] [data-name="topbar"],
+:root[data-style="mockup"] [data-name="work"],
+:root[data-style="mockup"] [data-name="tile-score"],
+:root[data-style="mockup"] [data-name="tile-progress"],
+:root[data-style="mockup"] [data-name="tile-time"]{
+  border-color:transparent; box-shadow:none;
+}
 
 /* style toggle -- fixed corner control, mounted by ui/style-mode.js */
 .style-toggle{
