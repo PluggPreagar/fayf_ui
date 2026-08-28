@@ -1,5 +1,5 @@
 { "extends": "component/app-nav-rail",
-  "box": "stack, fixed, w:132, pad:1, gap:1, solid, rounded",
+  "box": "stack, fixed, w:132, pad:1, gap:1, bare, rounded",
   "children": [
     { "box": "row, mid, gap:1, packed, fixed, w:124, h:24, tint3, rounded",
       "children": [
