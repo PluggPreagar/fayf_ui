@@ -40,6 +40,7 @@ function enterAnswering(ctx, send) {
   const q = ctx.quizData.questions[ctx.qIndex];
   ctx.selected = new Set();
   ctx.promptEl.textContent = q.prompt;
+  ctx.promptEl.classList.remove('bx-correct', 'bx-wrong');
   ctx.hintTextEl.textContent = q.hint;
   ctx.hintPanelEl.style.display = 'none';
   ctx.answersEl.replaceChildren();
@@ -89,6 +90,10 @@ function enterRevealed(ctx, send, triggerEvent) {
     }
   });
   mountIcons(ctx.answersEl);
+
+  const correct = grade(q.answers, ctx.selected);
+  ctx.promptEl.classList.toggle('bx-correct', correct);
+  ctx.promptEl.classList.toggle('bx-wrong', !correct);
 
   ctx.timer = setTimeout(() => send('paused'), PAUSE_MS);
   // The click that just caused the answering -> revealed transition (lock-in,
