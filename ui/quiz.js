@@ -24,7 +24,7 @@ function selectorShape(mode) {
 function answerNode(index, text, mode) {
   return {
     name: `answer-${index}`,
-    box: 'row, mid, gap:1, hug, solid, rounded, pad:1',
+    box: 'row, mid, gap:1, hug, w:280, solid, rounded, pad:1',
     children: [
       { name: `selector-${index}`, box: `fixed, w:12, h:12, solid, mid, evenly, ${selectorShape(mode)}` },
       { box: 'hug', content: text },
