@@ -70,9 +70,14 @@
 
 /* wireframe (default, not mockup): force a faint structure guide on every
    box that has no stroke of its own (bare, or no stroke dial at all), so
-   the full sketch layout is visible. Mockup leaves those truly borderless. */
+   the full sketch layout is visible. Mockup leaves those truly borderless.
+   outline, not border: border adds real box-model pixels (shrinks the
+   content area, inflates hug's fit-content size) present only in
+   wireframe, which shifted content on every toggle. outline never
+   participates in layout in either mode, so this can't happen. */
 :root:not([data-style="mockup"]) .bx:not(.bx-hairline):not(.bx-solid):not(.bx-dashed){
-  border:1px dotted var(--rule);
+  outline:1px dotted var(--rule);
+  outline-offset:-1px;
 }
 
 /* mockup: a few boxes carry stroke:solid only as a wireframe grouping
