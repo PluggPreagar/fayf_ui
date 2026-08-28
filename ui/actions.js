@@ -48,8 +48,11 @@ export function wireHoverTip(el, reg, text) {
     doc.body.appendChild(tip);
     const r = el.getBoundingClientRect();
     const t = tip.getBoundingClientRect();
+    const margin = 4;
     const above = r.top - t.height - 6;
-    tip.style.left = `${Math.round(r.left + r.width / 2 - t.width / 2)}px`;
+    const left = r.left + r.width / 2 - t.width / 2;
+    const clampedLeft = Math.min(Math.max(left, margin), doc.defaultView.innerWidth - t.width - margin);
+    tip.style.left = `${Math.round(clampedLeft)}px`;
     tip.style.top = `${Math.round(above >= 0 ? above : r.bottom + 6)}px`;
   });
   el.addEventListener('mouseleave', () => { tip?.remove(); tip = null; });
