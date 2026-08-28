@@ -53,16 +53,20 @@
   --canvas:#eef0f3; --paper:#fff; --ink:#9aa0ab; --text:#1b1f27;
   --muted:#6b7280; --tint0:#f8f9fb; --tint1:#f1f2f5; --tint2:#e7e9ee; --tint3:#dadde3;
   --dash:#aeb3bc; --rule:#c7cbd3;
-  --prose:-apple-system,'Segoe UI',Roboto,system-ui,sans-serif;
+  /* --prose intentionally NOT overridden: swapping font families reflows every
+     bx-hug (fit-content) box -- measured 6-8px width changes on this screen's
+     buttons/labels. Same font in both skins = zero layout jump on toggle. */
 }
 /* border follows stroke, same rule in every mode: bare = none (below),
    hairline/solid/dashed = a border, here just recolored for realism.
-   Resizable/dragable (handles.js, t11) doesn't change this -- a stroked
-   handled box keeps its fixed border; the handles reveal separately, on
-   top of it, from being hidden on approach. */
-:root[data-style="mockup"] .bx-hairline{border:1px solid var(--rule)}
-:root[data-style="mockup"] .bx-solid{border:1px solid var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06)}
-:root[data-style="mockup"] .bx-dashed{border:1px dashed var(--dash)}
+   Border-*width* stays identical to wireframe's (only color/shadow change)
+   so hug-sized bordered boxes don't reflow either. Resizable/dragable
+   (handles.js, t11) doesn't change any of this -- a stroked handled box
+   keeps its fixed border; the handles reveal separately, on top of it,
+   from being hidden on approach. */
+:root[data-style="mockup"] .bx-hairline{border-color:var(--rule)}
+:root[data-style="mockup"] .bx-solid{border-color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+:root[data-style="mockup"] .bx-dashed{border-color:var(--dash)}
 
 /* wireframe (default, not mockup): force a faint structure guide even on
    stroke:bare boxes, so the full sketch layout is visible. Mockup leaves

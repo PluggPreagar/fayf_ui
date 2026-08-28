@@ -1,6 +1,6 @@
 { "id": "screens/math-trainer-dashboard", "box": "stack, fill, clip, tint0",
   "children": [
-    { "name": "topbar", "box": "row, mid, between, fixed, h:44, pad1, solid, tint1",
+    { "name": "topbar", "box": "row, mid, between, fixed, h:44, pad1, tint1",
       "children": [
         { "box": "hug", "content": "Math Trainer · Dashboard" },
         { "name": "actions", "box": "row, mid, gap2, hug",
@@ -13,21 +13,21 @@
     { "name": "body", "box": "row, fill",
       "children": [
         { "$ref": "component/app-nav-rail" },
-        { "name": "work", "box": "stack, fill, pad3, gap2, scroll, solid, rounded",
+        { "name": "work", "box": "stack, fill, pad3, gap2, scroll, rounded",
           "children": [
             { "box": "hug", "content": "Welcome back, Jamie" },
             { "box": "row, gap2, fixed",
               "children": [
-                { "box": "stack, fill, pad2, gap1, solid, rounded",
+                { "box": "stack, fill, pad2, gap1, tint1, rounded",
                   "children": [
                     { "box": "hug", "content": "Score" },
                     { "box": "hug", "content": "128 pts" } ] },
-                { "box": "stack, fill, pad2, gap1, solid, rounded",
+                { "box": "stack, fill, pad2, gap1, tint1, rounded",
                   "children": [
                     { "box": "hug", "content": "Progress" },
                     { "$ref": "component/progress-indicator" },
                     { "box": "hug", "content": "62% of course" } ] },
-                { "box": "stack, fill, pad2, gap1, solid, rounded",
+                { "box": "stack, fill, pad2, gap1, tint1, rounded",
                   "children": [
                     { "box": "hug", "content": "Time left to examine" },
                     { "box": "hug", "content": "14 days" } ] } ] },
