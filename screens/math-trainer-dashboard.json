@@ -4,9 +4,9 @@
       "children": [
         { "extends": "component/breadcrumb-trail",
           "children": [
-            { "box": "hug", "content": "Home" },
+            { "name": "crumb-home", "box": "hug", "content": "Home" },
             { "box": "hug", "content": ">" },
-            { "box": "hug", "content": "Dashboard" } ] },
+            { "name": "crumb-dashboard", "box": "hug", "content": "Dashboard" } ] },
         { "name": "actions", "box": "row, mid, gap:2, hug",
           "children": [
             { "name": "primary-action", "extends": "atom/button.primary", "content": "Start next lecture" },

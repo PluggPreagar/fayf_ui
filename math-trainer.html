@@ -18,7 +18,7 @@ import { wireRelations } from './ui/relation.js';
 import { applyMotion } from './ui/motion.js';
 import { mountIcons } from './ui/icons.js';
 import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
-import { wireAction } from './ui/actions.js';
+import { wireAction, wireBreadcrumbs } from './ui/actions.js';
 initStyleMode();
 const reg = await (await fetch('/registry.json')).json();
 const el = render(resolve(reg['screens/math-trainer-dashboard'], reg));
@@ -28,6 +28,7 @@ el.querySelectorAll('[data-extra]').forEach(n => wireRelations(n, { host: el.que
 applyMotion(el);
 mountIcons(el);
 mountStyleToggle(el, { inline: true });
+wireBreadcrumbs(el, reg);
 wireAction(el.querySelector('[data-name="primary-action"]'), 'start-next-lecture', { reg });
 wireAction(el.querySelector('[data-name="nav-shop"]'), 'nav-shop', { reg, tipSide: 'right' });
 wireAction(el.querySelector('[data-name="nav-training"]'), 'nav-training', { reg, tipSide: 'right' });

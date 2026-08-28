@@ -20,6 +20,16 @@ export function wireAction(el, label, { reg, tipSide } = {}) {
   if (reg) wireHoverTip(el, reg, label, { side: tipSide });
 }
 
+// Any component/breadcrumb-trail: crumb boxes are named "crumb-<slug>"
+// (same convention as nav-*/icon-*). Last crumb = current page, stays
+// inert; every earlier one gets the same no-op wiring as any other nav
+// item. Generic across screens -- no per-crumb wiring at the call site.
+export function wireBreadcrumbs(root, reg) {
+  const crumbs = [...root.querySelectorAll('[data-name^="crumb-"]')];
+  crumbs.slice(0, -1).forEach(el =>
+    wireAction(el, el.dataset.name.slice('crumb-'.length), { reg }));
+}
+
 let toast = null;
 export function raiseToast(reg, doc = document) {
   dismissToast();
