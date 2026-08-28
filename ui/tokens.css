@@ -55,12 +55,19 @@
   --dash:#b5b9c2; --rule:#e2e4e9;
   --prose:-apple-system,'Segoe UI',Roboto,system-ui,sans-serif;
 }
+/* border follows stroke, same rule in every mode: bare = none (below),
+   hairline/solid/dashed = a border, here just recolored for realism.
+   Resizable/dragable (handles.js, t11) doesn't change this -- a stroked
+   handled box keeps its fixed border; the handles reveal separately, on
+   top of it, from being hidden on approach. */
 :root[data-style="mockup"] .bx-hairline{border:1px solid var(--rule)}
 :root[data-style="mockup"] .bx-solid{border:1px solid var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06)}
 :root[data-style="mockup"] .bx-dashed{border:1px dashed var(--dash)}
-/* resizable/movable (handles.js, t11): no static border in mockup --
-   the proximity-revealed handles are the resize/move affordance, not the box edge. */
-:root[data-style="mockup"] [data-handles="1"]{border:none;box-shadow:none}
+
+/* wireframe (default, not mockup): force a faint structure guide even on
+   stroke:bare boxes, so the full sketch layout is visible. Mockup leaves
+   bare = truly no border (base .bx-bare rule, untouched). */
+:root:not([data-style="mockup"]) .bx-bare{border:1px dotted var(--rule)}
 
 /* style toggle -- fixed corner control, mounted by ui/style-mode.js */
 .style-toggle{
