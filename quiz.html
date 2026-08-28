@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fayf_ui — quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui/tokens.css">
+<style>html,body{height:100%;margin:0}
+body{background:var(--canvas);display:flex}
+.bx .ic{stroke:currentColor}</style>
+</head>
+<body>
+<script type="module">
+import { resolve } from './ui/model.js';
+import { render } from './ui/render.js';
+import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
+import { mountQuiz } from './ui/quiz.js';
+initStyleMode();
+const reg = await (await fetch('/registry.json')).json();
+const el = render(resolve(reg['screens/quiz'], reg));
+document.body.appendChild(el);
+mountStyleToggle(el, { inline: true });
+const quizData = await (await fetch('/content/quiz/lesson1.json')).json();
+mountQuiz(el, quizData);
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>
