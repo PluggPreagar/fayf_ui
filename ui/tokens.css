@@ -14,7 +14,7 @@
 .bx-overlay{display:grid} .bx-overlay>.bx{grid-area:1/1}
 /* size */
 .bx-fixed{flex:none} .bx-hug{flex:none;width:fit-content;height:fit-content}
-.bx-fill{flex:1 1 auto;align-self:stretch}
+.bx-fill{flex:1 1 0;align-self:stretch}
 .bx-aspect-locked{aspect-ratio:1} .bx-clamped{flex:1 1 auto;max-width:max-content}
 /* align (children, cross axis) */
 .bx-start{align-items:flex-start} .bx-mid{align-items:center} .bx-end{align-items:flex-end}
