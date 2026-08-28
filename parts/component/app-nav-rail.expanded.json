@@ -1,7 +1,7 @@
 { "extends": "component/app-nav-rail",
   "box": "stack, fixed, w:132, pad:1, gap:1, bare, rounded",
   "children": [
-    { "box": "row, mid, gap:1, packed, fixed, w:124, h:24, tint3, rounded",
+    { "name": "nav-dashboard", "box": "row, mid, gap:1, packed, fixed, w:124, h:24, tint3, rounded",
       "children": [
         { "extends": "cluster/dot", "name": "icon-dashboard", "box": "w:16, h:16, circle, hairline, tint0" },
         { "box": "hug", "content": "Dashboard" } ] },

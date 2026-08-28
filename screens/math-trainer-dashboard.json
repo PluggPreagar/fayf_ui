@@ -2,7 +2,7 @@
   "children": [
     { "name": "topbar", "box": "row, mid, between, fixed, h:44, pad:1, solid, tint1",
       "children": [
-        { "extends": "component/breadcrumb-trail",
+        { "name": "breadcrumb", "extends": "component/breadcrumb-trail",
           "children": [
             { "name": "crumb-home", "box": "hug", "content": "Home" },
             ">",

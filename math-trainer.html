@@ -20,6 +20,7 @@ import { mountIcons } from './ui/icons.js';
 import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
 import { wireAction, wireBreadcrumbs } from './ui/actions.js';
 import { createMachine } from './ui/state-machine.js';
+import { mountQuiz } from './ui/quiz.js';
 initStyleMode();
 const reg = await (await fetch('/registry.json')).json();
 const el = render(resolve(reg['screens/math-trainer-dashboard'], reg));
@@ -33,21 +34,58 @@ wireBreadcrumbs(el, reg);
 const primaryAction = el.querySelector('[data-name="primary-action"]');
 primaryAction.classList.add('bx-actionable');
 primaryAction.style.cursor = 'pointer';
+
+// Starting the quiz keeps this workspace: only "work" gets replaced,
+// style/breadcrumb-trail/nav-rail all stay put -- breadcrumb gains a
+// third crumb (dashboard becomes a real back-link, no longer inert)
+// and the nav rail's dashboard chip dims while quiz content is shown.
+const work = el.querySelector('[data-name="work"]');
+const dashboardBody = [...work.children];
+const breadcrumb = el.querySelector('[data-name="breadcrumb"]');
+const crumbDashboard = el.querySelector('[data-name="crumb-dashboard"]');
+const navDashboard = el.querySelector('[data-name="nav-dashboard"]');
+
+function enterDashboard(ctx, send) {
+  ctx.onStart = () => send('start');
+  ctx.primaryAction.addEventListener('click', ctx.onStart);
+}
+function exitDashboard(ctx) {
+  ctx.primaryAction.removeEventListener('click', ctx.onStart);
+}
+
+async function enterQuiz(ctx, send) {
+  work.replaceChildren();
+  resolve(reg['screens/quiz'], reg).children.forEach(c => work.appendChild(render(c)));
+  const quizData = await (await fetch('/content/quiz/lesson1.json')).json();
+  mountQuiz(work, quizData);
+
+  navDashboard.classList.replace('bx-tint3', 'bx-tint1');
+  breadcrumb.appendChild(render(resolve('>')));
+  breadcrumb.appendChild(render(resolve({ box: 'hug', content: 'Quiz' })));
+  crumbDashboard.classList.add('bx-actionable');
+  crumbDashboard.style.cursor = 'pointer';
+  ctx.onBack = () => send('back');
+  crumbDashboard.addEventListener('click', ctx.onBack);
+}
+function exitQuiz(ctx) {
+  crumbDashboard.removeEventListener('click', ctx.onBack);
+  crumbDashboard.classList.remove('bx-actionable');
+  crumbDashboard.style.cursor = '';
+  breadcrumb.lastChild.remove();
+  breadcrumb.lastChild.remove();
+  navDashboard.classList.replace('bx-tint1', 'bx-tint3');
+  work.replaceChildren(...dashboardBody);
+}
+
 createMachine({
   states: {
-    idle: {
-      enter(ctx, send) {
-        ctx.onStart = () => send('start');
-        ctx.primaryAction.addEventListener('click', ctx.onStart);
-      },
-      exit(ctx) { ctx.primaryAction.removeEventListener('click', ctx.onStart); },
-      on: { start: 'navigating' },
-    },
-    navigating: { enter: () => { location.href = 'quiz.html'; } },
+    dashboard: { enter: enterDashboard, exit: exitDashboard, on: { start: 'quiz' } },
+    quiz: { enter: enterQuiz, exit: exitQuiz, on: { back: 'dashboard' } },
   },
-  initial: 'idle',
+  initial: 'dashboard',
   context: { primaryAction },
 });
+
 wireAction(el.querySelector('[data-name="nav-shop"]'), 'nav-shop', { reg, tipSide: 'right' });
 wireAction(el.querySelector('[data-name="nav-training"]'), 'nav-training', { reg, tipSide: 'right' });
 document.body.dataset.ready = '1';
