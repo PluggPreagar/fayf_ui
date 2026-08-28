@@ -28,11 +28,7 @@ export function capture(el) {
   const node = {};
   if (el.dataset.name) node.name = el.dataset.name;
   if (el.dataset.box) node.box = parse(el.dataset.box, 'box');
-  if (el.dataset.extra) {
-    const extra = JSON.parse(el.dataset.extra);
-    if (extra.path) extra.path = parse(print(extra.path, 'path'), 'path');
-    Object.assign(node, extra);
-  }
+  if (el.dataset.extra) Object.assign(node, JSON.parse(el.dataset.extra));
   const kids = [...el.children].filter(c => c.classList?.contains('bx'));
   if (kids.length) node.children = kids.map(capture);
   else if (el.textContent !== '') node.content = el.textContent;
