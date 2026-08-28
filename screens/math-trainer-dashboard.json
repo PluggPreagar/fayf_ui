@@ -9,7 +9,10 @@
             { "name": "crumb-dashboard", "box": "hug", "content": "Dashboard" } ] },
         { "name": "actions", "box": "row, mid, gap:2, hug",
           "children": [
-            { "name": "primary-action", "extends": "atom/button.primary", "content": "Start next lecture" },
+            { "name": "primary-action", "extends": "atom/button.primary", "box": "gap:1",
+              "children": [
+                { "name": "icon-run", "box": "hug, w:14, h:14, circle, hairline, tint0" },
+                { "box": "hug", "content": "Start next lecture" } ] },
             { "name": "user", "box": "row, mid, gap:1, hug",
               "children": [
                 { "extends": "atom/avatar", "content": "J" },
