@@ -4,7 +4,7 @@
     { "name": "body", "box": "row, fill",
       "children": [
         { "$ref": "component/navigation-rail", "box": "h:340, square, bare" },
-        { "name": "work", "box": "stack, fill, pad3, gap2, scroll",
+        { "name": "work", "box": "stack, fill, pad:3, gap:2, scroll",
           "children": [
             { "box": "row, mid, between",
               "children": [
@@ -12,7 +12,7 @@
                 { "$ref": "component/search-field" },
                 { "$ref": "atom/button", "content": "New" } ] },
             { "$ref": "component/inline-banner", "box": "w:520" },
-            { "box": "row, gap2",
+            { "box": "row, gap:2",
               "children": [
                 { "$ref": "atom/image-placeholder", "box": "w:180, h:110" },
                 { "$ref": "component/chart", "box": "fill, h:110" } ] },

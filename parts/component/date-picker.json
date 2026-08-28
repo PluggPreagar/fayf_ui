@@ -1,13 +1,13 @@
-{ "extends": "base/box", "box": "stack, gap1, pad1, hug, solid, rounded",
+{ "extends": "base/box", "box": "stack, gap:1, pad:1, hug, solid, rounded",
   "children": [
     { "box": "row, mid, between, fixed, w:96", "children": [
       { "box": "hug", "content": "‹" }, { "box": "hug", "content": "May" }, { "box": "hug", "content": "›" } ] },
-    { "box": "row, gap1", "children": [
+    { "box": "row, gap:1", "children": [
       { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" },
       { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "$ref": "cluster/dot", "box": "w:9, h:9, tint3, square" },
       { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" },
       { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" } ] },
-    { "box": "row, gap1", "children": [
+    { "box": "row, gap:1", "children": [
       { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" },
       { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" },
       { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" }, { "$ref": "cluster/dot", "box": "w:9, h:9, tint1, square" },

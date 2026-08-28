@@ -1,1 +1,1 @@
-{"extends":"base/box","box":"row, fixed, w:160, h:104, gap1","children":[{"box":"fixed, w:44, solid, rounded, tint1"},{"box":"fill, solid, rounded"}]}
+{"extends":"base/box","box":"row, fixed, w:160, h:104, gap:1","children":[{"box":"fixed, w:44, solid, rounded, tint1"},{"box":"fill, solid, rounded"}]}

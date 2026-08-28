@@ -6,11 +6,11 @@ const host = document.createElement('div');
 host.style.cssText = 'position:relative;width:400px;height:200px';
 document.body.appendChild(host);
 
-const a = render(resolve({ box: 'row, gap2, pad3, hug, solid' }));
+const a = render(resolve({ box: 'row, gap:2, pad:3, hug, solid' }));
 host.appendChild(a);
 let cs = getComputedStyle(a);
-assert('gap2 = 8px', cs.gap, '8px');
-assert('pad3 = 12px', cs.padding, '12px');
+assert('gap:2 = 8px', cs.gap, '8px');
+assert('pad:3 = 12px', cs.padding, '12px');
 assert('solid border style', cs.borderTopStyle, 'solid');
 assert('solid border width snapped ok', ['1px', '1.5px'].includes(cs.borderTopWidth), true);
 assert('hug has no fixed width', a.style.width, '');
@@ -23,10 +23,10 @@ assert('docked left spans height', cs.top + ' ' + cs.bottom, '0px 0px');
 assert('w:40', cs.width, '40px');
 
 suite('render — invariant');
-const doc = { box: 'stack, hug, gap1, solid, rounded',
+const doc = { box: 'stack, hug, gap:1, solid, rounded',
   children: [
     { name: 'label', box: 'fixed, w:40, h:6, tint2', },
-    { box: 'row, mid, pad2, solid', content: 'Go' } ] };
+    { box: 'row, mid, pad:2, solid', content: 'Go' } ] };
 const r = resolve(doc);
 const el = render(r);
 host.appendChild(el);

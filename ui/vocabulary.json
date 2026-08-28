@@ -13,7 +13,7 @@
     "overflow":   ["clip", "scroll"],
     "state":      ["disabled"]
   },
-  "box_numeric": ["w", "h", "depth", "opacity", "rotate"],
+  "box_numeric": ["w", "h", "pad", "gap", "depth", "opacity", "rotate"],
   "path": {
     "segment": ["straight", "elbow", "curve", "arc"],
     "dash":    ["solid", "dashed", "dotted"],

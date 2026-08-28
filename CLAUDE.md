@@ -20,7 +20,7 @@ Read via the `DesignSync` MCP. Verbatim copy: `docs/vocabulary.reference.html`.
 
 2 primitives (`box` · `path`) → 3 combinators (`row` · `stack` · `overlay`)
 → 3 layers (`style` · `relation` · `motion`). `box` has 12 dials (doc's 11 + `state`).
-Config = distinct token string: `"row, mid, hug, pad2, solid, rounded"` (C8).
+Config = distinct token string: `"row, mid, hug, pad:2, solid, rounded"` (C8).
 Part = saved preset of dials = JSON file.
 Spec: `docs/superpowers/specs/2026-08-27-wireframe-ui-design.md`.
 

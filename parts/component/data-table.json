@@ -1,10 +1,10 @@
-{ "extends": "base/box", "box": "stack, gap0, fixed, w:160, solid, rounded, clip",
+{ "extends": "base/box", "box": "stack, gap:0, fixed, w:160, solid, rounded, clip",
   "children": [
-    { "box": "row, gap0, fixed, h:16, tint1", "children": [
-      { "box": "fill, pad1, hairline" }, { "box": "fill, pad1, hairline" }, { "box": "fill, pad1, hairline" } ] },
-    { "box": "row, gap0, fixed, h:14", "children": [
-      { "box": "fill, pad1, hairline" }, { "box": "fill, pad1, hairline" }, { "box": "fill, pad1, hairline" } ] },
-    { "box": "row, gap0, fixed, h:14", "children": [
-      { "box": "fill, pad1, hairline" }, { "box": "fill, pad1, hairline" }, { "box": "fill, pad1, hairline" } ] },
-    { "box": "row, gap0, fixed, h:14", "children": [
-      { "box": "fill, pad1, hairline" }, { "box": "fill, pad1, hairline" }, { "box": "fill, pad1, hairline" } ] } ] }
+    { "box": "row, gap:0, fixed, h:16, tint1", "children": [
+      { "box": "fill, pad:1, hairline" }, { "box": "fill, pad:1, hairline" }, { "box": "fill, pad:1, hairline" } ] },
+    { "box": "row, gap:0, fixed, h:14", "children": [
+      { "box": "fill, pad:1, hairline" }, { "box": "fill, pad:1, hairline" }, { "box": "fill, pad:1, hairline" } ] },
+    { "box": "row, gap:0, fixed, h:14", "children": [
+      { "box": "fill, pad:1, hairline" }, { "box": "fill, pad:1, hairline" }, { "box": "fill, pad:1, hairline" } ] },
+    { "box": "row, gap:0, fixed, h:14", "children": [
+      { "box": "fill, pad:1, hairline" }, { "box": "fill, pad:1, hairline" }, { "box": "fill, pad:1, hairline" } ] } ] }

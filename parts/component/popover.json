@@ -1,4 +1,4 @@
-{ "extends": "base/box", "box": "stack, gap1, hug",
+{ "extends": "base/box", "box": "stack, gap:1, hug",
   "children": [ { "$ref": "atom/button", "name": "anchor", "content": "?" },
-    { "name": "bubble", "box": "stack, pad1, gap1, solid, rounded, tint0, hug",
+    { "name": "bubble", "box": "stack, pad:1, gap:1, solid, rounded, tint0, hug",
       "children": [ { "$ref": "cluster/line", "box": "w:56" }, { "$ref": "cluster/line", "box": "w:40" } ] } ] }

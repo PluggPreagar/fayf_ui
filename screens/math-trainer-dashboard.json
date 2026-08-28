@@ -1,43 +1,43 @@
 { "box": "stack, fill, clip, tint0",
   "children": [
-    { "name": "topbar", "box": "row, mid, between, fixed, h:44, pad1, solid, tint1",
+    { "name": "topbar", "box": "row, mid, between, fixed, h:44, pad:1, solid, tint1",
       "children": [
         { "box": "hug", "content": "Math Trainer · Dashboard" },
-        { "name": "actions", "box": "row, mid, gap2, hug",
+        { "name": "actions", "box": "row, mid, gap:2, hug",
           "children": [
             { "name": "primary-action", "$ref": "atom/button.primary", "content": "Start next lecture" },
-            { "name": "user", "box": "row, mid, gap1, hug",
+            { "name": "user", "box": "row, mid, gap:1, hug",
               "children": [
                 { "$ref": "atom/avatar", "content": "J" },
                 { "box": "hug", "content": "Jamie" } ] } ] } ] },
     { "name": "body", "box": "row, fill",
       "children": [
         { "$ref": "component/app-nav-rail" },
-        { "name": "work", "box": "stack, fill, pad3, gap2, scroll, solid, rounded",
+        { "name": "work", "box": "stack, fill, pad:3, gap:2, scroll, solid, rounded",
           "children": [
             { "box": "hug", "content": "Welcome back, Jamie" },
-            { "box": "row, gap2, fixed",
+            { "box": "row, gap:2, fixed",
               "children": [
-                { "name": "tile-score", "box": "stack, fill, pad2, gap1, solid, tint1, rounded",
+                { "name": "tile-score", "box": "stack, fill, pad:2, gap:1, solid, tint1, rounded",
                   "children": [
                     { "box": "hug", "content": "Score" },
                     { "box": "hug", "content": "128 pts" } ] },
-                { "name": "tile-progress", "box": "stack, fill, pad2, gap1, solid, tint1, rounded",
+                { "name": "tile-progress", "box": "stack, fill, pad:2, gap:1, solid, tint1, rounded",
                   "children": [
                     { "box": "hug", "content": "Progress" },
                     { "$ref": "component/progress-indicator" },
                     { "box": "hug", "content": "62% of course" } ] },
-                { "name": "tile-time", "box": "stack, fill, pad2, gap1, solid, tint1, rounded",
+                { "name": "tile-time", "box": "stack, fill, pad:2, gap:1, solid, tint1, rounded",
                   "children": [
                     { "box": "hug", "content": "Time left to examine" },
                     { "box": "hug", "content": "14 days" } ] } ] },
-            { "box": "stack, gap1, fill",
+            { "box": "stack, gap:1, fill",
               "children": [
                 { "box": "hug", "content": "Weekly progress" },
-                { "box": "row, end, gap1, fill, pad1, bare, rounded",
+                { "box": "row, end, gap:1, fill, pad:1, bare, rounded",
                   "children": [
                     { "box": "fill, h:22, tint2" }, { "box": "fill, h:36, tint3" },
                     { "box": "fill, h:14, tint2" }, { "box": "fill, h:46, tint1" } ] } ] } ] } ] },
-    { "name": "statusbar", "box": "row, mid, between, fixed, h:16, pad1, tint1",
+    { "name": "statusbar", "box": "row, mid, between, fixed, h:16, pad:1, tint1",
       "children": [
         { "$ref": "cluster/line", "box": "w:48, h:5" } ] } ] }

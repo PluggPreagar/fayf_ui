@@ -1,2 +1,2 @@
-{ "extends": "base/box", "box": "stack, gap0, hug, pad1",
+{ "extends": "base/box", "box": "stack, gap:0, hug, pad:1",
   "children": [ { "box": "hug", "content": "2.1 Checkout" }, { "box": "hug", "content": "desktop · v3" } ] }

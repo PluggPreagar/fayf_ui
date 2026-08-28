@@ -9,8 +9,8 @@ test('parse enum tokens', () => {
 test('parse list form', () => {
   assert.deepEqual(parse(['stack', 'fill']), { direction: 'stack', size: 'fill' });
 });
-test('padN gapN scale', () => {
-  assert.deepEqual(parse('pad2, gap1'), { pad: 2, gap: 1 });
+test('pad gap numerics', () => {
+  assert.deepEqual(parse('pad:2, gap:1'), { pad: 2, gap: 1 });
 });
 test('key:value numerics', () => {
   assert.deepEqual(parse('w:120, h:22, opacity:0.5'), { w: 120, h: 22, opacity: 0.5 });
@@ -39,7 +39,7 @@ test('path primitive', () => {
     { segment: 'curve', dash: 'dashed', 'trim-end': 0.35 });
 });
 test('print canonical + round-trip', () => {
-  const canon = 'row, hug, mid, solid, rounded, pad2, w:80';
-  assert.equal(print(parse('w:80, pad2, rounded, solid, mid, hug, row')), canon);
+  const canon = 'row, hug, mid, solid, rounded, w:80, pad:2';
+  assert.equal(print(parse('w:80, pad:2, rounded, solid, mid, hug, row')), canon);
   assert.deepEqual(parse(print(parse(canon))), parse(canon));
 });

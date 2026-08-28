@@ -74,10 +74,14 @@ fill        tint0 · tint1 · tint2 · tint3
 radius      square · rounded · pill · circle
 overflow    clip · scroll
 state       disabled
-pad · gap   padN · gapN  =  N × 4px, any N  (pad2 = 8px)
+pad · gap   pad:N · gap:N  =  N × 4px, any N  (pad:2 = 8px)
 ```
 
-Numeric (`key:value`): `t:` `trim:` `rotate:` `opacity:` `depth:` `w:` `h:`.
+Numeric (`key:value`): `pad:` `gap:` `rotate:` `opacity:` `depth:` `w:` `h:`.
+
+Deviations from the doc (C2, listed here): doc writes `padN`/`gapN`;
+repo uses `pad:N`/`gap:N` — one numeric syntax, no second token form.
+Doc's `t:` dropped — no reader existed (dead vocabulary).
 
 `place` legal only with `docked · floating · anchored · sticky`, never `in-flow`.
 Validator enforces. `align` = children, axis-relative. `place` = self, absolute.
@@ -103,7 +107,7 @@ label       a box anchored at t: along the path
 | size | size | = |
 | align | align | `centre` → `mid` (axis-relative triple `start·mid·end`) |
 | distribute | distribute | = |
-| pad · gap | `padN` · `gapN` | rule N×4px, open-ended like doc's scale |
+| pad · gap | `pad:N` · `gap:N` | rule N×4px, open-ended like doc's scale |
 | position | position | = |
 | depth | `depth:` numeric | **scrim: deferred** — add with modal (stage 4, sheet 3) |
 | stroke·fill | split: stroke + fill | stroke `none` → `bare`; fill → `tint0–3` (sheets paint tints) |
@@ -121,7 +125,7 @@ Token string or list; order-independent; per-primitive uniqueness at load.
 
 ```json
 { "id": "parts/button", "extends": "base/box",
-  "box": "row, mid, hug, pad2, solid, rounded", "content": "Go" }
+  "box": "row, mid, hug, pad:2, solid, rounded", "content": "Go" }
 ```
 
 ```json
@@ -184,7 +188,7 @@ diff(capture(render(resolve(d))), resolve(d)) == empty
 Honesty note: `render` stamps dials on the DOM, `capture` reads them back →
 the invariant catches resolver/merge/serialization drift, **not** visual
 correctness. Complement in `render_test.js`: computed-style spot checks —
-`hug` → no fixed width · `docked,left` → inset 0 · `gap2` → 8px.
+`hug` → no fixed width · `docked,left` → inset 0 · `gap:2` → 8px.
 
 ## Tokens (visual)
 

@@ -1,1 +1,1 @@
-{ "extends": "base/box", "box": "row, mid, gap1, pad1, hug, solid, pill", "content": "On" }
+{ "extends": "base/box", "box": "row, mid, gap:1, pad:1, hug, solid, pill", "content": "On" }

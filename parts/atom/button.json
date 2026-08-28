@@ -1,1 +1,1 @@
-{ "extends": "base/box", "box": "row, mid, packed, pad2, solid, rounded", "content": "Go" }
+{ "extends": "base/box", "box": "row, mid, packed, pad:2, solid, rounded", "content": "Go" }

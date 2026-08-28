@@ -5,7 +5,7 @@ import { resolve, diff } from '../../ui/model.js';
 const reg = {
   'base/box': { box: 'stack, hug, bare, square' },
   'atom/button': { extends: 'base/box',
-    box: 'row, mid, packed, pad2, solid, rounded', content: 'Go' },
+    box: 'row, mid, packed, pad:2, solid, rounded', content: 'Go' },
 };
 
 test('extends merges per dial', () => {
