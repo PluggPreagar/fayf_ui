@@ -59,7 +59,7 @@ function pickConditional(candidates, env) {
   return winners[0].c;
 }
 
-export function resolve(doc, registry = {}, env = [], seen = new Set()) {
+export function resolve(doc, registry = {}, env = [], seen = new Set(), path = [], provenance) {
   if (typeof doc === 'string') doc = { box: 'hug', content: doc };
   if (doc.conditional) {
     const winner = pickConditional(doc.conditional, env);
@@ -78,13 +78,14 @@ export function resolve(doc, registry = {}, env = [], seen = new Set()) {
     const parent = resolve(base, registry, env, new Set([...seen, link]));
     node = mergeNode(parent, node);
   }
+  if (provenance) provenance.set(path.join('.'), { path, extends: link ?? null });
   delete node.extends;
   for (const prim of ['box', 'path'])
     if (node[prim] != null) node[prim] = toDials(node[prim], prim);
   if (node.content != null && node.children)
     throw new Error(`content xor children violated${node.name ? ` at '${node.name}'` : ''}`);
   if (node.children)
-    node.children = node.children.map(c => resolve(c, registry, env, seen));
+    node.children = node.children.map((c, i) => resolve(c, registry, env, seen, [...path, i], provenance));
   return node;
 }
 

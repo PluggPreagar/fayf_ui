@@ -96,3 +96,29 @@ test('conditional: env unaffected by unrelated resolve calls (no leakage)', () =
   assert.equal(a.box.stroke, 'solid');
   assert.equal(b.box['fill-tint'], 'tint3');
 });
+
+test('provenance: omitted param is a no-op, resolve() output unchanged', () => {
+  const withMap = resolve(reg['atom/button'], reg, [], new Set(), [], new Map());
+  const without = resolve(reg['atom/button'], reg);
+  assert.deepEqual(withMap, without);
+});
+test('provenance: records path + extends for every node, path threads through children', () => {
+  const doc = { box: 'row', children: [
+    { extends: 'atom/button', name: 'a' },
+    { box: 'hug', content: 'plain' },
+  ] };
+  const provenance = new Map();
+  resolve(doc, reg, [], new Set(), [], provenance);
+  assert.deepEqual(provenance.get(''), { path: [], extends: null });
+  assert.deepEqual(provenance.get('0'), { path: [0], extends: 'atom/button' });
+  assert.deepEqual(provenance.get('1'), { path: [1], extends: null });
+});
+test('provenance: nested children get multi-segment paths', () => {
+  const doc = { box: 'stack', children: [
+    { box: 'row', children: [ { box: 'hug', content: 'x' }, { box: 'hug', content: 'y' } ] },
+  ] };
+  const provenance = new Map();
+  resolve(doc, reg, [], new Set(), [], provenance);
+  assert.deepEqual(provenance.get('0.0'), { path: [0, 0], extends: null });
+  assert.deepEqual(provenance.get('0.1'), { path: [0, 1], extends: null });
+});
