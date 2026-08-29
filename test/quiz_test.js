@@ -2,6 +2,7 @@
 import { resolve } from '../ui/model.js';
 import { render } from '../ui/render.js';
 import { mountQuiz } from '../ui/quiz.js';
+import { mountInspector } from '../ui/inspector.js';
 
 const tr = new TestRunner({ stopOnError: false });
 
@@ -322,6 +323,67 @@ tr.addBlock('quiz: a missed correct answer is colored wrong, not just left blank
 
     const { container } = syntheticMissed;
     container.remove();
+  });
+});
+
+let inspectorSynthetic = null;
+
+tr.addBlock('quiz: inspector edit on a live quiz does not break its interactivity', (r) => {
+  r.run(() => {
+    (async () => {
+      const reg = await (await fetch('/registry.json')).json();
+      const container = document.createElement('div');
+      container.id = 'synthetic-inspector-quiz';
+      document.body.appendChild(container);
+      const freshRoot = render(resolve(reg['screens/quiz'], reg));
+      container.appendChild(freshRoot);
+      const quizData = {
+        id: 'quiz/synthetic-inspector', questions: [
+          { prompt: 'Pick the right one', mode: 'single',
+            answers: [
+              { text: 'A', correct: false },
+              { text: 'B', correct: true } ],
+            hint: 'synthetic inspector hint' } ] };
+      mountQuiz(freshRoot, quizData, reg);
+      mountInspector(freshRoot, { sourceId: 'screens/quiz' });
+      inspectorSynthetic = { container, freshRoot };
+    })();
+  })
+  .waitFor(() => inspectorSynthetic !== null, 3000, 50, 'synthetic inspector quiz mounted')
+  .run(() => {
+    const { freshRoot } = inspectorSynthetic;
+    const answersBefore = [...freshRoot.querySelectorAll('[data-name^="answer-"]')];
+    r.check(answersBefore.length === 2, 'renders 2 answers before any inspector edit');
+
+    // select+edit a node that is NOT any answer row -- the hint panel's box
+    // -- via the inspector, exactly like a real debugging session would.
+    const hintPanel = freshRoot.querySelector('[data-name="hint-panel"]');
+    hintPanel.click();
+    r.check(hintPanel.classList.contains('ins-selected'), 'inspector selected the hint panel');
+    // quiz.html's own script (Step 1) already mounted its own inspector on
+    // the real page before this synthetic block runs, so document already
+    // has an earlier .ins-panel for that unrelated container -- each
+    // mountInspector() call appends a fresh, independent panel to
+    // document.body with no cleanup of prior ones. Take the most recently
+    // mounted panel (last in DOM order), which is this block's own.
+    const panels = document.querySelectorAll('.ins-panel');
+    const panel = panels[panels.length - 1];
+    const radiusSelect = panel.querySelector('[data-dial="radius"] select');
+    radiusSelect.value = 'pill';
+    radiusSelect.dispatchEvent(new Event('change'));
+    const hintPanelAfter = freshRoot.querySelector('[data-name="hint-panel"]');
+    r.check(hintPanelAfter.classList.contains('bx-pill'), 'hint panel re-rendered with the edited dial');
+    r.check(hintPanelAfter !== hintPanel, 'hint panel is a fresh element after the scoped re-render');
+
+    // quiz interactivity must still work after the edit: answer click ->
+    // revealed, still driven by the SAME state machine wired at mount time.
+    const answersAfter = [...freshRoot.querySelectorAll('[data-name^="answer-"]')];
+    r.check(answersAfter.length === 2, 'answers untouched by an edit elsewhere in the tree');
+    answersAfter[1].click(); // "B", correct, single mode locks in immediately
+    r.check(answersAfter[1].classList.contains('bx-correct'),
+      'quiz state machine still responds correctly after an unrelated inspector edit');
+
+    inspectorSynthetic.container.remove();
   });
 });
 
