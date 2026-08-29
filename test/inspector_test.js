@@ -1,3 +1,5 @@
+import { exportPayload } from '../ui/inspector.js';
+
 const tr = new TestRunner({ stopOnError: false });
 
 tr.addBlock('click-to-select highlights exactly one node, shows provenance', (r) => {
@@ -169,6 +171,18 @@ tr.addBlock('editing a node with real children preserves exactly those children,
     r.check(kids.length === 2, 'root keeps exactly its 2 real children after edit, not 33', String(kids.length));
     r.check(root.querySelector('[data-name="a"]')?.textContent === 'Go', 'child a content intact after root edit');
     r.check(root.querySelector('[data-name="b"]')?.textContent === 'plain', 'child b content intact after root edit');
+  });
+});
+
+tr.addBlock('exportPayload: JSON matches capture(), labeled with the provenance breadcrumb', (r) => {
+  r.run(() => {
+    const root = document.querySelector('.bx[data-name="root"]');
+    const a = root.querySelector('[data-name="a"]');
+    const payload = exportPayload(a, root, 'fixture/doc', null); // provenance omitted here on purpose
+    r.check(payload.source === 'runtime-inserted, no static source',
+      'no provenance map passed -> honest fallback text', payload.source);
+    r.check(payload.node.name === 'a', 'node.name matches capture() output');
+    r.check(payload.node.box.direction === 'row', 'node.box matches capture() output');
   });
 });
 

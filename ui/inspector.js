@@ -52,6 +52,10 @@ export function describeProvenance(path, sourceId = '(unknown source)', provenan
   return entry.extends ? `${loc}, extends ${entry.extends}` : loc;
 }
 
+export function exportPayload(el, root, sourceId, provenance) {
+  return { source: describeProvenance(nodePath(el, root), sourceId, provenance), node: capture(el) };
+}
+
 function buildFields(container, onChange) {
   const controls = {};
   for (const dial of ENUM_DIALS) {
@@ -157,6 +161,8 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
   let rootEl = container;
   let selected = null;
   const controls = buildFields(fieldsEl, onChange);
+  const copyBtn = panel.querySelector('.ins-copy');
+  const downloadBtn = panel.querySelector('.ins-download');
 
   function select(el) {
     if (selected) { detachHandles(selected); selected.classList.remove('ins-selected'); }
@@ -187,6 +193,21 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
     const el = e.target.closest('.bx');
     if (!el || !rootEl.contains(el)) return;
     select(el);
+  });
+
+  copyBtn.addEventListener('click', () => {
+    if (!selected) return;
+    navigator.clipboard?.writeText(JSON.stringify(exportPayload(selected, rootEl, sourceId, provenance), null, 2));
+  });
+  downloadBtn.addEventListener('click', () => {
+    if (!selected) return;
+    const json = JSON.stringify(exportPayload(selected, rootEl, sourceId, provenance), null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${selected.dataset.name || 'node'}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
   });
 
   return { select };
