@@ -4,16 +4,14 @@
       "children": [
         { "name": "prompt", "extends": "atom/text.title" },
         { "name": "answers", "box": "stack, gap:1, hug" },
-        { "box": "stack, gap:1, hug",
+        { "box": "fixed, w:280, h:1, hairline" },
+        { "name": "controls", "box": "row, mid, between, hug, w:280",
           "children": [
-            { "box": "fixed, w:280, h:1, hairline" },
-            { "name": "controls", "box": "row, mid, between, hug, w:280",
+            { "name": "btn-hint", "extends": "atom/button", "content": "Hint" },
+            { "box": "row, mid, gap:2, hug",
               "children": [
-                { "name": "btn-hint", "extends": "atom/button", "content": "Hint" },
-                { "box": "row, mid, gap:2, hug",
-                  "children": [
-                    { "name": "btn-lock", "extends": "atom/button.primary", "box": "disabled", "content": "Lock answer in" },
-                    { "name": "btn-next", "extends": "atom/button.primary", "box": "disabled", "content": "Next" } ] } ] } ] },
+                { "name": "btn-lock", "extends": "atom/button.primary", "box": "disabled", "content": "Lock answer in" },
+                { "name": "btn-next", "extends": "atom/button.primary", "box": "disabled", "content": "Next" } ] } ] },
         { "name": "hint-panel", "box": "row, mid, gap:1, hug, w:280",
           "children": [
             "!",
