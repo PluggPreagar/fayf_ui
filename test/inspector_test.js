@@ -14,6 +14,27 @@ tr.addBlock('click-to-select highlights exactly one node, shows provenance', (r)
      r.check(source.includes('extends atom/button'), 'shows the extends link', source);
    })
    .run(() => {
+     // Regression: attachHandles() renders its handle squares/pills via
+     // render(), so they carry the '.bx' class too and match the click
+     // delegation's `.closest('.bx')` just like any real node. Clicking
+     // one that belongs to the *currently selected* node used to crash --
+     // select() detached the old node's handles (removing the very
+     // element just clicked) before nodePath() walked its now-null
+     // parentElement. window 'error' catches an uncaught throw inside
+     // the click listener (click() itself never rethrows synchronously).
+     const root = document.querySelector('.bx[data-name="root"]');
+     const a = root.querySelector('[data-name="a"]');
+     let caught = null;
+     const onError = (ev) => { caught = ev.error || ev.message; };
+     window.addEventListener('error', onError);
+     const handle = document.querySelector('.hx-square');
+     r.check(!!handle, 'a resize-handle square exists to click');
+     handle.click();
+     window.removeEventListener('error', onError);
+     r.check(!caught, 'clicking a handle square does not crash the inspector', String(caught));
+     r.check(a.classList.contains('ins-selected'), 'original node stays selected after handle click');
+   })
+   .run(() => {
      const root = document.querySelector('.bx[data-name="root"]');
      const b = root.querySelector('[data-name="b"]');
      b.click();

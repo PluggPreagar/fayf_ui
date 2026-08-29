@@ -28,7 +28,7 @@ document.head.appendChild(style);
 
 // Child-index path from `root` to `el`, counting only real `.bx` nodes --
 // matches how render()/capture() address children (spacers excluded, see
-// checklist #18), so a path here lines up with resolve()'s own provenance
+// ui/render.js:10), so a path here lines up with resolve()'s own provenance
 // path (ui/model.js).
 export function nodePath(el, root) {
   if (el === root) return [];
@@ -81,6 +81,7 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
   }
 
   (rootEl.parentElement ?? rootEl).addEventListener('click', (e) => {
+    if (e.target.closest('.hx-square, .hx-pill')) return;
     const el = e.target.closest('.bx');
     if (!el || !rootEl.contains(el)) return;
     select(el);
