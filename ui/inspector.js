@@ -10,6 +10,13 @@
 // its parent once, at mount time, so editing the root's own dials (which
 // replaces `container` itself) doesn't orphan the listener.
 import { attachHandles, detachHandles } from './handles.js';
+import { parse } from './model.js';
+import vocabulary from './vocabulary.json' with { type: 'json' };
+
+const ENUM_DIALS = Object.keys(vocabulary.box);
+const NUMERIC_DIALS = vocabulary.box_numeric;
+const PLACE_DIALS = ['place-h', 'place-v'];
+const PLACE_REQUIRES = ['docked', 'floating', 'anchored', 'sticky'];
 
 const style = document.createElement('style');
 style.textContent = `
@@ -44,6 +51,70 @@ export function describeProvenance(path, sourceId = '(unknown source)', provenan
   return entry.extends ? `${loc}, extends ${entry.extends}` : loc;
 }
 
+function buildFields(container, onChange) {
+  const controls = {};
+  for (const dial of ENUM_DIALS) {
+    const row = document.createElement('label');
+    row.className = 'ins-field';
+    row.dataset.dial = dial;
+    row.textContent = dial;
+    const select = document.createElement('select');
+    select.appendChild(new Option('—', ''));
+    for (const tok of vocabulary.box[dial]) select.appendChild(new Option(tok, tok));
+    select.addEventListener('change', onChange);
+    row.appendChild(select);
+    container.appendChild(row);
+    controls[dial] = select;
+  }
+  for (const dial of NUMERIC_DIALS) {
+    const row = document.createElement('label');
+    row.className = 'ins-field';
+    row.dataset.dial = dial;
+    row.textContent = dial;
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.className = 'ins-value';
+    input.addEventListener('input', onChange);
+    row.appendChild(input);
+    if (dial === 'gap') {
+      const growth = document.createElement('select');
+      growth.className = 'ins-growth';
+      growth.appendChild(new Option('fixed', ''));
+      growth.appendChild(new Option('+', '+'));
+      growth.appendChild(new Option('++', '++'));
+      growth.addEventListener('change', onChange);
+      row.appendChild(growth);
+      controls.gapGrowth = growth;
+    }
+    container.appendChild(row);
+    controls[dial] = input;
+  }
+  return controls;
+}
+
+function syncPlaceGuard(controls) {
+  const allowed = PLACE_REQUIRES.includes(controls.position.value);
+  for (const dial of PLACE_DIALS) {
+    controls[dial].disabled = !allowed;
+    if (!allowed) controls[dial].value = '';
+  }
+}
+
+function populateFields(controls, dials) {
+  for (const dial of ENUM_DIALS) controls[dial].value = dials[dial] ?? '';
+  for (const dial of NUMERIC_DIALS) {
+    if (dial === 'gap') {
+      const raw = dials.gap;
+      const m = typeof raw === 'string' ? /^(\d+)(\+{1,2})$/.exec(raw) : null;
+      controls.gap.value = m ? m[1] : (raw ?? '');
+      controls.gapGrowth.value = m ? m[2] : '';
+      continue;
+    }
+    controls[dial].value = dials[dial] ?? '';
+  }
+  syncPlaceGuard(controls);
+}
+
 function buildPanel() {
   const panel = document.createElement('div');
   panel.className = 'ins-panel';
@@ -66,9 +137,11 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
   const emptyEl = panel.querySelector('.ins-empty');
   const formEl = panel.querySelector('.ins-form');
   const sourceEl = panel.querySelector('.ins-source');
+  const fieldsEl = panel.querySelector('.ins-fields');
 
   let rootEl = container;
   let selected = null;
+  const controls = buildFields(fieldsEl, () => {});
 
   function select(el) {
     if (selected) { detachHandles(selected); selected.classList.remove('ins-selected'); }
@@ -77,6 +150,7 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
     attachHandles(selected);
     emptyEl.hidden = true;
     formEl.hidden = false;
+    populateFields(controls, parse(selected.dataset.box || ''));
     sourceEl.textContent = describeProvenance(nodePath(selected, rootEl), sourceId, provenance);
   }
 

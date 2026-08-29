@@ -46,4 +46,25 @@ tr.addBlock('click-to-select highlights exactly one node, shows provenance', (r)
    });
 });
 
+tr.addBlock('form reflects the selected node\'s dials, incl. gap growth + place guard', (r) => {
+  r.run(() => {
+    const root = document.querySelector('.bx[data-name="root"]');
+    root.querySelector('[data-name="a"]').click();
+    const panel = document.querySelector('.ins-panel');
+    r.check(panel.querySelector('[data-dial="direction"] select').value === 'row', 'direction=row (child override wins)');
+    r.check(panel.querySelector('[data-dial="size"] select').value === 'hug', 'size=hug (survives from base/box)');
+    r.check(panel.querySelector('[data-dial="align"] select').value === 'mid', 'align=mid');
+    r.check(panel.querySelector('[data-dial="pad"] .ins-value').value === '2', 'pad=2');
+    r.check(panel.querySelector('[data-dial="place-h"] select').disabled, 'place-h disabled: position not set');
+    r.check(panel.querySelector('[data-dial="place-v"] select').disabled, 'place-v disabled: position not set');
+  })
+  .run(() => {
+    const root = document.querySelector('.bx[data-name="root"]');
+    root.click(); // root itself: box 'row, mid, pad:2, gap:2' -- gap is a plain fixed value
+    const panel = document.querySelector('.ins-panel');
+    r.check(panel.querySelector('[data-dial="gap"] .ins-value').value === '2', 'gap value=2');
+    r.check(panel.querySelector('[data-dial="gap"] .ins-growth').value === '', 'gap growth=fixed (no suffix)');
+  });
+});
+
 await tr.runBlocks();
