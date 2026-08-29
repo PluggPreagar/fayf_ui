@@ -276,4 +276,53 @@ tr.addBlock('quiz: next -> answering re-entry loads the second question correctl
   });
 });
 
+// Grading: a correct answer the user never selected is just as wrong a call
+// as selecting an incorrect one -- both directions of mismatch should color
+// red, not just "selected something wrong". Only the selected-wrong
+// direction was ever exercised above (lesson1's Q1 test always selects the
+// exact correct set).
+let syntheticMissed = null;
+
+tr.addBlock('quiz: a missed correct answer is colored wrong, not just left blank', (r) => {
+  r.run(() => {
+    (async () => {
+      const reg = await (await fetch('/registry.json')).json();
+      const container = document.createElement('div');
+      container.id = 'synthetic-missed-correct-quiz';
+      document.body.appendChild(container);
+      const freshRoot = render(resolve(reg['screens/quiz'], reg));
+      container.appendChild(freshRoot);
+      const quizData = {
+        id: 'quiz/synthetic-missed', questions: [
+          { prompt: 'Pick both primes', mode: 'multiple',
+            answers: [
+              { text: '2', correct: true },
+              { text: '4', correct: false },
+              { text: '5', correct: true } ],
+            hint: 'synthetic missed-correct hint' } ] };
+      mountQuiz(freshRoot, quizData, reg);
+      syntheticMissed = { container, freshRoot };
+    })();
+  })
+  .waitFor(() => syntheticMissed !== null, 3000, 50, 'synthetic missed-correct quiz mounted')
+  .run(() => {
+    const { freshRoot } = syntheticMissed;
+    const answers = [...freshRoot.querySelectorAll('[data-name^="answer-"]')];
+    answers[0].click(); // "2", correct -- but leave "5" (also correct) unselected
+    freshRoot.querySelector('[data-name="btn-lock"]').click();
+
+    r.check(answers[0].classList.contains('bx-correct'), 'selected correct answer colorized correct');
+    r.check(!!answers[0].querySelector('use[href="#icon-done"]'), 'selected correct answer got the done icon');
+    r.check(answers[1].classList.contains('bx-wrong') === false && answers[1].classList.contains('bx-correct') === false,
+      'unselected wrong answer stays neutral, no color either way');
+    r.check(answers[2].classList.contains('bx-wrong'),
+      'missed correct answer (never selected) is colored wrong, not neutral or correct');
+    r.check(!!answers[2].querySelector('use[href="#icon-cancelled"]'),
+      'missed correct answer got the cancelled icon, same as a wrongly-selected one');
+
+    const { container } = syntheticMissed;
+    container.remove();
+  });
+});
+
 await tr.runBlocks();

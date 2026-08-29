@@ -1,7 +1,7 @@
 {
   "box": {
     "direction":  ["row", "stack", "overlay"],
-    "size":       ["fixed", "fill", "hug", "aspect-locked", "clamped"],
+    "size":       ["fixed", "fill", "hug", "aspect-locked", "clamp"],
     "align":      ["start", "mid", "end", "baseline", "stretch"],
     "distribute": ["packed", "between", "around", "evenly"],
     "position":   ["in-flow", "docked", "floating", "anchored", "sticky"],

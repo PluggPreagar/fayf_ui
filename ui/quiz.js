@@ -116,12 +116,16 @@ function enterRevealed(ctx, send, triggerEvent) {
   const rows = [...ctx.answersEl.querySelectorAll('[data-name^="answer-"]')];
   q.answers.forEach((a, i) => {
     const row = rows[i];
-    if (a.correct) {
-      row.classList.add('bx-correct');
-      row.appendChild(render(resolve(markNode('done'))));
-    } else if (ctx.selected.has(i)) {
+    const selected = ctx.selected.has(i);
+    // Wrong covers both directions: picked one that wasn't correct, or
+    // missed one that was (a.correct true but never selected) -- either
+    // way the user's call on this answer didn't match reality.
+    if (a.correct !== selected) {
       row.classList.add('bx-wrong');
       row.appendChild(render(resolve(markNode('cancelled'))));
+    } else if (a.correct) {
+      row.classList.add('bx-correct');
+      row.appendChild(render(resolve(markNode('done'))));
     }
   });
   mountIcons(ctx.answersEl);

@@ -16,7 +16,7 @@ function answerDoc(target) {
 
 test('no layout -> plain component/answer regardless of env', () => {
   const n = resolve(answerDoc(null), reg, ['spacious']);
-  assert.equal(n.box.size, 'clamped');
+  assert.equal(n.box.size, 'clamp');
   assert.equal(n.box['fill-tint'], undefined);
 });
 
@@ -28,7 +28,7 @@ test('buzzer layout + spacious env -> component/answer.buzzer wins', () => {
 
 test('buzzer layout without spacious env -> falls back to component/answer', () => {
   const n = resolve(answerDoc('component/answer.buzzer'), reg, []);
-  assert.equal(n.box.size, 'clamped');
+  assert.equal(n.box.size, 'clamp');
   assert.equal(n.box['fill-tint'], undefined);
 });
 
