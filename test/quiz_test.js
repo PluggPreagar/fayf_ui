@@ -64,16 +64,46 @@ tr.addBlock('quiz: pause gate then next, click-to-continue skips the timer', (r)
     const root = document.querySelector('body > .bx');
     root.querySelector('[data-name="btn-next"]').click();
     r.check(root.querySelector('[data-name="btn-next"]').classList.contains('bx-disabled'),
-      'next disabled again -- lesson1 has only 1 question, so this was "finish"');
+      'next disabled again -- entering question 2 fresh (lesson1 now has 2 questions)');
+    r.check(root.querySelector('[data-name="prompt"]').textContent.includes('prime numbers is true'),
+      'prompt advanced to question 2');
   });
 });
 
-// content/quiz/lesson1.json (Task 3, already reviewed/approved, asserted verbatim by
-// test/node/quiz_content_test.js) only has a "multiple" question -- single mode has
-// never been driven through a real click. Build a synthetic single-mode quizData
-// inline instead of touching that fixture, and mount a second, independent
-// screens/quiz shell for it (kept off `body > .bx` so it can't collide with the
-// two blocks above, which key off that exact selector).
+tr.addBlock('quiz: question 2 renders the sentence (spacious-list) answer layout', (r) => {
+  r.run(() => {
+    const root = document.querySelector('body > .bx');
+    const answers = [...root.querySelectorAll('[data-name^="answer-"]')];
+    r.check(answers.length === 3, 'renders 3 answers for question 2');
+    r.check(answers[0].dataset.box.includes('h:52'),
+      'answer row resolved component/answer.spacious-list (h:52), not the plain base row');
+    const selector0 = root.querySelector('[data-name="selector-0"]');
+    r.check(getComputedStyle(selector0).width === '18px', 'selector sized up for the sentence layout (w:18)');
+    r.check(selector0.classList.contains('bx-circle'), 'single mode still uses a circle selector');
+
+    answers[0].click(); // the correct sentence -- single mode locks in immediately
+    r.check(answers[0].classList.contains('bx-correct'), 'correct sentence answer colorized correct');
+  })
+  .run(() => { document.querySelector('body > .bx').click(); }) // click-to-continue past the pause
+  .waitFor(() => {
+    const nextBtn = document.querySelector('body > .bx [data-name="btn-next"]');
+    return !nextBtn.classList.contains('bx-disabled');
+  }, 1000, 50, 'next enabled after question 2 reveal')
+  .run(() => {
+    const root = document.querySelector('body > .bx');
+    root.querySelector('[data-name="btn-next"]').click();
+    r.check(root.querySelector('[data-name="btn-next"]').classList.contains('bx-disabled'),
+      'next disabled again -- question 2 was the last one, this is real "finish"');
+  });
+});
+
+// content/quiz/lesson1.json's own single-mode question (Q2, above) already
+// exercises a real click, but its answers are 3-5 sentence-length options --
+// too few/specific to also isolate the click-to-continue race by itself.
+// Build a synthetic single-mode quizData inline instead of touching that
+// fixture, and mount a second, independent screens/quiz shell for it (kept
+// off `body > .bx` so it can't collide with the two blocks above, which key
+// off that exact selector).
 let synthetic = null;
 
 tr.addBlock('quiz: single-mode answer click transitions straight to revealed', (r) => {
@@ -161,11 +191,14 @@ tr.addBlock('quiz: real PAUSE_MS timer reaches next-ready with no click-to-conti
   });
 });
 
-// Finding 3 (final review): content/quiz/lesson1.json has exactly one question,
-// so every other block above only ever takes the "finish" branch out of
-// next-ready. Build a synthetic 2-question quiz (multiple, then single, to
-// also confirm the selector shape switches) and drive the next -> answering
-// re-entry path for real.
+// Finding 3 (final review): at the time this was written, content/quiz/
+// lesson1.json had exactly one question, so every other block above only
+// ever took the "finish" branch out of next-ready (lesson1 has since grown
+// a second question -- see the sentence-layout block above -- but this
+// synthetic quiz stays useful on its own: it isolates the multiple->single
+// selector-shape switch from any real content's specifics). Build a
+// synthetic 2-question quiz (multiple, then single, to also confirm the
+// selector shape switches) and drive the next -> answering re-entry path.
 let syntheticMulti = null;
 
 tr.addBlock('quiz: next -> answering re-entry loads the second question correctly', (r) => {

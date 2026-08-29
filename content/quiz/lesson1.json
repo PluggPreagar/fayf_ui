@@ -5,4 +5,10 @@
       { "text": "4", "correct": false },
       { "text": "5", "correct": true },
       { "text": "9", "correct": false } ],
-    "hint": "A prime number has exactly two divisors: 1 and itself." } ] }
+    "hint": "A prime number has exactly two divisors: 1 and itself." },
+  { "prompt": "Which statement about prime numbers is true?", "mode": "single", "layout": "sentence",
+    "answers": [
+      { "text": "Every prime greater than 2 is odd.", "correct": true },
+      { "text": "The number 1 counts as a prime number too.", "correct": false },
+      { "text": "All odd numbers are prime.", "correct": false } ],
+    "hint": "2 is the only even prime -- every other prime must be odd." } ] }
