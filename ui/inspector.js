@@ -25,7 +25,7 @@ style.textContent = `
   background:var(--paper);border-left:1px solid var(--rule);font:11px var(--mono);color:var(--text);padding:10px;
   pointer-events:none}
 .ins-empty{color:var(--muted)}
-.ins-source{color:var(--muted);margin-bottom:8px;word-break:break-word}
+.ins-source{color:var(--muted);margin-bottom:8px;word-break:break-word;pointer-events:auto}
 .ins-field{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:4px;pointer-events:auto}
 .ins-field select,.ins-field input{font:11px var(--mono);width:100px}
 .ins-actions{display:flex;gap:6px;margin-top:8px;pointer-events:auto}
@@ -46,15 +46,41 @@ export function nodePath(el, root) {
   return [...nodePath(parent, root), siblings.indexOf(el)];
 }
 
-export function describeProvenance(path, sourceId = '(unknown source)', provenance) {
-  const entry = provenance?.get(path.join('.'));
+// Path strings are NOT a safe key for looking up provenance at lookup time:
+// a path can be occupied by a static node at mount time and by a completely
+// different runtime-inserted node later (e.g. math-trainer.html's
+// work.replaceChildren() swaps a dashboard subtree for quiz content, reusing
+// the same paths). A stale path-string Map can't distinguish "no entry" from
+// "entry from before a swap", so it would misattribute the wrong file/path
+// with full confidence.
+//
+// Instead, walk the initially-rendered tree exactly once, at mount time, and
+// tag each element into a WeakMap keyed by element IDENTITY -- built here by
+// reusing nodePath's own indexing (same '.bx'-only, depth-first scheme) so
+// the walk lines up with resolve()'s provenance path exactly. Anything
+// inserted later by other code (or the DOM being restructured outside the
+// inspector's control) was never visited by this walk, so it simply has no
+// entry -- by construction, never a stale or wrong one -- and correctly
+// falls through to the honest "runtime-inserted, no static source" fallback.
+export function tagProvenance(container, provenance, map = new WeakMap()) {
+  if (provenance) {
+    const nodes = [container, ...container.querySelectorAll('.bx')];
+    for (const el of nodes) {
+      const entry = provenance.get(nodePath(el, container).join('.'));
+      if (entry) map.set(el, entry);
+    }
+  }
+  return map;
+}
+
+export function describeProvenance(entry, sourceId = '(unknown source)') {
   if (!entry) return 'runtime-inserted, no static source';
   const loc = `${sourceId}, path ${entry.path.join('.') || '(root)'}`;
   return entry.extends ? `${loc}, extends ${entry.extends}` : loc;
 }
 
-export function exportPayload(el, root, sourceId, provenance) {
-  return { source: describeProvenance(nodePath(el, root), sourceId, provenance), node: capture(el) };
+export function exportPayload(el, sourceId, elementProvenance) {
+  return { source: describeProvenance(elementProvenance?.get(el), sourceId), node: capture(el) };
 }
 
 function buildFields(container, onChange) {
@@ -161,6 +187,9 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
 
   let rootEl = container;
   let selected = null;
+  // Tagged once, against the tree exactly as it stood at mount time -- see
+  // tagProvenance's own comment for why identity (not path) is the key.
+  const elementProvenance = tagProvenance(container, provenance);
   const controls = buildFields(fieldsEl, onChange);
   const copyBtn = panel.querySelector('.ins-copy');
   const downloadBtn = panel.querySelector('.ins-download');
@@ -173,39 +202,48 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
     emptyEl.hidden = true;
     formEl.hidden = false;
     populateFields(controls, parse(selected.dataset.box || ''));
-    sourceEl.textContent = describeProvenance(nodePath(selected, rootEl), sourceId, provenance);
+    sourceEl.textContent = describeProvenance(elementProvenance.get(selected), sourceId);
   }
 
   function onChange() {
-    if (!selected) return;
+    if (!selected?.isConnected) return;
     syncPlaceGuard(controls);
     detachHandles(selected);
     const captured = capture(selected);
     captured.box = readFields(controls);
     const fresh = render(captured);
+    // Edit rule (spec): the edited node is still sourced from the same
+    // path/file, just now with a local override -- so its provenance entry
+    // carries over to the freshly rendered replacement by identity. A
+    // genuine runtime swap done by other code (never routed through here)
+    // has no entry to carry, so it still falls through to the fallback.
+    const entry = elementProvenance.get(selected);
+    if (entry) elementProvenance.set(fresh, entry);
     const wasRoot = selected === rootEl;
     selected.replaceWith(fresh);
     if (wasRoot) rootEl = fresh;
     select(fresh);
   }
 
-  (rootEl.parentElement ?? rootEl).addEventListener('click', (e) => {
+  const clickTarget = rootEl.parentElement ?? rootEl;
+  function handleClick(e) {
     if (e.target.closest('.hx-square, .hx-pill')) return;
     const el = e.target.closest('.bx');
     if (!el || !rootEl.contains(el)) return;
     select(el);
-  });
+  }
+  clickTarget.addEventListener('click', handleClick);
 
   copyBtn.addEventListener('click', () => {
-    if (!selected) return;
+    if (!selected?.isConnected) return;
     detachHandles(selected);
-    navigator.clipboard?.writeText(JSON.stringify(exportPayload(selected, rootEl, sourceId, provenance), null, 2));
+    navigator.clipboard?.writeText(JSON.stringify(exportPayload(selected, sourceId, elementProvenance), null, 2));
     attachHandles(selected);
   });
   downloadBtn.addEventListener('click', () => {
-    if (!selected) return;
+    if (!selected?.isConnected) return;
     detachHandles(selected);
-    const json = JSON.stringify(exportPayload(selected, rootEl, sourceId, provenance), null, 2);
+    const json = JSON.stringify(exportPayload(selected, sourceId, elementProvenance), null, 2);
     attachHandles(selected);
     const blob = new Blob([json], { type: 'application/json' });
     const a = document.createElement('a');
@@ -215,5 +253,11 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
     URL.revokeObjectURL(a.href);
   });
 
-  return { select };
+  function destroy() {
+    if (selected) { detachHandles(selected); selected.classList.remove('ins-selected'); }
+    clickTarget.removeEventListener('click', handleClick);
+    panel.remove();
+  }
+
+  return { select, destroy };
 }

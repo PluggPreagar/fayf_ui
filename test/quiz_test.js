@@ -328,7 +328,25 @@ tr.addBlock('quiz: a missed correct answer is colored wrong, not just left blank
 
 let inspectorSynthetic = null;
 
-tr.addBlock('quiz: inspector edit on a live quiz does not break its interactivity', (r) => {
+// Finding 3 (final review): this block edits `hint-panel`, which is ALSO
+// `ctx.hintPanelEl` in ui/quiz.js -- a cached DOM reference the state
+// machine holds from mount time (same for `ctx.hintTextEl`, hint-panel's
+// child). The inspector's scoped re-render (capture()+render()+replaceWith)
+// replaces hint-panel with a fresh element, so that cached reference now
+// points at a detached node. This is the spec's own documented "Re-render"
+// limitation -- "if the edited node's own descendants carry live-wired
+// state, that resets on replace" -- just applying to the selected node
+// itself (which quiz.js happens to cache), not only its descendants.
+//
+// It is NOT a bug in onChange or the re-render mechanism, and this test
+// must not "fix" it by changing that mechanism. What it must do is stop
+// silently failing to verify it: the answer-click assertion below only
+// proves editing one node doesn't break listeners ELSEWHERE in the tree
+// that don't cache a reference to the edited node -- it says nothing about
+// the edited node's own cached state, which this block also touches. Pin
+// that half with a real, failing-if-it-regresses assertion instead of
+// leaving it unverified.
+tr.addBlock('quiz: inspector edit on a live quiz does not break OTHER listeners (editing a node the state machine itself caches has a known, asserted limitation)', (r) => {
   r.run(() => {
     (async () => {
       const reg = await (await fetch('/registry.json')).json();
@@ -345,8 +363,8 @@ tr.addBlock('quiz: inspector edit on a live quiz does not break its interactivit
               { text: 'B', correct: true } ],
             hint: 'synthetic inspector hint' } ] };
       mountQuiz(freshRoot, quizData, reg);
-      mountInspector(freshRoot, { sourceId: 'screens/quiz' });
-      inspectorSynthetic = { container, freshRoot };
+      const { destroy } = mountInspector(freshRoot, { sourceId: 'screens/quiz' });
+      inspectorSynthetic = { container, freshRoot, destroy };
     })();
   })
   .waitFor(() => inspectorSynthetic !== null, 3000, 50, 'synthetic inspector quiz mounted')
@@ -358,6 +376,7 @@ tr.addBlock('quiz: inspector edit on a live quiz does not break its interactivit
     // select+edit a node that is NOT any answer row -- the hint panel's box
     // -- via the inspector, exactly like a real debugging session would.
     const hintPanel = freshRoot.querySelector('[data-name="hint-panel"]');
+    r.check(getComputedStyle(hintPanel).visibility === 'hidden', 'hint panel starts hidden, before any edit');
     hintPanel.click();
     r.check(hintPanel.classList.contains('ins-selected'), 'inspector selected the hint panel');
     // quiz.html's own script (Step 1) already mounted its own inspector on
@@ -375,15 +394,48 @@ tr.addBlock('quiz: inspector edit on a live quiz does not break its interactivit
     r.check(hintPanelAfter.classList.contains('bx-pill'), 'hint panel re-rendered with the edited dial');
     r.check(hintPanelAfter !== hintPanel, 'hint panel is a fresh element after the scoped re-render');
 
-    // quiz interactivity must still work after the edit: answer click ->
-    // revealed, still driven by the SAME state machine wired at mount time.
+    // Known limitation, asserted: render() never re-applies the inline
+    // `style.visibility = 'hidden'` enterAnswering set on the ORIGINAL
+    // hint-panel at question-start (capture() only round-trips box-dial-
+    // driven styles, not arbitrary inline ones) -- so the fresh hint-panel
+    // comes back at the browser's default visibility, already visible,
+    // before Hint was ever clicked.
+    r.check(getComputedStyle(hintPanelAfter).visibility === 'visible',
+      'known limitation: hint panel comes back already visible after the edit -- its cached hidden state was lost with the replaced element');
+    // And since ctx.hintPanelEl still points at the OLD, now-detached
+    // element, clicking Hint after the edit changes nothing the user can
+    // see -- it sets visibility on a node no longer on screen.
+    freshRoot.querySelector('[data-name="btn-hint"]').click();
+    r.check(getComputedStyle(hintPanelAfter).visibility === 'visible' && !hintPanel.isConnected,
+      'known limitation: clicking Hint after the edit no longer reaches the on-screen element (ctx.hintPanelEl is the stale, detached one)');
+
+    // Interactivity elsewhere in the tree, with NO cached reference to the
+    // edited node, must still work: answer click -> revealed, still driven
+    // by the SAME state machine wired at mount time.
     const answersAfter = [...freshRoot.querySelectorAll('[data-name^="answer-"]')];
     r.check(answersAfter.length === 2, 'answers untouched by an edit elsewhere in the tree');
     answersAfter[1].click(); // "B", correct, single mode locks in immediately
     r.check(answersAfter[1].classList.contains('bx-correct'),
-      'quiz state machine still responds correctly after an unrelated inspector edit');
+      'quiz state machine still responds correctly after an unrelated inspector edit (no cached reference involved)');
 
+    inspectorSynthetic.destroy();
     inspectorSynthetic.container.remove();
+  });
+});
+
+tr.addBlock('mountInspector().destroy() removes the panel it mounted, no leak across synthetic mounts', (r) => {
+  r.run(() => {
+    const panelsBefore = document.querySelectorAll('.ins-panel').length;
+    const container = document.createElement('div');
+    container.id = 'synthetic-destroy-quiz';
+    document.body.appendChild(container);
+    const freshRoot = render(resolve({ box: 'hug', name: 'destroy-fixture', content: 'x' }));
+    container.appendChild(freshRoot);
+    const { destroy } = mountInspector(freshRoot, { sourceId: 'destroy-fixture' });
+    r.check(document.querySelectorAll('.ins-panel').length === panelsBefore + 1, 'mounting adds exactly one panel');
+    destroy();
+    r.check(document.querySelectorAll('.ins-panel').length === panelsBefore, 'destroy() leaves no orphaned .ins-panel behind');
+    container.remove();
   });
 });
 

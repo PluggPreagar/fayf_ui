@@ -1,4 +1,6 @@
-import { exportPayload } from '../ui/inspector.js';
+import { exportPayload, mountInspector } from '../ui/inspector.js';
+import { resolve } from '../ui/model.js';
+import { render } from '../ui/render.js';
 
 const tr = new TestRunner({ stopOnError: false });
 
@@ -83,6 +85,17 @@ tr.addBlock('editing a dial scopes re-render to the selected subtree only', (r) 
     r.check(aAfter.classList.contains('bx-circle'), 'edited node re-rendered with the new dial');
     r.check(aAfter.classList.contains('ins-selected'), 'edited node is re-selected after replace');
     r.check(root.querySelector('[data-name="b"]') === bBefore, 'sibling untouched -- same DOM reference, not replaced');
+
+    // Finding 1 (final review): the edited node is a fresh element (not the
+    // one the provenance WeakMap was tagged against at mount time), but per
+    // the spec's edit rule it's still sourced from the same path/file, just
+    // now with a local override -- so its provenance entry must carry over
+    // to the replacement, not fall back to "runtime-inserted". This is the
+    // deliberate carry-over onChange performs, distinct from a genuine
+    // runtime swap done by other code (see the dedicated block below).
+    const source = document.querySelector('.ins-source').textContent;
+    r.check(source.includes('fixture/doc') && source.includes('extends atom/button'),
+      'provenance survives an inspector-driven edit -- same path/file, just locally overridden', source);
   });
 });
 
@@ -178,9 +191,9 @@ tr.addBlock('exportPayload: JSON matches capture(), labeled with the provenance 
   r.run(() => {
     const root = document.querySelector('.bx[data-name="root"]');
     const a = root.querySelector('[data-name="a"]');
-    const payload = exportPayload(a, root, 'fixture/doc', null); // provenance omitted here on purpose
+    const payload = exportPayload(a, 'fixture/doc', null); // elementProvenance omitted on purpose
     r.check(payload.source === 'runtime-inserted, no static source',
-      'no provenance map passed -> honest fallback text', payload.source);
+      'no elementProvenance map passed -> honest fallback text', payload.source);
     r.check(payload.node.name === 'a', 'node.name matches capture() output');
     r.check(payload.node.box.direction === 'row', 'node.box matches capture() output');
   });
@@ -240,6 +253,133 @@ tr.addBlock('Download JSON excludes the live resize-handle overlay from captured
     r.check(!payload.node.children, 'b (leaf, no real children) has no children entry once handles are excluded');
     r.check(payload.node.content === 'plain', 'leaf content still captured correctly', payload.node.content);
     r.check(!!document.querySelector('.hx-square'), 'handles re-attached after download -- selection stays editable');
+  });
+});
+
+// Finding 1 (final review): describeProvenance/provenance lookup used to be
+// keyed by path string, so a path re-occupied at runtime by a completely
+// different node (e.g. math-trainer.html's work.replaceChildren() swap)
+// inherited the OLD node's provenance with full, wrong confidence. Fixed by
+// tagging elements into a WeakMap by identity at mount time, so a path
+// collision can no longer happen -- an element the mount-time walk never
+// saw simply has no entry, by construction.
+// Isolated on its own fresh mount (not the shared fixture above, which by
+// this point in the suite has had several of its nodes edited through the
+// inspector -- editing an ANCESTOR re-renders its whole subtree via
+// capture()+render(), so descendants legitimately lose WeakMap identity
+// too, same as the edited node's known "live-wired state resets" limit.
+// That's expected, not what this block is isolating.
+let swapFixture = null;
+tr.addBlock('runtime-inserted node at a previously-static path gets the honest fallback, not the old node\'s provenance', (r) => {
+  r.run(() => {
+    const reg = {
+      'base/box': { box: 'stack, hug, bare, square' },
+      'atom/button': { extends: 'base/box', box: 'row, mid, packed, pad:2, solid, rounded', content: 'Go' },
+    };
+    const doc = { box: 'row, mid, pad:2, gap:2', name: 'sroot', children: [
+      { extends: 'atom/button', name: 'x' },
+      { box: 'hug, pad:1', name: 'y', content: 'plain' },
+    ] };
+    const provenance = new Map();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const el = render(resolve(doc, reg, [], new Set(), [], provenance));
+    container.appendChild(el);
+    const inspector = mountInspector(el, { sourceId: 'swap/fixture', provenance });
+    swapFixture = { container, el, inspector };
+    // This mount's panel is a second, independent .ins-panel appended to
+    // document.body after the shared fixture's own -- take the most
+    // recently mounted one (last in DOM order), same convention as
+    // test/quiz_test.js's synthetic-inspector block.
+    const panels = document.querySelectorAll('.ins-panel');
+    const panel = panels[panels.length - 1];
+
+    const x = el.querySelector('[data-name="x"]');
+    x.click();
+    const sourceX = panel.querySelector('.ins-source').textContent;
+    r.check(sourceX.includes('swap/fixture') && sourceX.includes('extends atom/button'),
+      'x shows correct provenance before any swap', sourceX);
+
+    // Bypass the inspector entirely (no click, no onChange) -- this is the
+    // "some other code restructured the DOM" case finding #1 reported, not
+    // an inspector-driven edit (which deliberately carries provenance
+    // across the replace -- see the earlier block in this file).
+    const yOld = el.querySelector('[data-name="y"]');
+    const swapped = document.createElement('div');
+    swapped.className = 'bx';
+    swapped.dataset.box = 'hug, pad:1';
+    swapped.dataset.name = 'y';
+    swapped.textContent = 'swapped-in at runtime';
+    yOld.replaceWith(swapped);
+
+    swapped.click();
+    r.check(swapped.classList.contains('ins-selected'), 'runtime-swapped node gets selected');
+    const sourceSwapped = panel.querySelector('.ins-source').textContent;
+    r.check(sourceSwapped === 'runtime-inserted, no static source',
+      'occupying y\'s old path does not inherit y\'s stale provenance', sourceSwapped);
+
+    // Regression guard: the fix must not blanket-disable provenance -- a
+    // real, still-untouched node elsewhere in the tree still resolves
+    // correctly after the unrelated swap happened.
+    x.click();
+    const sourceX2 = panel.querySelector('.ins-source').textContent;
+    r.check(sourceX2.includes('swap/fixture') && sourceX2.includes('extends atom/button'),
+      'an untouched node elsewhere in the tree is unaffected by the swap', sourceX2);
+
+    swapFixture.inspector.destroy();
+    swapFixture.container.remove();
+  });
+});
+
+// Finding 2 (final review): nodePath(el, root) dereferenced el.parentElement
+// with no guard, so if the host page removed the selected subtree outside
+// the inspector's control, the next form change threw inside onChange
+// (capture() on a detached node, then a no-op replaceWith, then a throwing
+// nodePath call), leaving the panel stuck showing stale dials.
+tr.addBlock('detached selection guards onChange/copy/download instead of throwing', (r) => {
+  r.run(() => {
+    const root = document.querySelector('.bx[data-name="root"]');
+    const b = root.querySelector('[data-name="b"]');
+    b.click();
+    r.check(b.classList.contains('ins-selected'), 'b selected before detaching it');
+
+    b.remove(); // host page tears down the selected subtree, outside inspector's control
+    r.check(!b.isConnected, 'selected node is now detached');
+
+    let caught = null;
+    const onError = (ev) => { caught = ev.error || ev.message; };
+    window.addEventListener('error', onError);
+
+    const panel = document.querySelector('.ins-panel');
+    const radiusSelect = panel.querySelector('[data-dial="radius"] select');
+    radiusSelect.value = 'circle';
+    radiusSelect.dispatchEvent(new Event('change')); // used to throw inside onChange
+
+    document.querySelector('.ins-panel .ins-copy').click();     // used to throw via exportPayload
+    document.querySelector('.ins-panel .ins-download').click(); // ditto
+
+    window.removeEventListener('error', onError);
+    r.check(!caught, 'no uncaught throw from onChange/copy/download on a detached selection', String(caught));
+  });
+});
+
+// Finding 5 (final review): mountInspector() appended its panel to
+// document.body with no way to remove it -- a page that mounts/unmounts the
+// inspector repeatedly (e.g. test/quiz_test.js's synthetic blocks) leaked
+// one orphaned .ins-panel per mount, forever.
+tr.addBlock('destroy() removes the panel from the DOM', (r) => {
+  r.run(() => {
+    const before = document.querySelectorAll('.ins-panel').length;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const fresh = render(resolve({ box: 'hug', name: 'destroy-fixture', content: 'x' }));
+    container.appendChild(fresh);
+    const { destroy } = mountInspector(fresh, { sourceId: 'destroy-fixture' });
+    r.check(document.querySelectorAll('.ins-panel').length === before + 1, 'mounting adds one panel');
+
+    destroy();
+    r.check(document.querySelectorAll('.ins-panel').length === before, 'destroy() removes exactly the panel it added');
+    container.remove();
   });
 });
 

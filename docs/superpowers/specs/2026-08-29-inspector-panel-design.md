@@ -3,7 +3,7 @@
 2026-08-29 · governed by [`CONSTITUTION.md`](../../../CONSTITUTION.md) C1–C10
 · addendum to [2026-08-27-wireframe-ui-design.md](2026-08-27-wireframe-ui-design.md)
 
-Status: **designed, not implemented**.
+Status: **implemented**.
 
 ## Motivation
 
@@ -35,6 +35,13 @@ No new page. Existing pages opt in with one call, same pattern as
 ```js
 mountInspector(root, { sourceId: 'screens/quiz' });
 ```
+
+(Implementation note: `inspector.html` was added as a test fixture page —
+same role as `space-class.html`, a self-contained doc independent of the
+real registry, driven by `test/inspector_test.js`. This is a minor,
+testing-only deviation from this section's "no new page" — the thing
+actually rejected below is a *product* page with a doc picker, not a
+harness fixture.)
 
 `root` is the DOM element the page already rendered — works whether
 that came from a plain `resolve()+render()` (`anatomy.html`) or a
