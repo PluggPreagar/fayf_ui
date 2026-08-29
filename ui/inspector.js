@@ -22,12 +22,13 @@ const PLACE_REQUIRES = ['docked', 'floating', 'anchored', 'sticky'];
 const style = document.createElement('style');
 style.textContent = `
 .ins-panel{position:fixed;top:0;right:0;bottom:0;z-index:9998;width:220px;overflow-y:auto;
-  background:var(--paper);border-left:1px solid var(--rule);font:11px var(--mono);color:var(--text);padding:10px}
+  background:var(--paper);border-left:1px solid var(--rule);font:11px var(--mono);color:var(--text);padding:10px;
+  pointer-events:none}
 .ins-empty{color:var(--muted)}
 .ins-source{color:var(--muted);margin-bottom:8px;word-break:break-word}
-.ins-field{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:4px}
+.ins-field{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:4px;pointer-events:auto}
 .ins-field select,.ins-field input{font:11px var(--mono);width:100px}
-.ins-actions{display:flex;gap:6px;margin-top:8px}
+.ins-actions{display:flex;gap:6px;margin-top:8px;pointer-events:auto}
 .ins-actions button{font:11px var(--mono);padding:3px 8px;border:1px solid var(--rule);border-radius:4px;
   background:var(--paper);color:var(--muted);cursor:pointer}
 .ins-actions button:hover{color:var(--text);border-color:var(--dash)}
