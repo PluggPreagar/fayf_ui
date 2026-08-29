@@ -67,4 +67,50 @@ tr.addBlock('form reflects the selected node\'s dials, incl. gap growth + place 
   });
 });
 
+tr.addBlock('editing a dial scopes re-render to the selected subtree only', (r) => {
+  r.run(() => {
+    const root = document.querySelector('.bx[data-name="root"]');
+    const bBefore = root.querySelector('[data-name="b"]');
+    root.querySelector('[data-name="a"]').click();
+    const panel = document.querySelector('.ins-panel');
+    const radiusSelect = panel.querySelector('[data-dial="radius"] select');
+    radiusSelect.value = 'circle';
+    radiusSelect.dispatchEvent(new Event('change'));
+
+    const aAfter = root.querySelector('[data-name="a"]');
+    r.check(aAfter.classList.contains('bx-circle'), 'edited node re-rendered with the new dial');
+    r.check(aAfter.classList.contains('ins-selected'), 'edited node is re-selected after replace');
+    r.check(root.querySelector('[data-name="b"]') === bBefore, 'sibling untouched -- same DOM reference, not replaced');
+  });
+});
+
+tr.addBlock('gap growth suffix round-trips through the form into data-box', (r) => {
+  r.run(() => {
+    const root = document.querySelector('.bx[data-name="root"]');
+    root.click();
+    const panel = document.querySelector('.ins-panel');
+    panel.querySelector('[data-dial="gap"] .ins-growth').value = '+';
+    panel.querySelector('[data-dial="gap"] .ins-growth').dispatchEvent(new Event('change'));
+    const rootAfter = document.querySelector('.bx[data-name="root"]');
+    r.check(rootAfter.dataset.box.includes('gap:2+'), 'growth suffix applied to data-box', rootAfter.dataset.box);
+  });
+});
+
+tr.addBlock('place-h/place-v are cleared and disabled when position is unset via the form', (r) => {
+  r.run(() => {
+    const root = document.querySelector('.bx[data-name="root"]');
+    root.querySelector('[data-name="b"]').click();
+    const panel = document.querySelector('.ins-panel');
+    const positionSelect = panel.querySelector('[data-dial="position"] select');
+    positionSelect.value = 'floating';
+    positionSelect.dispatchEvent(new Event('change'));
+    r.check(!panel.querySelector('[data-dial="place-h"] select').disabled, 'place-h enabled once position=floating');
+    positionSelect.value = '';
+    positionSelect.dispatchEvent(new Event('change'));
+    r.check(panel.querySelector('[data-dial="place-h"] select').disabled, 'place-h disabled again once position cleared');
+    const bAfter = root.querySelector('[data-name="b"]');
+    r.check(!bAfter.dataset.box.includes('floating'), 'position was cleared, not left stale on the node', bAfter.dataset.box);
+  });
+});
+
 await tr.runBlocks();

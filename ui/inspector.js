@@ -11,6 +11,7 @@
 // replaces `container` itself) doesn't orphan the listener.
 import { attachHandles, detachHandles } from './handles.js';
 import { parse } from './model.js';
+import { render, capture } from './render.js';
 import vocabulary from './vocabulary.json' with { type: 'json' };
 
 const ENUM_DIALS = Object.keys(vocabulary.box);
@@ -115,6 +116,20 @@ function populateFields(controls, dials) {
   syncPlaceGuard(controls);
 }
 
+function readFields(controls) {
+  const dials = {};
+  for (const dial of ENUM_DIALS) if (controls[dial].value) dials[dial] = controls[dial].value;
+  for (const dial of NUMERIC_DIALS) {
+    if (dial === 'gap') {
+      if (controls.gap.value !== '')
+        dials.gap = controls.gapGrowth.value ? `${controls.gap.value}${controls.gapGrowth.value}` : Number(controls.gap.value);
+      continue;
+    }
+    if (controls[dial].value !== '') dials[dial] = Number(controls[dial].value);
+  }
+  return dials;
+}
+
 function buildPanel() {
   const panel = document.createElement('div');
   panel.className = 'ins-panel';
@@ -141,7 +156,7 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
 
   let rootEl = container;
   let selected = null;
-  const controls = buildFields(fieldsEl, () => {});
+  const controls = buildFields(fieldsEl, onChange);
 
   function select(el) {
     if (selected) { detachHandles(selected); selected.classList.remove('ins-selected'); }
@@ -152,6 +167,18 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
     formEl.hidden = false;
     populateFields(controls, parse(selected.dataset.box || ''));
     sourceEl.textContent = describeProvenance(nodePath(selected, rootEl), sourceId, provenance);
+  }
+
+  function onChange() {
+    if (!selected) return;
+    syncPlaceGuard(controls);
+    const captured = capture(selected);
+    captured.box = readFields(controls);
+    const fresh = render(captured);
+    const wasRoot = selected === rootEl;
+    selected.replaceWith(fresh);
+    if (wasRoot) rootEl = fresh;
+    select(fresh);
   }
 
   (rootEl.parentElement ?? rootEl).addEventListener('click', (e) => {
