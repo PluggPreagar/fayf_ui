@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parse, print, distributeGrowth } from '../../ui/model.js';
+import { parse, print, distributeGrowth, parseGapGrowth } from '../../ui/model.js';
 
 test('parse enum tokens', () => {
   assert.deepEqual(parse('row, hug, solid, rounded'),
@@ -101,4 +101,15 @@ test('distributeGrowth: caps keep leftover for margins even when excess exceeds 
 // discrete text-size dial -- carried internally by atom/text.* parts only
 test('font numeric parses', () => {
   assert.deepEqual(parse('font:17'), { font: 17 });
+});
+
+// parseGapGrowth -- decodes a growth-suffixed gap value for the L2 renderer
+test('parseGapGrowth: + suffix', () => {
+  assert.deepEqual(parseGapGrowth('2+'), { base: 2, allow: 2 });
+});
+test('parseGapGrowth: ++ suffix', () => {
+  assert.deepEqual(parseGapGrowth('2++'), { base: 2, allow: 4 });
+});
+test('parseGapGrowth: plain number (no suffix) returns null', () => {
+  assert.equal(parseGapGrowth(2), null);
 });

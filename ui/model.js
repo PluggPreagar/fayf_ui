@@ -98,6 +98,15 @@ function mergeNode(parent, child) {
   return out;
 }
 
+// Decodes a growth-suffixed gap dial value ('2+', '2++') into {base, allow},
+// both in gap units (pre-x4 render scaling). null for a plain fixed gap.
+export function parseGapGrowth(value) {
+  if (typeof value !== 'string') return null;
+  const m = /^(\d+)(\+{1,2})$/.exec(value);
+  if (!m) throw new Error(`invalid gap growth token '${value}'`);
+  return { base: Number(m[1]), allow: vocabulary.grow_class[m[2]] };
+}
+
 // L1 -- pure excess -> gap distribution. slots: [{base, allow}], same unit as excess.
 // Growth is capped per slot at `allow`; unconsumed excess returns as `leftover`
 // for the caller (V1 posture: margins absorb whatever gaps don't).

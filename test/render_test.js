@@ -26,6 +26,63 @@ const t = render(resolve({ box: 'hug, font:17', content: 'Title' }));
 host.appendChild(t);
 assert('font:17 = 17px font-size', getComputedStyle(t).fontSize, '17px');
 
+suite('render — elastic gap growth (L2)');
+{
+  const rows = (...hs) => hs.map(h => ({ box: `fixed, h:${h}` }));
+
+  // A: huge excess -> both gaps cap at base+allow (2+ = base8 allow8 -> cap16)
+  const hA = document.createElement('div'); hA.style.cssText = 'width:100px;height:200px';
+  host.appendChild(hA);
+  const elA = render(resolve({ box: 'stack, fixed, h:200, w:100, gap:2+', children: rows(20, 20, 20) }));
+  hA.appendChild(elA);
+  const spacersA = [...elA.children].filter(c => !c.classList.contains('bx'));
+  assert('growth gap: two spacers inserted for 3 children', spacersA.length, 2);
+  assert('growth gap: capped at base+allow (16px)', getComputedStyle(spacersA[0]).height, '16px');
+  assert('growth gap: both gaps cap equally (homogeneous)', getComputedStyle(spacersA[1]).height, '16px');
+  assert('growth gap: no CSS gap property set', elA.style.gap, '');
+  assert('growth gap: no garbage className leaked', elA.className.includes('bx-2+'), false);
+
+  // B: hug container -> zero excess -> spacer sits at base (8px)
+  const elB = render(resolve({ box: 'stack, hug, gap:2+', children: rows(20, 20) }));
+  host.appendChild(elB);
+  const spacerB = [...elB.children].find(c => !c.classList.contains('bx'));
+  assert('growth gap: hug container has no excess, spacer at base (8px)', getComputedStyle(spacerB).height, '8px');
+
+  // C: different growth classes cap at different sizes (nesting differentiates weight)
+  const hC = document.createElement('div'); hC.style.cssText = 'width:80px;height:100px';
+  host.appendChild(hC);
+  const elC1 = render(resolve({ box: 'stack, fixed, h:100, w:80, gap:1+', children: rows(10, 10) }));
+  const elC2 = render(resolve({ box: 'stack, fixed, h:100, w:80, gap:2++', children: rows(10, 10) }));
+  hC.append(elC1, elC2);
+  const spacerC1 = [...elC1.children].find(c => !c.classList.contains('bx'));
+  const spacerC2 = [...elC2.children].find(c => !c.classList.contains('bx'));
+  assert('gap:1+ caps lower (base4+allow8=12px)', getComputedStyle(spacerC1).height, '12px');
+  assert('gap:2++ caps higher (base8+allow16=24px)', getComputedStyle(spacerC2).height, '24px');
+
+  // D: below-cap proportional split, homogeneous gaps share leftover equally
+  const elD = render(resolve({ box: 'stack, fixed, h:84, w:80, gap:2+', children: rows(20, 20, 20) }));
+  host.appendChild(elD);
+  const spacersD = [...elD.children].filter(c => !c.classList.contains('bx'));
+  assert('below cap: gap 1 grows by its equal share (8+4=12px)', getComputedStyle(spacersD[0]).height, '12px');
+  assert('below cap: gap 2 grows by its equal share (8+4=12px)', getComputedStyle(spacersD[1]).height, '12px');
+
+  // E: distribute dial (evenly) still soaks up whatever excess the capped gap doesn't claim
+  const elE = render(resolve({ box: 'stack, fixed, h:300, w:80, evenly, gap:2+', children: rows(20, 20) }));
+  host.appendChild(elE);
+  const spacerE = [...elE.children].find(c => !c.classList.contains('bx'));
+  assert('evenly + growth gap: gap still capped at 16px', getComputedStyle(spacerE).height, '16px');
+  const firstChildE = [...elE.children].find(c => c.classList.contains('bx'));
+  const topGapE = firstChildE.getBoundingClientRect().top - elE.getBoundingClientRect().top;
+  assert('evenly + growth gap: leftover excess still gives a real leading margin', topGapE > 40, true);
+
+  // F: round-trip invariant holds for a growth-suffixed gap (spacers excluded from capture)
+  const docF = { box: 'stack, hug, gap:2+', children: [{ box: 'fixed, h:10' }, { box: 'fixed, h:10' }] };
+  const rF = resolve(docF);
+  const elF = render(rF);
+  host.appendChild(elF);
+  assert('growth gap: capture round-trip invariant holds', diff(capture(elF), rF), []);
+}
+
 suite('render — invariant');
 const doc = { box: 'stack, hug, gap:1, solid, rounded',
   children: [
