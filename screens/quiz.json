@@ -5,7 +5,7 @@
         { "name": "prompt", "extends": "atom/text.title" },
         { "name": "answers", "box": "stack, gap:1, hug" },
         { "box": "fixed, h:1, hairline" },
-        { "name": "controls", "box": "row, mid, between, hug, w:380",
+        { "name": "controls", "box": "row, mid, between, clamped",
           "children": [
             { "name": "btn-hint", "extends": "atom/button", "content": "Hint!!" },
             { "box": "row, mid, gap:2, hug",

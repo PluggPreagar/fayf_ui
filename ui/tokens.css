@@ -15,7 +15,12 @@
 /* size */
 .bx-fixed{flex:none} .bx-hug{flex:none;width:fit-content;height:fit-content}
 .bx-fill{flex:1 1 0;align-self:stretch}
-.bx-aspect-locked{aspect-ratio:1} .bx-clamped{flex:1 1 auto;max-width:max-content}
+.bx-aspect-locked{aspect-ratio:1}
+/* clamped: hug on the main axis (flex:none, sizes to content like hug/fixed)
+   but always stretches to fill the cross axis (align-self, so it wins over
+   the parent's own align token the way .bx-fill's align-self does) --
+   "whole width, not hug" without duplicating the parent's w as a number. */
+.bx-clamped{flex:none;align-self:stretch}
 /* align (children, cross axis) */
 .bx-start{align-items:flex-start} .bx-mid{align-items:center} .bx-end{align-items:flex-end}
 .bx-baseline{align-items:baseline} .bx-stretch{align-items:stretch}
