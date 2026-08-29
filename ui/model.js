@@ -123,16 +123,23 @@ export function distributeGrowth(slots, excess) {
   return { values, leftover: excess - consumed };
 }
 
-// L1 -- pure excess (px) -> space-class condition tokens. Threshold
-// registered in ui/vocabulary.json (C8), not code. Binary for now (just
-// 'spacious'): the only real evidence so far is one data point --
-// examples/too-much-space-sketch.html's panel B, a 460px-tall island
-// container leaving ~185px leftover after elastic-gap growth caps out,
-// which is exactly the case mechanism 2 (spacious variants) was designed
-// for. A 3-way compact/cozy/spacious split needs more measured screens
-// before its boundaries would be evidence-backed rather than guessed.
+// L1 -- pure excess (px) -> space-class condition token. Thresholds
+// registered in ui/vocabulary.json (C8), not code. Always returns exactly
+// one of 'compact'/'cozy'/'spacious' (never empty), so a doc can condition
+// on any of the three explicitly.
+//
+// `spacious_min` (96) carries real evidence: examples/too-much-space-
+// sketch.html's panel B measures a 460px-tall island container leaving
+// ~185px leftover after elastic-gap growth caps out, comfortably above
+// this threshold -- exactly the case mechanism 2 (spacious variants) was
+// designed for. `compact_max` (48) does not have independent evidence of
+// its own yet -- it's the simple midpoint of the 0..96 "not yet spacious"
+// band, not a separately measured cutover. Revisit both once more real
+// screens have been measured, per the same evidence discipline as above.
 export function classify(excess) {
-  return excess >= vocabulary.space_class.spacious_min ? ['spacious'] : [];
+  if (excess >= vocabulary.space_class.spacious_min) return ['spacious'];
+  if (excess >= vocabulary.space_class.compact_max) return ['cozy'];
+  return ['compact'];
 }
 
 export function diff(a, b, at = '') {

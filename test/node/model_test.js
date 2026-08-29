@@ -98,17 +98,23 @@ test('distributeGrowth: caps keep leftover for margins even when excess exceeds 
   assert.equal(leftover, 92);
 });
 
-// classify -- pure excess(px)->condition-tokens (too-much-space mechanism 2)
-test('classify: below threshold -> no condition tokens', () => {
-  assert.deepEqual(classify(0), []);
-  assert.deepEqual(classify(95), []);
+// classify -- pure excess(px)->condition-token (too-much-space mechanism 2)
+test('classify: negative or ~zero excess -> compact', () => {
+  assert.deepEqual(classify(-500), ['compact']);
+  assert.deepEqual(classify(0), ['compact']);
+  assert.deepEqual(classify(47), ['compact']);
 });
-test('classify: negative excess -> no condition tokens', () => {
-  assert.deepEqual(classify(-500), []);
+test('classify: mid-range excess -> cozy', () => {
+  assert.deepEqual(classify(48), ['cozy']);
+  assert.deepEqual(classify(70), ['cozy']);
+  assert.deepEqual(classify(95), ['cozy']);
 });
 test('classify: at or above threshold -> spacious', () => {
   assert.deepEqual(classify(96), ['spacious']);
   assert.deepEqual(classify(185), ['spacious']); // examples/too-much-space-sketch.html panel B's measured leftover
+});
+test('classify: always returns exactly one token, never empty', () => {
+  for (const e of [-1000, 0, 48, 96, 1000]) assert.equal(classify(e).length, 1);
 });
 
 // discrete text-size dial -- carried internally by atom/text.* parts only

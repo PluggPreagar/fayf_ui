@@ -14,16 +14,17 @@ import { render, excess } from './render.js';
 // Every reclassification re-renders the unconditioned base first to
 // re-measure its current natural footprint (cheap, and the only way to
 // detect "still fits" vs "room opened up" without caching a footprint that
-// could go stale) -- one or two renders per resize tick, not optimized for
-// resize-drag performance. `container.dataset.spaceClass` exposes the
-// current classification for tests/debugging ('base' when no token fires).
+// could go stale) -- two renders per resize tick (base, then the winning
+// class), not optimized for resize-drag performance. `classify()` always
+// returns exactly one of 'compact'/'cozy'/'spacious', exposed live via
+// `container.dataset.spaceClass` for tests/debugging.
 export function wireSpaceClass(container, doc, registry, { axis = 'height', baseEnv = [] } = {}) {
   function apply() {
     const island = render(resolve(doc, registry, baseEnv));
     container.replaceChildren(island);
     const tokens = classify(excess(container, island, axis));
-    container.dataset.spaceClass = tokens.join(',') || 'base';
-    if (tokens.length) container.replaceChildren(render(resolve(doc, registry, [...baseEnv, ...tokens])));
+    container.dataset.spaceClass = tokens.join(',');
+    container.replaceChildren(render(resolve(doc, registry, [...baseEnv, ...tokens])));
   }
   apply();
   const ro = new ResizeObserver(apply);

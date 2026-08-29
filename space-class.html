@@ -19,7 +19,8 @@ import { wireSpaceClass } from './ui/space-class.js';
 // deterministic number of px, independent of web-font load timing.
 const doc = { name: 'island', conditional: [
   { condition: ['spacious'], box: 'fixed, w:200, h:40, solid, rounded, tint2' },
-  { box: 'fixed, w:200, h:40, solid, rounded' } ] };
+  { condition: ['cozy'], box: 'fixed, w:200, h:40, solid, rounded, tint1' },
+  { box: 'fixed, w:200, h:40, solid, rounded' } ] }; // compact (unconditioned default)
 
 wireSpaceClass(document.getElementById('stage'), doc, {}, { axis: 'height' });
 document.body.dataset.ready = '1';

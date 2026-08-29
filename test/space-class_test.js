@@ -3,15 +3,17 @@
 // resize (TODO-5). Fixture: space-class.html.
 const tr = new TestRunner({ stopOnError: false });
 
-tr.addBlock('space-class: resize reclassifies live', (r) => {
+tr.addBlock('space-class: resize reclassifies live across all three bands', (r) => {
   // island is a fixed-size box (see space-class.html) -- its natural
   // footprint is a known constant, not a text-metric measurement, so the
   // container heights below can be computed directly with no risk of
-  // web-font-load timing skewing the numbers.
+  // web-font-load timing skewing the numbers. Margins keep each height
+  // comfortably clear of the compact_max=48 / spacious_min=96 boundaries.
   const naturalH = 40;
   const padY = 24; // space-class.html's #stage: padding:12px top+bottom
-  const spaciousHeight = naturalH + padY + 96 + 20; // comfortably over spacious_min
-  const baseHeight = naturalH + padY + 96 - 20;     // comfortably under it
+  const compactHeight = naturalH + padY + 20;  // excess=20  (< 48)
+  const cozyHeight = naturalH + padY + 70;     // excess=70  (48..96)
+  const spaciousHeight = naturalH + padY + 120; // excess=120 (>= 96)
 
   r.waitFor(() => document.body.dataset.ready === '1', 3000)
    .run(() => {
@@ -21,15 +23,24 @@ tr.addBlock('space-class: resize reclassifies live', (r) => {
        `dataset.spaceClass=${stage.dataset.spaceClass}`);
      r.check(!!stage.querySelector('.bx-tint2'), 'spacious variant rendered initially (tint2 present)');
    })
-   .run(() => { document.getElementById('stage').style.height = `${baseHeight}px`; })
-   .waitFor(() => document.getElementById('stage').dataset.spaceClass === 'base', 2000, 50,
-     'reclassifies to base on shrink')
+   .run(() => { document.getElementById('stage').style.height = `${compactHeight}px`; })
+   .waitFor(() => document.getElementById('stage').dataset.spaceClass === 'compact', 2000, 50,
+     'reclassifies to compact on shrink')
    .run(() => {
-     r.check(!document.getElementById('stage').querySelector('.bx-tint2'), 'base variant rendered, no tint2');
+     const stage = document.getElementById('stage');
+     r.check(!stage.querySelector('.bx-tint1') && !stage.querySelector('.bx-tint2'), 'compact variant rendered, no tint');
+   })
+   .run(() => { document.getElementById('stage').style.height = `${cozyHeight}px`; })
+   .waitFor(() => document.getElementById('stage').dataset.spaceClass === 'cozy', 2000, 50,
+     'reclassifies to cozy on partial grow')
+   .run(() => {
+     const stage = document.getElementById('stage');
+     r.check(!!stage.querySelector('.bx-tint1'), 'cozy variant rendered (tint1 present)');
+     r.check(!stage.querySelector('.bx-tint2'), 'cozy variant is not the spacious one (no tint2)');
    })
    .run(() => { document.getElementById('stage').style.height = `${spaciousHeight}px`; })
    .waitFor(() => document.getElementById('stage').dataset.spaceClass === 'spacious', 2000, 50,
-     'reclassifies back to spacious on grow')
+     'reclassifies to spacious on full grow')
    .run(() => {
      r.check(!!document.getElementById('stage').querySelector('.bx-tint2'), 'spacious variant rendered again (tint2 present)');
    });

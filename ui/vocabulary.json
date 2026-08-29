@@ -20,7 +20,7 @@
     "closed":  ["open", "closed"]
   },
   "path_numeric": ["weight", "trim-start", "trim-end"],
-  "condition": ["desktop", "mobile", "dark", "spacious"],
+  "condition": ["desktop", "mobile", "dark", "compact", "cozy", "spacious"],
   "grow_class": { "+": 2, "++": 4 },
-  "space_class": { "spacious_min": 96 }
+  "space_class": { "compact_max": 48, "spacious_min": 96 }
 }
