@@ -127,3 +127,8 @@
 .bx-selected{outline:2px solid var(--ink);outline-offset:-2px}
 .bx-correct{background:rgba(47,125,79,.16)}
 .bx-wrong{background:rgba(192,57,43,.16)}
+
+/* inspector panel selection outline -- page-mount concern (ui/inspector.js),
+   own class so it never collides with quiz's .bx-selected above (different
+   concept: this is "currently inspected", not "chosen answer"). */
+.ins-selected{outline:2px solid var(--accent);outline-offset:-2px}
