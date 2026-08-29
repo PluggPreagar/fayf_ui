@@ -113,4 +113,63 @@ tr.addBlock('place-h/place-v are cleared and disabled when position is unset via
   });
 });
 
+// select() legitimately attaches fresh hx-square/hx-pill handles to
+// whatever node is currently selected -- that's correct, ongoing UI
+// behavior, not the bug. The bug was capture() baking those handles in
+// as permanent, indistinguishable-from-real '.bx' children. So these
+// regression checks count only *real* children: '.bx' elements that
+// are not themselves the live handle overlay.
+function realChildren(el) {
+  return [...el.children].filter(c => c.classList.contains('bx')
+    && !c.classList.contains('hx-square') && !c.classList.contains('hx-pill'));
+}
+
+tr.addBlock('editing a node does not leak its own resize-handle overlay into captured content/children', (r) => {
+  r.run(() => {
+    // Regression: select() calls attachHandles(selected), which appends
+    // real .bx-classed hx-square/hx-pill elements as DOM children of the
+    // selected node. onChange used to call capture(selected) before
+    // detaching those -- capture() can't tell a handle overlay from a
+    // real child (both just match .bx), so it either dropped the node's
+    // real content (leaf node: kids.length > 0 skips the content branch)
+    // or baked the handles in as permanent children that compound on
+    // every further edit.
+    const root = document.querySelector('.bx[data-name="root"]');
+    const a = root.querySelector('[data-name="a"]');
+    a.click();
+    const panel = document.querySelector('.ins-panel');
+    const radiusSelect = panel.querySelector('[data-dial="radius"] select');
+    radiusSelect.value = 'rounded';
+    radiusSelect.dispatchEvent(new Event('change'));
+    const aAfter1 = root.querySelector('[data-name="a"]');
+    r.check(aAfter1.textContent === 'Go', 'leaf content survives first edit', aAfter1.textContent);
+    r.check(realChildren(aAfter1).length === 0, 'no phantom handle children baked in after first edit', String(realChildren(aAfter1).length));
+
+    // Edit again on the same (now re-selected) node -- catches compounding.
+    const radiusSelect2 = document.querySelector('.ins-panel [data-dial="radius"] select');
+    radiusSelect2.value = 'circle';
+    radiusSelect2.dispatchEvent(new Event('change'));
+    const aAfter2 = root.querySelector('[data-name="a"]');
+    r.check(aAfter2.textContent === 'Go', 'leaf content survives second edit', aAfter2.textContent);
+    r.check(realChildren(aAfter2).length === 0, 'no phantom handle children after second edit -- no compounding', String(realChildren(aAfter2).length));
+  });
+});
+
+tr.addBlock('editing a node with real children preserves exactly those children, no more no less', (r) => {
+  r.run(() => {
+    let root = document.querySelector('.bx[data-name="root"]');
+    root.click();
+    const panel = document.querySelector('.ins-panel');
+    const radiusSelect = panel.querySelector('[data-dial="radius"] select');
+    radiusSelect.value = 'rounded';
+    radiusSelect.dispatchEvent(new Event('change'));
+
+    root = document.querySelector('.bx[data-name="root"]');
+    const kids = realChildren(root);
+    r.check(kids.length === 2, 'root keeps exactly its 2 real children after edit, not 33', String(kids.length));
+    r.check(root.querySelector('[data-name="a"]')?.textContent === 'Go', 'child a content intact after root edit');
+    r.check(root.querySelector('[data-name="b"]')?.textContent === 'plain', 'child b content intact after root edit');
+  });
+});
+
 await tr.runBlocks();

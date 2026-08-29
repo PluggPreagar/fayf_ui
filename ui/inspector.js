@@ -172,6 +172,7 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
   function onChange() {
     if (!selected) return;
     syncPlaceGuard(controls);
+    detachHandles(selected);
     const captured = capture(selected);
     captured.box = readFields(controls);
     const fresh = render(captured);
