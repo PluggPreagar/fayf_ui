@@ -186,4 +186,61 @@ tr.addBlock('exportPayload: JSON matches capture(), labeled with the provenance 
   });
 });
 
+// Regression: select() calls attachHandles(selected), appending live
+// hx-square/hx-pill elements as real '.bx' children of the selected node
+// (same mechanism as the onChange bug fixed in Task 4). copyBtn/downloadBtn
+// call exportPayload(selected, ...) -> capture(selected) with no guard, so
+// clicking either while a node is selected used to ship JSON polluted with
+// the handle overlay as phantom children. These tests go through the real
+// select()-via-click path (so attachHandles genuinely runs) and the real
+// button click (so the fix -- detachHandles/attachHandles bracketing the
+// exportPayload call -- is what's under test, not a hand-picked bypass).
+tr.addBlock('Copy JSON excludes the live resize-handle overlay from captured children', (r) => {
+  r.run(() => {
+    const root = document.querySelector('.bx[data-name="root"]');
+    root.click(); // real select() path -> attachHandles(root)
+    r.check(!!document.querySelector('.hx-square'), 'handle squares attached after selection');
+
+    const copyBtn = document.querySelector('.ins-panel .ins-copy');
+    let captured = null;
+    const originalWriteText = navigator.clipboard.writeText;
+    navigator.clipboard.writeText = (text) => { captured = text; return Promise.resolve(); };
+    copyBtn.click();
+    navigator.clipboard.writeText = originalWriteText;
+
+    r.check(typeof captured === 'string', 'copy handler wrote JSON to the clipboard');
+    const payload = JSON.parse(captured);
+    const kids = payload.node.children || [];
+    const phantom = kids.filter(c => !c.name);
+    r.check(phantom.length === 0, 'no phantom hx-square/hx-pill entries in copied JSON', JSON.stringify(kids));
+    r.check(kids.length === 2, 'copied JSON keeps exactly root\'s 2 real children', String(kids.length));
+    r.check(!!document.querySelector('.hx-square'), 'handles re-attached after copy -- selection stays editable');
+  });
+});
+
+tr.addBlock('Download JSON excludes the live resize-handle overlay from captured children', (r) => {
+  r.run(() => {
+    const root = document.querySelector('.bx[data-name="root"]');
+    const b = root.querySelector('[data-name="b"]');
+    b.click(); // real select() path -> attachHandles(b)
+    r.check(!!document.querySelector('.hx-square'), 'handle squares attached after selection');
+
+    const downloadBtn = document.querySelector('.ins-panel .ins-download');
+    let capturedJson = null;
+    const OriginalBlob = window.Blob;
+    window.Blob = function (parts, opts) { capturedJson = parts[0]; return new OriginalBlob(parts, opts); };
+    const originalClick = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {}; // suppress the real file-save side effect
+    downloadBtn.click();
+    HTMLAnchorElement.prototype.click = originalClick;
+    window.Blob = OriginalBlob;
+
+    r.check(typeof capturedJson === 'string', 'download handler built a JSON blob');
+    const payload = JSON.parse(capturedJson);
+    r.check(!payload.node.children, 'b (leaf, no real children) has no children entry once handles are excluded');
+    r.check(payload.node.content === 'plain', 'leaf content still captured correctly', payload.node.content);
+    r.check(!!document.querySelector('.hx-square'), 'handles re-attached after download -- selection stays editable');
+  });
+});
+
 await tr.runBlocks();

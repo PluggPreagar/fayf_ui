@@ -197,11 +197,15 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
 
   copyBtn.addEventListener('click', () => {
     if (!selected) return;
+    detachHandles(selected);
     navigator.clipboard?.writeText(JSON.stringify(exportPayload(selected, rootEl, sourceId, provenance), null, 2));
+    attachHandles(selected);
   });
   downloadBtn.addEventListener('click', () => {
     if (!selected) return;
+    detachHandles(selected);
     const json = JSON.stringify(exportPayload(selected, rootEl, sourceId, provenance), null, 2);
+    attachHandles(selected);
     const blob = new Blob([json], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
