@@ -20,6 +20,6 @@
     "closed":  ["open", "closed"]
   },
   "path_numeric": ["weight", "trim-start", "trim-end"],
-  "condition": ["desktop", "mobile", "dark"],
+  "condition": ["desktop", "mobile", "dark", "spacious"],
   "grow_class": { "+": 2, "++": 4 }
 }

@@ -93,7 +93,7 @@ tr.addBlock('quiz: single-mode answer click transitions straight to revealed', (
               { text: 'B', correct: true },
               { text: 'C', correct: false } ],
             hint: 'synthetic single-mode hint' } ] };
-      mountQuiz(freshRoot, quizData);
+      mountQuiz(freshRoot, quizData, reg);
       synthetic = { container, freshRoot };
     })();
   })
@@ -138,7 +138,7 @@ tr.addBlock('quiz: real PAUSE_MS timer reaches next-ready with no click-to-conti
               { text: 'A', correct: false },
               { text: 'B', correct: true } ],
             hint: 'synthetic pause-timer hint' } ] };
-      mountQuiz(freshRoot, quizData);
+      mountQuiz(freshRoot, quizData, reg);
       syntheticPause = { container, freshRoot };
     })();
   })
@@ -190,7 +190,7 @@ tr.addBlock('quiz: next -> answering re-entry loads the second question correctl
               { text: 'Y', correct: true },
               { text: 'Z', correct: false } ],
             hint: 'hint two' } ] };
-      mountQuiz(freshRoot, quizData);
+      mountQuiz(freshRoot, quizData, reg);
       syntheticMulti = { container, freshRoot };
     })();
   })

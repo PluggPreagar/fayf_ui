@@ -65,7 +65,7 @@ async function enterQuiz(ctx, send) {
   work.classList.add('bx-mid');
   resolve(reg['screens/quiz'], reg).children.forEach(c => work.appendChild(render(c)));
   const quizData = await (await fetch('/content/quiz/lesson1.json')).json();
-  mountQuiz(work, quizData);
+  mountQuiz(work, quizData, reg);
 
   navDashboard.classList.replace('bx-tint3', 'bx-tint1');
   breadcrumb.appendChild(render(resolve('>')));

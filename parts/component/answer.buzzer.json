@@ -1,0 +1,5 @@
+{ "extends": "component/answer",
+  "box": "w:136, h:52, pad:2, tint2",
+  "children": [
+    { "box": "fixed, w:18, h:18, solid, mid, evenly, circle" },
+    { "extends": "cluster/line", "box": "w:56" } ] }

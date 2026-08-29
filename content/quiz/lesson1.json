@@ -1,5 +1,5 @@
 { "id": "quiz/lesson1", "questions": [
-  { "prompt": "Which of these are prime numbers?", "mode": "multiple",
+  { "prompt": "Which of these are prime numbers?", "mode": "multiple", "layout": "buzzer",
     "answers": [
       { "text": "2", "correct": true },
       { "text": "4", "correct": false },

@@ -21,12 +21,26 @@ function selectorShape(mode) {
   throw new Error(`unknown quiz mode '${mode}'`);
 }
 
-function answerNode(index, text, mode) {
+// `layout` is an optional per-question content field (see content/quiz/*.json)
+// that picks which spacious-condition target this question's answer rows
+// resolve to -- "content shape is known at authoring time" (too-much-space
+// spec, mechanism 2). Absent `layout` -> plain unconditioned component/answer.
+function answerTarget(layout) {
+  if (layout === 'buzzer') return 'component/answer.buzzer';
+  if (layout === 'sentence') return 'component/answer.spacious-list';
+  throw new Error(`unknown answer layout '${layout}'`);
+}
+
+function answerNode(index, text, mode, layout) {
+  const selSize = layout ? 18 : 12;
   return {
     name: `answer-${index}`,
-    box: 'row, mid, gap:1, hug, w:280, solid, rounded, pad:1',
+    conditional: [
+      ...(layout ? [{ condition: ['spacious'], extends: answerTarget(layout) }] : []),
+      { extends: 'component/answer' },
+    ],
     children: [
-      { name: `selector-${index}`, box: `fixed, w:12, h:12, solid, mid, evenly, ${selectorShape(mode)}` },
+      { name: `selector-${index}`, box: `fixed, w:${selSize}, h:${selSize}, solid, mid, evenly, ${selectorShape(mode)}` },
       { box: 'hug', content: text },
     ],
   };
@@ -50,9 +64,23 @@ function enterAnswering(ctx, send) {
   ctx.btnNext.classList.add('bx-disabled');
   ctx.btnLock.classList.toggle('bx-disabled', q.mode !== 'multiple');
 
-  ctx.rowListeners = q.answers.map((a, i) => {
-    const row = render(resolve(answerNode(i, a.text, q.mode)));
-    ctx.answersEl.appendChild(row);
+  const env = q.layout ? ['spacious'] : [];
+  const rows = q.answers.map((a, i) => render(resolve(answerNode(i, a.text, q.mode, q.layout), ctx.reg, env)));
+  // buzzer cells (component/answer.buzzer) are sized for a 2-col grid, but
+  // the "answers" container itself is a plain vertical stack -- pair rows
+  // into 2-cell row wrappers so the grid actually forms; every other layout
+  // stays one row per answer as before.
+  if (q.layout === 'buzzer') {
+    for (let i = 0; i < rows.length; i += 2) {
+      const pair = render(resolve({ box: 'row, gap:1, hug' }));
+      pair.appendChild(rows[i]);
+      if (rows[i + 1]) pair.appendChild(rows[i + 1]);
+      ctx.answersEl.appendChild(pair);
+    }
+  } else {
+    rows.forEach(row => ctx.answersEl.appendChild(row));
+  }
+  ctx.rowListeners = rows.map((row, i) => {
     const onClick = (e) => {
       if (q.mode === 'single') {
         ctx.selected = new Set([i]);
@@ -83,7 +111,9 @@ function exitAnswering(ctx) {
 
 function enterRevealed(ctx, send, triggerEvent) {
   const q = ctx.quizData.questions[ctx.qIndex];
-  const rows = [...ctx.answersEl.children];
+  // querySelectorAll, not .children -- buzzer layout nests rows two-per-pair
+  // wrapper, so answer cells aren't answersEl's direct children.
+  const rows = [...ctx.answersEl.querySelectorAll('[data-name^="answer-"]')];
   q.answers.forEach((a, i) => {
     const row = rows[i];
     if (a.correct) {
@@ -143,7 +173,7 @@ const states = {
   finished:     { enter: enterFinished },
 };
 
-export function mountQuiz(root, quizData) {
+export function mountQuiz(root, quizData, reg = {}) {
   // box.size:fill sets align-self:stretch as a side effect (checklist
   // #11) -- correct for "grow to fill available height" (needed so
   // distribute:between has room to space out quiz-body's own regions
@@ -155,7 +185,7 @@ export function mountQuiz(root, quizData) {
   const quizBody = root.querySelector('[data-name="quiz-body"]');
   if (quizBody) quizBody.style.alignSelf = 'center';
   const ctx = {
-    quizData, qIndex: 0, root,
+    quizData, qIndex: 0, root, reg,
     promptEl: root.querySelector('[data-name="prompt"]'),
     answersEl: root.querySelector('[data-name="answers"]'),
     hintPanelEl: root.querySelector('[data-name="hint-panel"]'),

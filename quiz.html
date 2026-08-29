@@ -21,7 +21,7 @@ const el = render(resolve(reg['screens/quiz'], reg));
 document.body.appendChild(el);
 mountStyleToggle(el, { inline: true });
 const quizData = await (await fetch('/content/quiz/lesson1.json')).json();
-mountQuiz(el, quizData);
+mountQuiz(el, quizData, reg);
 document.body.dataset.ready = '1';
 </script>
 </body>
