@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parse, print, distributeGrowth, parseGapGrowth } from '../../ui/model.js';
+import { parse, print, distributeGrowth, parseGapGrowth, classify } from '../../ui/model.js';
 
 test('parse enum tokens', () => {
   assert.deepEqual(parse('row, hug, solid, rounded'),
@@ -96,6 +96,19 @@ test('distributeGrowth: caps keep leftover for margins even when excess exceeds 
   const { values, leftover } = distributeGrowth([{ base: 4, allow: 4 }, { base: 4, allow: 4 }], 100);
   assert.deepEqual(values, [8, 8]);
   assert.equal(leftover, 92);
+});
+
+// classify -- pure excess(px)->condition-tokens (too-much-space mechanism 2)
+test('classify: below threshold -> no condition tokens', () => {
+  assert.deepEqual(classify(0), []);
+  assert.deepEqual(classify(95), []);
+});
+test('classify: negative excess -> no condition tokens', () => {
+  assert.deepEqual(classify(-500), []);
+});
+test('classify: at or above threshold -> spacious', () => {
+  assert.deepEqual(classify(96), ['spacious']);
+  assert.deepEqual(classify(185), ['spacious']); // examples/too-much-space-sketch.html panel B's measured leftover
 });
 
 // discrete text-size dial -- carried internally by atom/text.* parts only

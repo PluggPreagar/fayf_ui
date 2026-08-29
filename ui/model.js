@@ -123,6 +123,18 @@ export function distributeGrowth(slots, excess) {
   return { values, leftover: excess - consumed };
 }
 
+// L1 -- pure excess (px) -> space-class condition tokens. Threshold
+// registered in ui/vocabulary.json (C8), not code. Binary for now (just
+// 'spacious'): the only real evidence so far is one data point --
+// examples/too-much-space-sketch.html's panel B, a 460px-tall island
+// container leaving ~185px leftover after elastic-gap growth caps out,
+// which is exactly the case mechanism 2 (spacious variants) was designed
+// for. A 3-way compact/cozy/spacious split needs more measured screens
+// before its boundaries would be evidence-backed rather than guessed.
+export function classify(excess) {
+  return excess >= vocabulary.space_class.spacious_min ? ['spacious'] : [];
+}
+
 export function diff(a, b, at = '') {
   if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object' || typeof a !== typeof b) {
     return JSON.stringify(a) !== JSON.stringify(b)

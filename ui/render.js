@@ -47,6 +47,23 @@ export function render(node, doc = document) {
   return el;
 }
 
+// L2 -- avail-need excess (px) along one axis, for the too-much-space
+// space-class mechanism (TODO-5 mechanism 2). `container` must be a
+// stable-sized box (V1: `fill`, sized by its own parent, not by `island`) --
+// a `hug`-sized container would resize itself off `island`'s own footprint,
+// which classify()'s caller could then feed back in as a moving target.
+// `island` is the single child whose natural (unconditioned) footprint is
+// being measured against the room `container` actually has.
+export function excess(container, island, axis = 'height') {
+  const cs = getComputedStyle(container);
+  if (axis === 'width') {
+    const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+    return container.clientWidth - padX - island.offsetWidth;
+  }
+  const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+  return container.clientHeight - padY - island.offsetHeight;
+}
+
 export function capture(el) {
   const node = {};
   if (el.dataset.name) node.name = el.dataset.name;

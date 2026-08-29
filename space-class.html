@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fayf_ui — space-class</title>
+<link rel="stylesheet" href="ui/tokens.css">
+<style>html,body{margin:0;background:var(--canvas)}</style>
+</head>
+<body>
+<div id="stage" style="width:300px;height:460px;padding:12px;box-sizing:border-box"></div>
+<script type="module">
+import { wireSpaceClass } from './ui/space-class.js';
+
+// Deliberately minimal, self-contained doc (no registry/extends needed) --
+// this fixture exercises the excess -> classify -> conditional resolve ->
+// render pipeline itself (TODO-5 mechanism 2), independent of any real
+// screen's content. See test/space-class_test.js.
+// Fixed size, not hug+text -- keeps the island's natural footprint a
+// deterministic number of px, independent of web-font load timing.
+const doc = { name: 'island', conditional: [
+  { condition: ['spacious'], box: 'fixed, w:200, h:40, solid, rounded, tint2' },
+  { box: 'fixed, w:200, h:40, solid, rounded' } ] };
+
+wireSpaceClass(document.getElementById('stage'), doc, {}, { axis: 'height' });
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

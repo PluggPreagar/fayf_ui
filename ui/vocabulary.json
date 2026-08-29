@@ -21,5 +21,6 @@
   },
   "path_numeric": ["weight", "trim-start", "trim-end"],
   "condition": ["desktop", "mobile", "dark", "spacious"],
-  "grow_class": { "+": 2, "++": 4 }
+  "grow_class": { "+": 2, "++": 4 },
+  "space_class": { "spacious_min": 96 }
 }
