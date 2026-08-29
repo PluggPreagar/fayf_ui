@@ -1,0 +1,1 @@
+{ "extends": "atom/text", "box": "font:22" }

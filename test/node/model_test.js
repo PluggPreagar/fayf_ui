@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parse, print } from '../../ui/model.js';
+import { parse, print, distributeGrowth } from '../../ui/model.js';
 
 test('parse enum tokens', () => {
   assert.deepEqual(parse('row, hug, solid, rounded'),
@@ -46,4 +46,59 @@ test('print canonical + round-trip', () => {
   const canon = 'row, hug, mid, solid, rounded, w:80, pad:2';
   assert.equal(print(parse('w:80, pad:2, rounded, solid, mid, hug, row')), canon);
   assert.deepEqual(parse(print(parse(canon))), parse(canon));
+});
+
+// elastic gap growth suffix -- too-much-space mechanism 1
+test('gap without growth suffix stays a plain number', () => {
+  assert.deepEqual(parse('gap:2'), { gap: 2 });
+});
+test('gap with + growth suffix parses as a string token', () => {
+  assert.deepEqual(parse('gap:2+'), { gap: '2+' });
+});
+test('gap with ++ growth suffix parses as a string token', () => {
+  assert.deepEqual(parse('gap:2++'), { gap: '2++' });
+});
+test('growth suffix on a non-gap numeric throws', () => {
+  assert.throws(() => parse('w:80+'), /growth suffix only valid on 'gap'/);
+});
+test('growth suffix print round-trip', () => {
+  assert.equal(print(parse('gap:2+')), 'gap:2+');
+  assert.deepEqual(parse(print(parse('gap:2++'))), parse('gap:2++'));
+});
+
+// distributeGrowth -- pure excess->gap distribution (too-much-space mechanism 1)
+test('distributeGrowth: no growable slots -> leftover = excess unchanged', () => {
+  const { values, leftover } = distributeGrowth([{ base: 8, allow: 0 }, { base: 12, allow: 0 }], 40);
+  assert.deepEqual(values, [8, 12]);
+  assert.equal(leftover, 40);
+});
+test('distributeGrowth: single growable slot consumes excess up to its cap', () => {
+  const { values, leftover } = distributeGrowth([{ base: 8, allow: 16 }], 40);
+  assert.deepEqual(values, [24]);
+  assert.equal(leftover, 24);
+});
+test('distributeGrowth: single growable slot below cap consumes proportional share', () => {
+  const { values, leftover } = distributeGrowth([{ base: 8, allow: 16 }], 10);
+  assert.deepEqual(values, [18]);
+  assert.equal(leftover, 0);
+});
+test('distributeGrowth: multiple slots split proportional to allowance weight', () => {
+  const { values, leftover } = distributeGrowth([{ base: 4, allow: 8 }, { base: 8, allow: 24 }], 16);
+  assert.deepEqual(values, [8, 20]);
+  assert.equal(leftover, 0);
+});
+test('distributeGrowth: negative excess never shrinks below base', () => {
+  const { values, leftover } = distributeGrowth([{ base: 8, allow: 16 }], -20);
+  assert.deepEqual(values, [8]);
+  assert.equal(leftover, -20);
+});
+test('distributeGrowth: caps keep leftover for margins even when excess exceeds total allowance', () => {
+  const { values, leftover } = distributeGrowth([{ base: 4, allow: 4 }, { base: 4, allow: 4 }], 100);
+  assert.deepEqual(values, [8, 8]);
+  assert.equal(leftover, 92);
+});
+
+// discrete text-size dial -- carried internally by atom/text.* parts only
+test('font numeric parses', () => {
+  assert.deepEqual(parse('font:17'), { font: 17 });
 });

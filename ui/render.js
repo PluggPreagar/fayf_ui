@@ -11,6 +11,7 @@ export function render(node, doc = document) {
   if ('gap' in d) el.style.gap = `${d.gap * 4}px`;
   if ('w' in d) el.style.width = `${d.w}px`;
   if ('h' in d) el.style.height = `${d.h}px`;
+  if ('font' in d) el.style.fontSize = `${d.font}px`;
   if ('depth' in d) el.style.zIndex = d.depth;
   if ('opacity' in d) el.style.opacity = d.opacity;
   if ('rotate' in d) el.style.transform = `rotate(${d.rotate}deg)`;

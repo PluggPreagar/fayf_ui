@@ -13,11 +13,13 @@
     "overflow":   ["clip", "scroll"],
     "state":      ["disabled", "running", "paused", "blocked", "cancelled", "done"]
   },
-  "box_numeric": ["w", "h", "pad", "gap", "depth", "opacity", "rotate"],
+  "box_numeric": ["w", "h", "pad", "gap", "depth", "opacity", "rotate", "font"],
   "path": {
     "segment": ["straight", "elbow", "curve", "arc"],
     "dash":    ["solid", "dashed", "dotted"],
     "closed":  ["open", "closed"]
   },
-  "path_numeric": ["weight", "trim-start", "trim-end"]
+  "path_numeric": ["weight", "trim-start", "trim-end"],
+  "condition": ["desktop", "mobile", "dark"],
+  "grow_class": { "+": 2, "++": 4 }
 }

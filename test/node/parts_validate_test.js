@@ -4,13 +4,14 @@ import { resolve, parse, print } from '../../ui/model.js';
 import { loadRegistry } from './registry.js';
 
 const RESERVED = new Set(['extends', 'box', 'content', 'children',
-  'name', 'path', 'from', 'to', 'relation', 'motion']);
+  'name', 'path', 'from', 'to', 'relation', 'motion', 'condition', 'conditional']);
 
 function walkKeys(node, id) {
   if (typeof node === 'string') return;
   for (const k of Object.keys(node))
     assert.ok(RESERVED.has(k), `${id}: unknown key '${k}'`);
   for (const c of node.children ?? []) walkKeys(c, id);
+  for (const c of node.conditional ?? []) walkKeys(c, id);
 }
 
 const reg = loadRegistry();
@@ -31,6 +32,18 @@ test('variant naming: type.variant extends its type', () => {
     if (i > id.lastIndexOf('/'))
       assert.equal(doc.extends, id.slice(0, i), `${id} must extend its type`);
   }
+});
+
+test('font: numeric restricted to atom/text base files', () => {
+  const isTextBase = id => id === 'atom/text' || id.startsWith('atom/text.');
+  const walkFont = (node, id) => {
+    if (typeof node === 'string') return;
+    if (typeof node.box === 'string' && /(^|,\s*)font:/.test(node.box))
+      assert.ok(isTextBase(id), `${id}: 'font:' only allowed in atom/text base files, found '${node.box}'`);
+    for (const c of node.children ?? []) walkFont(c, id);
+    for (const c of node.conditional ?? []) walkFont(c, id);
+  };
+  for (const [id, doc] of Object.entries(reg)) walkFont(doc, id);
 });
 
 test('classification rule holds', () => {

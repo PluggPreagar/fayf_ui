@@ -22,6 +22,10 @@ assert('docked left inset 0', cs.left, '0px');
 assert('docked left spans height', cs.top + ' ' + cs.bottom, '0px 0px');
 assert('w:40', cs.width, '40px');
 
+const t = render(resolve({ box: 'hug, font:17', content: 'Title' }));
+host.appendChild(t);
+assert('font:17 = 17px font-size', getComputedStyle(t).fontSize, '17px');
+
 suite('render — invariant');
 const doc = { box: 'stack, hug, gap:1, solid, rounded',
   children: [
