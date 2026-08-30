@@ -1,7 +1,7 @@
 // test/quiz_test.js
 import { resolve } from '../ui/model.js';
 import { render } from '../ui/render.js';
-import { mountQuiz } from '../ui/quiz.js';
+import { mountQuiz, mountQuizFromUrl } from '../ui/quiz.js';
 import { mountInspector } from '../ui/inspector.js';
 
 const tr = new TestRunner({ stopOnError: false });
@@ -47,6 +47,12 @@ tr.addBlock('quiz: hint reveal and multiple-choice flow', (r) => {
      r.check(!answers[1].classList.contains('bx-wrong'), 'unselected wrong answer 1 not marked wrong');
      r.check(!answers[3].classList.contains('bx-wrong'), 'unselected wrong answer 3 not marked wrong');
      r.check(!!answers[0].querySelector('use[href="#icon-done"]'), 'correct answer got the done icon');
+
+     // Real state-rules wiring: a revealed row's per-row click listener is
+     // already gone by this point (exitAnswering ran) -- read-only makes
+     // that fact visible/inert instead of silently misleading.
+     answers.forEach((a, i) => r.check(a.classList.contains('bx-readonly'), `answer ${i} marked read-only once revealed`));
+     r.check(answers[0].tabIndex === -1, 'read-only answer dropped from tab order');
    });
 });
 
@@ -435,6 +441,66 @@ tr.addBlock('mountInspector().destroy() removes the panel it mounted, no leak ac
     r.check(document.querySelectorAll('.ins-panel').length === panelsBefore + 1, 'mounting adds exactly one panel');
     destroy();
     r.check(document.querySelectorAll('.ins-panel').length === panelsBefore, 'destroy() leaves no orphaned .ins-panel behind');
+    container.remove();
+  });
+});
+
+let fromUrlSynthetic = null;
+
+tr.addBlock('mountQuizFromUrl: loading shows during the fetch, clears once mounted (happy path)', (r) => {
+  r.run(() => {
+    (async () => {
+      const reg = await (await fetch('/registry.json')).json();
+      const container = document.createElement('div');
+      container.id = 'synthetic-from-url-quiz';
+      document.body.appendChild(container);
+      const freshRoot = render(resolve(reg['screens/quiz'], reg));
+      container.appendChild(freshRoot);
+      const answersEl = freshRoot.querySelector('[data-name="answers"]');
+      const p = mountQuizFromUrl(freshRoot, '/content/quiz/lesson1.json', reg);
+      // loading is set synchronously before the fetch's first await yields,
+      // same reasoning as math-trainer.html's primary-action test.
+      r.check(answersEl.classList.contains('bx-loading'), 'loading set synchronously before the fetch resolves');
+      await p;
+      fromUrlSynthetic = { container, freshRoot, answersEl };
+    })();
+  })
+  .waitFor(() => fromUrlSynthetic !== null, 3000, 50, 'mountQuizFromUrl settled')
+  .run(() => {
+    const { answersEl, freshRoot } = fromUrlSynthetic;
+    r.check(!answersEl.classList.contains('bx-loading'), 'loading cleared once mounted');
+    r.check(freshRoot.querySelectorAll('[data-name^="answer-"]').length === 4, 'real quiz content mounted (4 answers, lesson1)');
+    fromUrlSynthetic.container.remove();
+  });
+});
+
+let errorSynthetic = null;
+
+tr.addBlock('mountQuizFromUrl: a failed fetch shows an actionable Retry, not a permanently-empty screen', (r) => {
+  r.run(() => {
+    (async () => {
+      const reg = await (await fetch('/registry.json')).json();
+      const container = document.createElement('div');
+      container.id = 'synthetic-from-url-error-quiz';
+      document.body.appendChild(container);
+      const freshRoot = render(resolve(reg['screens/quiz'], reg));
+      container.appendChild(freshRoot);
+      // A URL guaranteed to 404 against this same dev server (real fetch,
+      // not a mocked one -- server.py serves plain 404s for unknown paths).
+      await mountQuizFromUrl(freshRoot, '/content/quiz/does-not-exist.json', reg);
+      errorSynthetic = { container, freshRoot };
+    })();
+  })
+  .waitFor(() => errorSynthetic !== null, 3000, 50, 'mountQuizFromUrl settled on the failing url')
+  .run(() => {
+    const { freshRoot, container } = errorSynthetic;
+    const answersEl = freshRoot.querySelector('[data-name="answers"]');
+    r.check(!answersEl.classList.contains('bx-loading'), 'loading cleared after the failure');
+    const retryBtn = answersEl.querySelector('.bx-actionable');
+    r.check(!!retryBtn, 'a Retry control is rendered in place of the empty answers area');
+    r.check(retryBtn.textContent === 'Retry', 'labeled Retry', retryBtn.textContent);
+    r.check(retryBtn.classList.contains('bx-error'), 'marked bx-error');
+    r.check(retryBtn.tabIndex === 0, 'stays actionable/tabbable -- error never drops tab order');
     container.remove();
   });
 });

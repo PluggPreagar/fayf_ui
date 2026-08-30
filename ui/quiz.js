@@ -4,7 +4,7 @@ import { createMachine } from './state-machine.js';
 import { resolve } from './model.js';
 import { render } from './render.js';
 import { mountIcons } from './icons.js';
-import { markActionable, setActionableDisabled } from './actions.js';
+import { markActionable, setActionableDisabled, setActionableReadonly, setActionableLoading, setActionableError } from './actions.js';
 
 export function grade(answers, selectedIndices) {
   const correct = new Set(answers.map((a, i) => i).filter(i => answers[i].correct));
@@ -129,6 +129,11 @@ function enterRevealed(ctx, send, triggerEvent) {
       row.classList.add('bx-correct');
       row.appendChild(render(resolve(markNode('done'))));
     }
+    // Real state-rules wiring: a revealed row's per-row click listener is
+    // already gone (exitAnswering ran) -- it just hadn't been honest about
+    // it. read-only makes the "locked in, can't change your pick anymore"
+    // fact visible/inert, matching what already happens functionally.
+    setActionableReadonly(row, true);
   });
   mountIcons(ctx.answersEl);
 
@@ -204,4 +209,30 @@ export function mountQuiz(root, quizData, reg = {}) {
   const machine = createMachine({ states, initial: 'answering', context: ctx });
   ctx.send = machine.send;
   return machine;
+}
+
+// Fetch + mount, with real state-rules wiring for the gap this closes over:
+// `answers` sits empty on screen the whole time the fetch is in flight (the
+// screen shell is already rendered/appended before this runs, in every
+// caller), so `loading` belongs there honestly. `error` covers a fetch that
+// used to just leave a permanently-empty screen with no path forward --
+// clicking Retry re-runs this same function against the same url.
+export async function mountQuizFromUrl(root, url, reg = {}) {
+  const answersEl = root.querySelector('[data-name="answers"]');
+  setActionableLoading(answersEl, true);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const quizData = await res.json();
+    setActionableLoading(answersEl, false);
+    return mountQuiz(root, quizData, reg);
+  } catch (err) {
+    setActionableLoading(answersEl, false);
+    const retryBtn = render(resolve({ box: 'row, mid, packed, pad:2, solid, rounded', content: 'Retry' }));
+    markActionable(retryBtn);
+    setActionableError(retryBtn, true);
+    retryBtn.addEventListener('click', () => mountQuizFromUrl(root, url, reg), { once: true });
+    answersEl.replaceChildren(retryBtn);
+    return null;
+  }
 }
