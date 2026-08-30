@@ -44,6 +44,14 @@
 /* fill-tint */
 .bx-tint0{background:var(--tint0)} .bx-tint1{background:var(--tint1)}
 .bx-tint2{background:var(--tint2)} .bx-tint3{background:var(--tint3)}
+/* brand -- primary/emphasis fill (atom/button.primary). Wireframe: same
+   neutral tint3 grey the wireframe skin always used -- deliberately
+   colorless, unchanged look. Mockup gets a real definition below: the
+   brand blue from the original Claude Design state-rules import, lost
+   when this was first implemented as a plain tint3 reuse (C2 said "one
+   name, no aliases" -- primary and tint3 were never really the same
+   thing, just shared a class by accident). */
+.bx-brand{background:var(--tint3)}
 /* radius */
 .bx-square{border-radius:0} .bx-rounded{border-radius:3px}
 .bx-pill{border-radius:999px} .bx-circle{border-radius:50%}
@@ -61,7 +69,17 @@
   /* --prose intentionally NOT overridden: swapping font families reflows every
      bx-hug (fit-content) box -- measured 6-8px width changes on this screen's
      buttons/labels. Same font in both skins = zero layout jump on toggle. */
+  --brand:#2f5fd8; --brand-surf:#e4eafb;
 }
+/* .bx-brand: light-blue surface + blue text/border, same "tint fill,
+   ink text/border" shape every other tint already uses here -- not a
+   solid blue block with white text, which the source design never did
+   for its "primary" role either (btn.p: background:surf, color/border:
+   fill). Second rule wins the border-color fight against the plain
+   .bx-solid mockup rule above (higher specificity, both classes) --
+   same pattern .bx-error already uses for the same reason. */
+:root[data-style="mockup"] .bx-brand{background:var(--brand-surf);color:var(--brand)}
+:root[data-style="mockup"] .bx-solid.bx-brand{border-color:var(--brand)}
 /* border follows stroke, same rule in every mode: bare = none (below),
    hairline/solid/dashed = a border, here just recolored for realism.
    Border-*width* stays identical to wireframe's (only color/shadow change)
@@ -141,7 +159,7 @@
    wash instead, so the whole row highlights like the fill-tint case
    does implicitly via the filter. */
 .bx-actionable:hover{filter:brightness(.94)}
-.bx-actionable:hover:not([class*="bx-tint"]){background:var(--tint1)}
+.bx-actionable:hover:not([class*="bx-tint"]):not(.bx-brand){background:var(--tint1)}
 
 /* focus feedback for the same actionable boxes (ui/actions.js#markActionable) --
    dashed ring per the design concept, offset outside so it never collides

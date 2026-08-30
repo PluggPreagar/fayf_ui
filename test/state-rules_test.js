@@ -104,18 +104,26 @@ tr.addBlock('error\'s channel (border-color) never overlaps focus-visible\'s (ou
 // pseudo-class-avoidance (see the file-top comment).
 tr.addBlock('hover gives bare/untinted actionable boxes a real background wash, tinted ones are unaffected', (r) => {
   r.run(() => {
-    const bareProps = declaredProps('.bx-actionable:hover:not([class*="bx-tint"])');
+    const bareProps = declaredProps('.bx-actionable:hover:not([class*="bx-tint"]):not(.bx-brand)');
     r.check(!!bareProps, 'bare-hover rule found in tokens.css', bareProps);
     r.check(bareProps.includes('background-color'), 'bare-hover rule sets a real background', bareProps);
 
     const bareEl = document.querySelector('[data-name="default"]');
-    r.check(bareEl.matches('.bx-actionable:not([class*="bx-tint"])'),
+    r.check(bareEl.matches('.bx-actionable:not([class*="bx-tint"]):not(.bx-brand)'),
       'the fixture\'s bare box (no tint class) matches the bare-hover selector');
 
     const tintedEl = document.createElement('div');
     tintedEl.className = 'bx bx-actionable bx-tint3';
-    r.check(!tintedEl.matches('.bx-actionable:not([class*="bx-tint"])'),
+    r.check(!tintedEl.matches('.bx-actionable:not([class*="bx-tint"]):not(.bx-brand)'),
       'a tinted box does NOT match -- keeps only the brightness filter, no double treatment');
+
+    // .bx-brand (atom/button.primary) isn't a bx-tint* class -- it needs
+    // its own exclusion or it'd wrongly get the bare-hover wash on top of
+    // its own brand fill (mockup) / tint3 fill (wireframe).
+    const brandEl = document.createElement('div');
+    brandEl.className = 'bx bx-actionable bx-brand';
+    r.check(!brandEl.matches('.bx-actionable:not([class*="bx-tint"]):not(.bx-brand)'),
+      'a brand (primary button) box does NOT match either -- already has its own fill');
   });
 });
 
