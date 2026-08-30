@@ -38,7 +38,10 @@ export function render(node, doc = document) {
   const extra = {};
   for (const k of PASSTHRU) if (node[k] != null) extra[k] = node[k];
   if (Object.keys(extra).length) el.dataset.extra = JSON.stringify(extra);
-  if (node.content != null) el.textContent = node.content;
+  if (node.content != null) {
+    el.textContent = node.content;
+    el.dataset.hasContent = '1';
+  }
   const children = node.children ?? [];
   children.forEach((child, i) => {
     el.appendChild(render(child, doc));
@@ -71,6 +74,6 @@ export function capture(el) {
   if (el.dataset.extra) Object.assign(node, JSON.parse(el.dataset.extra));
   const kids = [...el.children].filter(c => c.classList?.contains('bx'));
   if (kids.length) node.children = kids.map(capture);
-  else if (el.textContent !== '') node.content = el.textContent;
+  else if (el.dataset.hasContent) node.content = el.textContent;
   return node;
 }

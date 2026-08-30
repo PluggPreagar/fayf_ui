@@ -93,6 +93,16 @@ const el = render(r);
 host.appendChild(el);
 assert('diff(capture(render(resolve)), resolve) empty', diff(capture(el), r), []);
 
+suite('render — empty-string content round-trips');
+{
+  const docEmpty = { box: 'fill', content: '' };
+  const rEmpty = resolve(docEmpty);
+  const elEmpty = render(rEmpty);
+  host.appendChild(elEmpty);
+  assert('explicit content:"" survives capture (not undefined)', capture(elEmpty).content, '');
+  assert('diff(capture(render(resolve)), resolve) empty for content:""', diff(capture(elEmpty), rEmpty), []);
+}
+
 suite('render — reserved-key pass-through');
 const p = resolve({ box: 'fixed, w:80, h:24', path: 'curve, solid', from: 'free:0,12', to: 'free:80,12' });
 const pe = render(p);
