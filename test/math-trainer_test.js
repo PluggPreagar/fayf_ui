@@ -53,6 +53,23 @@ tr.addBlock('starting the quiz shows loading on primary-action for the real fetc
     const primary = root.querySelector('[data-name="primary-action"]');
     r.check(primary.tabIndex === 0, 'tab order restored once loading clears');
     r.check(!!root.querySelector('[data-name="quiz-body"]'), 'quiz content actually mounted into work');
+
+    // quiz-body is now a fixed height (screens/quiz.json), not fill -- work
+    // needs bx-evenly (same trick screens/quiz.json's own root uses) to
+    // actually center it, matching the standalone quiz.html page instead of
+    // leaving it stuck top-anchored in the leftover space.
+    const work = root.querySelector('[data-name="work"]');
+    r.check(work.classList.contains('bx-evenly'), 'work centers its lone quiz-body child vertically while quiz is shown');
+  });
+});
+
+tr.addBlock('leaving the quiz cleans up the centering override', (r) => {
+  r.run(() => {
+    const root = document.querySelector('body > .bx');
+    root.querySelector('[data-name="crumb-dashboard"]').click(); // back to dashboard
+    const work = root.querySelector('[data-name="work"]');
+    r.check(!work.classList.contains('bx-evenly'), 'bx-evenly removed once back on the dashboard');
+    r.check(!work.classList.contains('bx-mid'), 'bx-mid removed too, same as before');
   });
 });
 
