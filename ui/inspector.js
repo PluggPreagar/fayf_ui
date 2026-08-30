@@ -28,6 +28,8 @@ style.textContent = `
 .ins-source{color:var(--muted);margin-bottom:8px;word-break:break-word;pointer-events:auto}
 .ins-field{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:4px;pointer-events:auto}
 .ins-field select,.ins-field input{font:11px var(--mono);width:100px}
+.ins-field input.ins-value{width:56px}
+.ins-field select.ins-growth{width:52px}
 .ins-actions{display:flex;gap:6px;margin-top:8px;pointer-events:auto}
 .ins-actions button{font:11px var(--mono);padding:3px 8px;border:1px solid var(--rule);border-radius:4px;
   background:var(--paper);color:var(--muted);cursor:pointer}
