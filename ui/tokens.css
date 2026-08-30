@@ -132,8 +132,16 @@
 
 /* hover feedback for anything wired via ui/actions.js#wireAction --
    generic, works regardless of the element's own fill/tint (no new
-   token needed, C2: hover isn't a box dial). */
+   token needed, C2: hover isn't a box dial).
+   Found live: brightness(.94) alone is only visible on an element that
+   already has a fill-tint background (e.g. atom/button.primary) --
+   quiz's answer rows (bare/solid stroke, transparent background) darken
+   only their already-near-black border/text by 6%, imperceptible.
+   Second rule gives bare/untinted actionable boxes an actual background
+   wash instead, so the whole row highlights like the fill-tint case
+   does implicitly via the filter. */
 .bx-actionable:hover{filter:brightness(.94)}
+.bx-actionable:hover:not([class*="bx-tint"]){background:var(--tint1)}
 
 /* focus feedback for the same actionable boxes (ui/actions.js#markActionable) --
    dashed ring per the design concept, offset outside so it never collides

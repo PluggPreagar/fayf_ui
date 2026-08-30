@@ -96,6 +96,29 @@ tr.addBlock('error\'s channel (border-color) never overlaps focus-visible\'s (ou
   });
 });
 
+// Found live (quiz.html): brightness(.94) alone is invisible on a bare/
+// untinted actionable box (transparent background -- only the already-dark
+// border/text shifts by 6%). Fixed with a supplemental background-wash
+// rule scoped to untinted boxes only (tokens.css). Verified via selector
+// matching, not real :hover -- consistent with this file's other
+// pseudo-class-avoidance (see the file-top comment).
+tr.addBlock('hover gives bare/untinted actionable boxes a real background wash, tinted ones are unaffected', (r) => {
+  r.run(() => {
+    const bareProps = declaredProps('.bx-actionable:hover:not([class*="bx-tint"])');
+    r.check(!!bareProps, 'bare-hover rule found in tokens.css', bareProps);
+    r.check(bareProps.includes('background-color'), 'bare-hover rule sets a real background', bareProps);
+
+    const bareEl = document.querySelector('[data-name="default"]');
+    r.check(bareEl.matches('.bx-actionable:not([class*="bx-tint"])'),
+      'the fixture\'s bare box (no tint class) matches the bare-hover selector');
+
+    const tintedEl = document.createElement('div');
+    tintedEl.className = 'bx bx-actionable bx-tint3';
+    r.check(!tintedEl.matches('.bx-actionable:not([class*="bx-tint"])'),
+      'a tinted box does NOT match -- keeps only the brightness filter, no double treatment');
+  });
+});
+
 // Full channel audit across every state rule -- generalizes the error/focus
 // check above. focus-visible <-> selected USED to be here (both used
 // outline, same collision class as error's original draft) -- fixed by
