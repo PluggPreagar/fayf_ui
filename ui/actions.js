@@ -9,10 +9,47 @@
 import { resolve } from './model.js';
 import { render } from './render.js';
 
-export function wireAction(el, label, { reg, tipSide } = {}) {
-  if (!el) return;
+// Shared "make this box actionable" wiring -- hover (bx-actionable, tokens.css)
+// plus real keyboard focus, since these are plain boxes, not native buttons
+// (no tabindex/Enter-Space activation for free). One name per effect (C2):
+// callers needing hover+focus but not the no-op click/tooltip below use
+// these directly instead of wireAction.
+const keydownHandlers = new WeakMap();
+
+export function markActionable(el) {
+  if (!el || el.classList.contains('bx-actionable')) return;
   el.classList.add('bx-actionable');
   el.style.cursor = 'pointer';
+  el.tabIndex = 0;
+  const onKeydown = (e) => {
+    if ((e.key !== 'Enter' && e.key !== ' ') || el.classList.contains('bx-disabled')) return;
+    e.preventDefault();
+    el.click();
+  };
+  keydownHandlers.set(el, onKeydown);
+  el.addEventListener('keydown', onKeydown);
+}
+
+export function unmarkActionable(el) {
+  if (!el) return;
+  el.classList.remove('bx-actionable');
+  el.style.cursor = '';
+  el.removeAttribute('tabindex');
+  const onKeydown = keydownHandlers.get(el);
+  if (onKeydown) { el.removeEventListener('keydown', onKeydown); keydownHandlers.delete(el); }
+}
+
+// Pairs the existing bx-disabled toggle (state dial, tokens.css) with tab
+// order -- pointer-events:none alone still leaves a disabled box reachable
+// (and Enter/Space-triggerable) by keyboard.
+export function setActionableDisabled(el, disabled) {
+  el.classList.toggle('bx-disabled', disabled);
+  el.tabIndex = disabled ? -1 : 0;
+}
+
+export function wireAction(el, label, { reg, tipSide } = {}) {
+  if (!el) return;
+  markActionable(el);
   el.addEventListener('click', () => {
     console.debug(`[action] ${label} (no-op)`);
     if (reg) raiseToast(reg);

@@ -120,6 +120,15 @@
    token needed, C2: hover isn't a box dial). */
 .bx-actionable:hover{filter:brightness(.94)}
 
+/* focus feedback for the same actionable boxes (ui/actions.js#markActionable) --
+   dashed ring per the design concept, offset outside so it never collides
+   with the box's own solid/hairline border. :focus-visible only (not plain
+   :focus) so a mouse click doesn't leave the ring showing, keyboard tabbing
+   does. Disabled boxes drop out of tab order (setActionableDisabled), so no
+   extra guard needed here. */
+.bx-actionable:focus{outline:none}
+.bx-actionable:focus-visible{outline:2px dashed var(--ink);outline-offset:2px}
+
 /* quiz answer states -- page-mount concern (ui/quiz.js), not a box
    dial: selection/result aren't part of the vocabulary model, same
    precedent as .bx-actionable above. Tints, not solid fills, per

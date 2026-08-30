@@ -18,7 +18,7 @@ import { wireRelations } from './ui/relation.js';
 import { applyMotion } from './ui/motion.js';
 import { mountIcons } from './ui/icons.js';
 import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
-import { wireAction, wireBreadcrumbs } from './ui/actions.js';
+import { wireAction, wireBreadcrumbs, markActionable, unmarkActionable } from './ui/actions.js';
 import { createMachine } from './ui/state-machine.js';
 import { mountQuiz } from './ui/quiz.js';
 import { mountInspector } from './ui/inspector.js';
@@ -35,8 +35,7 @@ mountIcons(el);
 mountStyleToggle(el, { inline: true });
 wireBreadcrumbs(el, reg);
 const primaryAction = el.querySelector('[data-name="primary-action"]');
-primaryAction.classList.add('bx-actionable');
-primaryAction.style.cursor = 'pointer';
+markActionable(primaryAction);
 
 // Starting the quiz keeps this workspace: only "work" gets replaced,
 // style/breadcrumb-trail/nav-rail all stay put -- breadcrumb gains a
@@ -73,15 +72,13 @@ async function enterQuiz(ctx, send) {
   navDashboard.classList.replace('bx-tint3', 'bx-tint1');
   breadcrumb.appendChild(render(resolve('>')));
   breadcrumb.appendChild(render(resolve({ box: 'hug', content: 'Quiz' })));
-  crumbDashboard.classList.add('bx-actionable');
-  crumbDashboard.style.cursor = 'pointer';
+  markActionable(crumbDashboard);
   ctx.onBack = () => send('back');
   crumbDashboard.addEventListener('click', ctx.onBack);
 }
 function exitQuiz(ctx) {
   crumbDashboard.removeEventListener('click', ctx.onBack);
-  crumbDashboard.classList.remove('bx-actionable');
-  crumbDashboard.style.cursor = '';
+  unmarkActionable(crumbDashboard);
   breadcrumb.lastChild.remove();
   breadcrumb.lastChild.remove();
   navDashboard.classList.replace('bx-tint1', 'bx-tint3');

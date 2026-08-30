@@ -4,6 +4,7 @@ import { createMachine } from './state-machine.js';
 import { resolve } from './model.js';
 import { render } from './render.js';
 import { mountIcons } from './icons.js';
+import { markActionable, setActionableDisabled } from './actions.js';
 
 export function grade(answers, selectedIndices) {
   const correct = new Set(answers.map((a, i) => i).filter(i => answers[i].correct));
@@ -61,8 +62,8 @@ function enterAnswering(ctx, send) {
   // shifts anything below (e.g. "controls") -- fixed as possible.
   ctx.hintPanelEl.style.visibility = 'hidden';
   ctx.answersEl.replaceChildren();
-  ctx.btnNext.classList.add('bx-disabled');
-  ctx.btnLock.classList.toggle('bx-disabled', q.mode !== 'multiple');
+  setActionableDisabled(ctx.btnNext, true);
+  setActionableDisabled(ctx.btnLock, q.mode !== 'multiple');
 
   const env = q.layout ? ['spacious'] : [];
   const rows = q.answers.map((a, i) => render(resolve(answerNode(i, a.text, q.mode, q.layout), ctx.reg, env)));
@@ -80,6 +81,7 @@ function enterAnswering(ctx, send) {
   } else {
     rows.forEach(row => ctx.answersEl.appendChild(row));
   }
+  rows.forEach(markActionable);
   ctx.rowListeners = rows.map((row, i) => {
     const onClick = (e) => {
       if (q.mode === 'single') {
@@ -153,7 +155,7 @@ function exitRevealed(ctx) {
 }
 
 function enterNextReady(ctx) {
-  ctx.btnNext.classList.remove('bx-disabled');
+  setActionableDisabled(ctx.btnNext, false);
   ctx.onNext = () => {
     const isLast = ctx.qIndex + 1 >= ctx.quizData.questions.length;
     if (isLast) { ctx.send('finish'); }
@@ -167,7 +169,7 @@ function exitNextReady(ctx) {
 }
 
 function enterFinished(ctx) {
-  ctx.btnNext.classList.add('bx-disabled');
+  setActionableDisabled(ctx.btnNext, true);
 }
 
 const states = {
@@ -198,6 +200,7 @@ export function mountQuiz(root, quizData, reg = {}) {
     btnLock: root.querySelector('[data-name="btn-lock"]'),
     btnNext: root.querySelector('[data-name="btn-next"]'),
   };
+  [ctx.hintBtn, ctx.btnLock, ctx.btnNext].forEach(markActionable);
   const machine = createMachine({ states, initial: 'answering', context: ctx });
   ctx.send = machine.send;
   return machine;
