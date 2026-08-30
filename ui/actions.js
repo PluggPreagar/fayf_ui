@@ -47,6 +47,27 @@ export function setActionableDisabled(el, disabled) {
   el.tabIndex = disabled ? -1 : 0;
 }
 
+// Loading/read-only: same tab-order pairing as setActionableDisabled above
+// (both classes carry pointer-events:none, tokens.css) -- own setters, not
+// a shared "inert" helper, since disabled/loading/read-only are different
+// concepts per docs/superpowers/specs/2026-08-30-state-rules-design.md and
+// may need to change independently later.
+export function setActionableLoading(el, loading) {
+  el.classList.toggle('bx-loading', loading);
+  el.tabIndex = loading ? -1 : 0;
+}
+
+export function setActionableReadonly(el, readonly) {
+  el.classList.toggle('bx-readonly', readonly);
+  el.tabIndex = readonly ? -1 : 0;
+}
+
+// Error does NOT drop tab order -- an errored action (e.g. "Retry") stays
+// reachable/actionable, per the design doc's own example row.
+export function setActionableError(el, error) {
+  el.classList.toggle('bx-error', error);
+}
+
 export function wireAction(el, label, { reg, tipSide } = {}) {
   if (!el) return;
   markActionable(el);

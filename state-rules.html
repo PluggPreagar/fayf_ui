@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fayf_ui — state rules</title>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui/tokens.css">
+<style>body{background:var(--canvas);padding:40px}</style>
+</head>
+<body>
+<script type="module">
+// Self-contained fixture (independent of the real registry), same role as
+// inspector.html/space-class.html -- exercises the state-rules CSS/JS
+// (docs/superpowers/specs/2026-08-30-state-rules-design.md) against a
+// small but real box tree, not tied to any real screen. See
+// test/state-rules_test.js. hover/focus/pressed are native pseudo-classes
+// (already shipped before this doc) -- not driven by JS here, verify by
+// real pointer/keyboard interaction against this page.
+import { resolve } from './ui/model.js';
+import { render } from './ui/render.js';
+import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
+import {
+  markActionable, setActionableDisabled,
+  setActionableLoading, setActionableError, setActionableReadonly,
+} from './ui/actions.js';
+
+initStyleMode();
+mountStyleToggle();
+
+const box = 'row, mid, packed, pad:2, solid, rounded';
+const doc = { box: 'row, mid, packed, pad:2, gap:2', name: 'root', children: [
+  { box, name: 'default', content: 'Default' },
+  { box, name: 'disabled', content: 'Disabled' },
+  { box, name: 'loading', content: 'Loading' },
+  { box, name: 'error', content: 'Error' },
+  { box, name: 'readonly', content: 'Read-only' },
+  { box, name: 'engaged', content: 'Engaged' },
+] };
+
+const el = render(resolve(doc));
+document.body.appendChild(el);
+
+for (const name of ['default', 'disabled', 'loading', 'error', 'readonly', 'engaged'])
+  markActionable(el.querySelector(`[data-name="${name}"]`));
+
+setActionableDisabled(el.querySelector('[data-name="disabled"]'), true);
+setActionableLoading(el.querySelector('[data-name="loading"]'), true);
+setActionableError(el.querySelector('[data-name="error"]'), true);
+setActionableReadonly(el.querySelector('[data-name="readonly"]'), true);
+el.querySelector('[data-name="engaged"]').classList.add('bx-selected');
+
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

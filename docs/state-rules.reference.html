@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet"><style>
+body{margin:0;background:#f0eee9;font-family:system-ui,sans-serif}
+a{color:#2f5fd8}a:hover{color:#1b3a86}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}
+.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;padding:20px 22px 18px}
+.dv-opt:target .dv-oid{background:#2f5fd8;color:#fff}
+.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+.ttl{font:700 19px/1.1 Kalam,cursive;color:#1a1a1a;margin:0 0 2px}
+.sub{font:400 12px/1.4 Kalam,cursive;color:#6b6b6b;margin:0 0 16px}
+.mx{display:grid;grid-template-columns:104px repeat(9,minmax(88px,1fr));gap:9px 6px;align-items:center}
+.hd{font:600 8.5px/1.2 ui-monospace,Menlo,monospace;color:#8a8880;letter-spacing:.06em;text-transform:uppercase;text-align:center;padding-bottom:4px;border-bottom:1px dashed #ddd9d1}
+.hd.l{text-align:left}
+.rl{font:600 10px/1.25 system-ui,sans-serif;color:#1a1a1a}
+.cell{display:flex;align-items:center;justify-content:center;min-height:36px}
+.na{font:400 11px Kalam,cursive;color:#c6c3bc}
+.btn{font:600 10px/1 system-ui,sans-serif;padding:7px 11px;border-radius:5px;display:inline-flex;align-items:center;gap:4px;border:var(--bw,1.5px) var(--bs,solid) transparent;opacity:var(--op,1);box-shadow:var(--elev,none);outline:var(--ring,none);outline-offset:3px;white-space:nowrap}
+.btn.p{background:var(--surf,#e4eafb);color:var(--fill);border-color:var(--fill)}
+.btn.s{background:transparent;color:var(--fill);border-color:var(--fill)}
+.btn.t{background:transparent;color:var(--fill);border-color:transparent;padding:7px 4px}
+.lnk{font:600 11px/1 system-ui,sans-serif;color:var(--fill);text-decoration:none;padding:4px 6px;border-radius:4px;background:var(--lsurf,transparent);box-shadow:var(--lmark,none);opacity:var(--op,1);outline:var(--ring,none);outline-offset:3px;display:inline-flex;align-items:center;gap:4px}
+.lnk::after{content:"\2197";font-size:9px;line-height:1;opacity:var(--mop,.65)}
+.sh .lnk,.se .lnk{--mop:1}
+.cbx{width:16px;height:16px;border-radius:4px;border:var(--bw,1.5px) var(--bs,solid) var(--fill);background:var(--cfill,transparent);color:transparent;font:700 10px/1 system-ui,sans-serif;display:flex;align-items:center;justify-content:center;opacity:var(--op,1);box-shadow:var(--elev,none);outline:var(--ring,none);outline-offset:3px}
+.tgl{width:30px;height:17px;border-radius:9px;border:var(--bw,1.5px) var(--bs,solid) var(--fill);background:var(--tfill,transparent);position:relative;display:inline-block;opacity:var(--op,1);box-shadow:var(--elev,none);outline:var(--ring,none);outline-offset:3px}
+.tgl i{position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:var(--fill)}
+.nav{font:600 10px/1 system-ui,sans-serif;padding:6px 9px;border-radius:5px;color:var(--fill);background:var(--nfill,transparent);box-shadow:inset var(--nedge,0px) 0 0 var(--fill);opacity:var(--op,1);outline:var(--ring,none);outline-offset:3px;display:inline-block}
+.se{--fill:#0e7a54;--surf:#daeee4;--cfill:#daeee4;--tfill:#daeee4;--nfill:#daeee4;--lsurf:#daeee4}
+.se .btn,.se .lnk,.se .nav{border-radius:0;border-left:4px solid #0e7a54;padding-left:9px;box-shadow:none}
+.se .cbx,.se .tgl{border-radius:0;border-left-width:4px}
+.se .tgl i{border-radius:0}
+.se .cbx{color:var(--fill)}
+.se .tgl i{left:auto;right:2px;background:var(--fill)}
+.sro .cbx,.sro .tgl{background:#e8e5de}
+.rules{list-style:none;margin:16px 0 0;padding:12px 0 0;border-top:1px dashed #ddd9d1;display:grid;gap:5px}
+.rules li{font:400 12px/1.35 Kalam,cursive;color:#3d3b37}
+.rules li b{font-weight:700;color:#1a1a1a}
+.tag{display:inline-block;font:600 8.5px ui-monospace,Menlo,monospace;padding:2px 6px;border-radius:3px;background:#f0eee9;color:#6b6b6b;margin-left:6px;vertical-align:1px}
+.lg{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 18px;font:400 12px/1.4 Kalam,cursive;color:#3d3b37}
+.lg span{display:flex;align-items:center;gap:6px}
+.lg i{width:22px;height:12px;border-radius:3px;border:1.5px solid #1a1a1a;display:inline-block}
+
+.apA{--fill:#2f5fd8;--surf:#e4eafb}
+.apA .sh{--op:.82}
+.apA .sf{--ring:2px dashed #2f5fd8}
+.apA .sa{--op:.58}
+.apA .sx{--op:.26}
+.apA .sl{--op:.5}
+.apA .ser{--fill:#b3382b;--surf:#f8e0dd;--cfill:#f8e0dd;--tfill:#f8e0dd}
+.apA .sro{--op:.45;--bs:dotted}
+
+.apB{--fill:#2f5fd8;--surf:#e4eafb}
+.apB .sh{--fill:#23479f;--surf:#d3ddf5}
+.apB .sf{--ring:2px dashed #eda92b}
+.apB .sa{--fill:#152c66;--surf:#c3cfee}
+.apB .sx{--fill:#b9b7b2;--surf:#f1f0ed}
+.apB .sl{--fill:#7d8290;--surf:#eaebee}
+.apB .ser{--fill:#b3382b;--surf:#f8e0dd}
+.apB .sro{--fill:#6d6a64;--surf:#eeece7;--bs:dashed}
+
+.apC{--fill:#1a1a1a;--surf:#f2efe8}
+.apC .sh{--elev:0 3px 0 #1a1a1a}
+.apC .sa{--elev:inset 0 3px 0 rgba(0,0,0,.35)}
+.apC .sf{--ring:2px dashed #1a1a1a}
+.apC .sx{--bs:dashed;--fill:#bdbbb6}
+.apC .sl{--fill:#8a8880;--bs:dotted}
+.apC .ser{--bw:3px;--bs:double}
+.apC .sro{--fill:#6b6b6b;--bw:0px}
+.apC .ser .btn.p{box-shadow:0 0 0 2px #fffdf8,0 0 0 4px #1a1a1a}
+.apC .ser .btn.t{border-color:#1a1a1a;--bw:3px;--bs:double}
+.apC .sh .lnk{--lsurf:#f2efe8}
+.apC .sa .lnk{--lsurf:#d8d4cc}
+.apC .ser .lnk{--lmark:inset 0 0 0 2px #1a1a1a}
+.apC .sh .nav{--nfill:#f2efe8}
+.apC .sa .nav{--nfill:#d8d4cc}
+.apC .sh .btn.t{--elev:none;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+.apC .sa .btn.t{--elev:none;background:#e0dcd4}
+
+.apD{--fill:#2f5fd8;--surf:#e4eafb}
+.apD .sh{--fill:#2650b9;--surf:#d3ddf5}
+.apD .sf{--ring:2px dashed #2f5fd8}
+.apD .sa{--fill:#1b3a86;--surf:#c3cfee;--elev:inset 0 2px 0 rgba(0,0,0,.22)}
+.apD .sx{--fill:#c3c1bb;--surf:#f1f0ed}
+.apD .sl{--op:.55}
+.apD .ser{--fill:#b3382b;--surf:#f8e0dd;--bw:2px}
+.apD .sro{--fill:#5d5a55;--surf:#eeece7;--bw:0px;--nfill:#eae7e0}
+</style></helmet>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Four ways to encode state — buttons, controls, links, nav</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>One ink, many opacities</div>
+<div class="dv-card apA" style="width:1120px">
+<p class="ttl">A · Tint &amp; opacity ladder</p>
+<p class="sub">One brand ink. Every state is that ink at a different strength — no new hues except error. Links carry a small ↗ marker instead of an underline.</p>
+<div class="mx">
+<div class="hd l">Element</div><div class="hd">Default</div><div class="hd">Hover</div><div class="hd">Focus</div><div class="hd">Pressed</div><div class="hd">Engaged</div><div class="hd">Disabled</div><div class="hd">Loading</div><div class="hd">Error</div><div class="hd">Read-only</div>
+
+<div class="rl">Primary btn</div>
+<div class="cell sd"><span class="btn p">Save</span></div>
+<div class="cell sh"><span class="btn p">Save</span></div>
+<div class="cell sf"><span class="btn p">Save</span></div>
+<div class="cell sa"><span class="btn p">Save</span></div>
+<div class="cell se"><span class="btn p">Save</span></div>
+<div class="cell sx"><span class="btn p">Save</span></div>
+<div class="cell sl"><span class="btn p">◌ Saving</span></div>
+<div class="cell ser"><span class="btn p">Retry</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+
+<div class="rl">Secondary btn</div>
+<div class="cell sd"><span class="btn s">Cancel</span></div>
+<div class="cell sh"><span class="btn s">Cancel</span></div>
+<div class="cell sf"><span class="btn s">Cancel</span></div>
+<div class="cell sa"><span class="btn s">Cancel</span></div>
+<div class="cell se"><span class="btn s">Cancel</span></div>
+<div class="cell sx"><span class="btn s">Cancel</span></div>
+<div class="cell sl"><span class="btn s">◌ Wait</span></div>
+<div class="cell ser"><span class="btn s">Retry</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+
+<div class="rl">Tertiary btn</div>
+<div class="cell sd"><span class="btn t">More</span></div>
+<div class="cell sh"><span class="btn t">More</span></div>
+<div class="cell sf"><span class="btn t">More</span></div>
+<div class="cell sa"><span class="btn t">More</span></div>
+<div class="cell se"><span class="btn t">More</span></div>
+<div class="cell sx"><span class="btn t">More</span></div>
+<div class="cell sl"><span class="btn t">◌ More</span></div>
+<div class="cell ser"><span class="btn t">More</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+
+<div class="rl">Link</div>
+<div class="cell sd"><a class="lnk" href="#1a">Details</a></div>
+<div class="cell sh"><a class="lnk" href="#1a">Details</a></div>
+<div class="cell sf"><a class="lnk" href="#1a">Details</a></div>
+<div class="cell sa"><a class="lnk" href="#1a">Details</a></div>
+<div class="cell se"><a class="lnk" href="#1a">Details</a></div>
+<div class="cell sx"><span class="lnk">Details</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+<div class="cell ser"><a class="lnk" href="#1a">Broken</a></div>
+<div class="cell sro"><span class="lnk">Details</span></div>
+
+<div class="rl">Checkbox</div>
+<div class="cell sd"><span class="cbx">✓</span></div>
+<div class="cell sh"><span class="cbx">✓</span></div>
+<div class="cell sf"><span class="cbx">✓</span></div>
+<div class="cell sa"><span class="cbx">✓</span></div>
+<div class="cell se"><span class="cbx">✓</span></div>
+<div class="cell sx"><span class="cbx">✓</span></div>
+<div class="cell sl"><span class="cbx">✓</span></div>
+<div class="cell ser"><span class="cbx">✓</span></div>
+<div class="cell sro"><span class="cbx">✓</span></div>
+
+<div class="rl">Toggle</div>
+<div class="cell sd"><span class="tgl"><i></i></span></div>
+<div class="cell sh"><span class="tgl"><i></i></span></div>
+<div class="cell sf"><span class="tgl"><i></i></span></div>
+<div class="cell sa"><span class="tgl"><i></i></span></div>
+<div class="cell se"><span class="tgl"><i></i></span></div>
+<div class="cell sx"><span class="tgl"><i></i></span></div>
+<div class="cell sl"><span class="tgl"><i></i></span></div>
+<div class="cell ser"><span class="tgl"><i></i></span></div>
+<div class="cell sro"><span class="tgl"><i></i></span></div>
+
+<div class="rl">Nav item</div>
+<div class="cell sd"><span class="nav">Reports</span></div>
+<div class="cell sh"><span class="nav">Reports</span></div>
+<div class="cell sf"><span class="nav">Reports</span></div>
+<div class="cell sa"><span class="nav">Reports</span></div>
+<div class="cell se"><span class="nav">Reports</span></div>
+<div class="cell sx"><span class="nav">Reports</span></div>
+<div class="cell sl"><span class="nav">◌ Reports</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+<div class="cell sro"><span class="nav">Reports</span></div>
+</div>
+<ul class="rules">
+<li><b>Rule:</b> hover = ink at 82%, pressed = 58%, loading = 50%, disabled = 26%, read-only = 45% + dotted edge.<span class="tag">1 token, 5 alphas</span></li>
+<li><b>Engaged</b> breaks shape, not just colour: green ink, a 4px left edge, and square corners — selection can never be mistaken for hover.</li>
+<li><b>Cost:</b> cheapest to maintain, but faded ≠ forbidden — disabled at 26% can fail contrast and looks like loading.</li>
+</ul>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>A named colour per state</div>
+<div class="dv-card apB" style="width:1120px">
+<p class="ttl">B · Discrete state tokens</p>
+<p class="sub">Nine named tokens. Hue carries meaning: grey = disabled, amber ring = focus, red = error, green = engaged.</p>
+<div class="mx">
+<div class="hd l">Element</div><div class="hd">Default</div><div class="hd">Hover</div><div class="hd">Focus</div><div class="hd">Pressed</div><div class="hd">Engaged</div><div class="hd">Disabled</div><div class="hd">Loading</div><div class="hd">Error</div><div class="hd">Read-only</div>
+
+<div class="rl">Primary btn</div>
+<div class="cell sd"><span class="btn p">Save</span></div>
+<div class="cell sh"><span class="btn p">Save</span></div>
+<div class="cell sf"><span class="btn p">Save</span></div>
+<div class="cell sa"><span class="btn p">Save</span></div>
+<div class="cell se"><span class="btn p">Save</span></div>
+<div class="cell sx"><span class="btn p">Save</span></div>
+<div class="cell sl"><span class="btn p">◌ Saving</span></div>
+<div class="cell ser"><span class="btn p">Retry</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+
+<div class="rl">Secondary btn</div>
+<div class="cell sd"><span class="btn s">Cancel</span></div>
+<div class="cell sh"><span class="btn s">Cancel</span></div>
+<div class="cell sf"><span class="btn s">Cancel</span></div>
+<div class="cell sa"><span class="btn s">Cancel</span></div>
+<div class="cell se"><span class="btn s">Cancel</span></div>
+<div class="cell sx"><span class="btn s">Cancel</span></div>
+<div class="cell sl"><span class="btn s">◌ Wait</span></div>
+<div class="cell ser"><span class="btn s">Retry</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+
+<div class="rl">Tertiary btn</div>
+<div class="cell sd"><span class="btn t">More</span></div>
+<div class="cell sh"><span class="btn t">More</span></div>
+<div class="cell sf"><span class="btn t">More</span></div>
+<div class="cell sa"><span class="btn t">More</span></div>
+<div class="cell se"><span class="btn t">More</span></div>
+<div class="cell sx"><span class="btn t">More</span></div>
+<div class="cell sl"><span class="btn t">◌ More</span></div>
+<div class="cell ser"><span class="btn t">More</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+
+<div class="rl">Link</div>
+<div class="cell sd"><a class="lnk" href="#1b">Details</a></div>
+<div class="cell sh"><a class="lnk" href="#1b">Details</a></div>
+<div class="cell sf"><a class="lnk" href="#1b">Details</a></div>
+<div class="cell sa"><a class="lnk" href="#1b">Details</a></div>
+<div class="cell se"><a class="lnk" href="#1b">Details</a></div>
+<div class="cell sx"><span class="lnk">Details</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+<div class="cell ser"><a class="lnk" href="#1b">Broken</a></div>
+<div class="cell sro"><span class="lnk">Details</span></div>
+
+<div class="rl">Checkbox</div>
+<div class="cell sd"><span class="cbx">✓</span></div>
+<div class="cell sh"><span class="cbx">✓</span></div>
+<div class="cell sf"><span class="cbx">✓</span></div>
+<div class="cell sa"><span class="cbx">✓</span></div>
+<div class="cell se"><span class="cbx">✓</span></div>
+<div class="cell sx"><span class="cbx">✓</span></div>
+<div class="cell sl"><span class="cbx">✓</span></div>
+<div class="cell ser"><span class="cbx">✓</span></div>
+<div class="cell sro"><span class="cbx">✓</span></div>
+
+<div class="rl">Toggle</div>
+<div class="cell sd"><span class="tgl"><i></i></span></div>
+<div class="cell sh"><span class="tgl"><i></i></span></div>
+<div class="cell sf"><span class="tgl"><i></i></span></div>
+<div class="cell sa"><span class="tgl"><i></i></span></div>
+<div class="cell se"><span class="tgl"><i></i></span></div>
+<div class="cell sx"><span class="tgl"><i></i></span></div>
+<div class="cell sl"><span class="tgl"><i></i></span></div>
+<div class="cell ser"><span class="tgl"><i></i></span></div>
+<div class="cell sro"><span class="tgl"><i></i></span></div>
+
+<div class="rl">Nav item</div>
+<div class="cell sd"><span class="nav">Reports</span></div>
+<div class="cell sh"><span class="nav">Reports</span></div>
+<div class="cell sf"><span class="nav">Reports</span></div>
+<div class="cell sa"><span class="nav">Reports</span></div>
+<div class="cell se"><span class="nav">Reports</span></div>
+<div class="cell sx"><span class="nav">Reports</span></div>
+<div class="cell sl"><span class="nav">◌ Reports</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+<div class="cell sro"><span class="nav">Reports</span></div>
+</div>
+<ul class="rules">
+<li><b>Rule:</b> one token per state, per role. Nothing is derived at runtime — engineers pick a name, never a formula.<span class="tag">9 tokens × 3 roles</span></li>
+<li><b>Engaged goes green with square corners and a hard 4px left edge</b>, focus goes amber: states are readable at a glance, even in a screenshot.</li>
+<li><b>Cost:</b> biggest palette, and the extra hues compete with your product's own semantic colours.</li>
+</ul>
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Structure, not colour</div>
+<div class="dv-card apC" style="width:1120px">
+<p class="ttl">C · Weight &amp; elevation only</p>
+<p class="sub">Monochrome. States change border weight, style, and shadow — colour stays out of it entirely.</p>
+<div class="mx">
+<div class="hd l">Element</div><div class="hd">Default</div><div class="hd">Hover</div><div class="hd">Focus</div><div class="hd">Pressed</div><div class="hd">Engaged</div><div class="hd">Disabled</div><div class="hd">Loading</div><div class="hd">Error</div><div class="hd">Read-only</div>
+
+<div class="rl">Primary btn</div>
+<div class="cell sd"><span class="btn p">Save</span></div>
+<div class="cell sh"><span class="btn p">Save</span></div>
+<div class="cell sf"><span class="btn p">Save</span></div>
+<div class="cell sa"><span class="btn p">Save</span></div>
+<div class="cell se"><span class="btn p">Save</span></div>
+<div class="cell sx"><span class="btn p">Save</span></div>
+<div class="cell sl"><span class="btn p">◌ Saving</span></div>
+<div class="cell ser"><span class="btn p">Retry</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+
+<div class="rl">Secondary btn</div>
+<div class="cell sd"><span class="btn s">Cancel</span></div>
+<div class="cell sh"><span class="btn s">Cancel</span></div>
+<div class="cell sf"><span class="btn s">Cancel</span></div>
+<div class="cell sa"><span class="btn s">Cancel</span></div>
+<div class="cell se"><span class="btn s">Cancel</span></div>
+<div class="cell sx"><span class="btn s">Cancel</span></div>
+<div class="cell sl"><span class="btn s">◌ Wait</span></div>
+<div class="cell ser"><span class="btn s">Retry</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+
+<div class="rl">Tertiary btn</div>
+<div class="cell sd"><span class="btn t">More</span></div>
+<div class="cell sh"><span class="btn t">More</span></div>
+<div class="cell sf"><span class="btn t">More</span></div>
+<div class="cell sa"><span class="btn t">More</span></div>
+<div class="cell se"><span class="btn t">More</span></div>
+<div class="cell sx"><span class="btn t">More</span></div>
+<div class="cell sl"><span class="btn t">◌ More</span></div>
+<div class="cell ser"><span class="btn t">More</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+
+<div class="rl">Link</div>
+<div class="cell sd"><a class="lnk" href="#1c">Details</a></div>
+<div class="cell sh"><a class="lnk" href="#1c">Details</a></div>
+<div class="cell sf"><a class="lnk" href="#1c">Details</a></div>
+<div class="cell sa"><a class="lnk" href="#1c">Details</a></div>
+<div class="cell se"><a class="lnk" href="#1c">Details</a></div>
+<div class="cell sx"><span class="lnk">Details</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+<div class="cell ser"><a class="lnk" href="#1c">Broken</a></div>
+<div class="cell sro"><span class="lnk">Details</span></div>
+
+<div class="rl">Checkbox</div>
+<div class="cell sd"><span class="cbx">✓</span></div>
+<div class="cell sh"><span class="cbx">✓</span></div>
+<div class="cell sf"><span class="cbx">✓</span></div>
+<div class="cell sa"><span class="cbx">✓</span></div>
+<div class="cell se"><span class="cbx">✓</span></div>
+<div class="cell sx"><span class="cbx">✓</span></div>
+<div class="cell sl"><span class="cbx">✓</span></div>
+<div class="cell ser"><span class="cbx">✓</span></div>
+<div class="cell sro"><span class="cbx">✓</span></div>
+
+<div class="rl">Toggle</div>
+<div class="cell sd"><span class="tgl"><i></i></span></div>
+<div class="cell sh"><span class="tgl"><i></i></span></div>
+<div class="cell sf"><span class="tgl"><i></i></span></div>
+<div class="cell sa"><span class="tgl"><i></i></span></div>
+<div class="cell se"><span class="tgl"><i></i></span></div>
+<div class="cell sx"><span class="tgl"><i></i></span></div>
+<div class="cell sl"><span class="tgl"><i></i></span></div>
+<div class="cell ser"><span class="tgl"><i></i></span></div>
+<div class="cell sro"><span class="tgl"><i></i></span></div>
+
+<div class="rl">Nav item</div>
+<div class="cell sd"><span class="nav">Reports</span></div>
+<div class="cell sh"><span class="nav">Reports</span></div>
+<div class="cell sf"><span class="nav">Reports</span></div>
+<div class="cell sa"><span class="nav">Reports</span></div>
+<div class="cell se"><span class="nav">Reports</span></div>
+<div class="cell sx"><span class="nav">Reports</span></div>
+<div class="cell sl"><span class="nav">◌ Reports</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+<div class="cell sro"><span class="nav">Reports</span></div>
+</div>
+<ul class="rules">
+<li><b>Rule:</b> hover lifts (3px hard shadow), pressed sinks (inset), disabled goes dashed, read-only loses its edge — engaged is the one licensed exception: green, square, 4px left edge.<span class="tag">1 extra colour</span></li>
+<li><b>Borderless roles get their own channel:</b> links, nav items and tertiary buttons take a fill step plus an inset edge marker, since a shadow needs a box to sit on.</li>
+<li><b>Works anywhere</b> — dark mode, print, colour-blind users, and inside colourful data views where a blue hover would collide.</li>
+<li><b>Cost:</b> a 1.5px→3px border is a quiet signal; needs generous hit areas and consistent spacing to read at all.</li>
+</ul>
+</div>
+</div>
+
+<div class="dv-opt" id="1d">
+<div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Each state gets one job</div>
+<div class="dv-card apD" style="width:1120px">
+<p class="ttl">D · Hybrid — one channel per state</p>
+<p class="sub">Hover owns tint, focus owns the dashed ring, pressed owns the inset, engaged owns green + square 4px left edge, disabled owns grey.</p>
+<div class="mx">
+<div class="hd l">Element</div><div class="hd">Default</div><div class="hd">Hover</div><div class="hd">Focus</div><div class="hd">Pressed</div><div class="hd">Engaged</div><div class="hd">Disabled</div><div class="hd">Loading</div><div class="hd">Error</div><div class="hd">Read-only</div>
+
+<div class="rl">Primary btn</div>
+<div class="cell sd"><span class="btn p">Save</span></div>
+<div class="cell sh"><span class="btn p">Save</span></div>
+<div class="cell sf"><span class="btn p">Save</span></div>
+<div class="cell sa"><span class="btn p">Save</span></div>
+<div class="cell se"><span class="btn p">Save</span></div>
+<div class="cell sx"><span class="btn p">Save</span></div>
+<div class="cell sl"><span class="btn p">◌ Saving</span></div>
+<div class="cell ser"><span class="btn p">Retry</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+
+<div class="rl">Secondary btn</div>
+<div class="cell sd"><span class="btn s">Cancel</span></div>
+<div class="cell sh"><span class="btn s">Cancel</span></div>
+<div class="cell sf"><span class="btn s">Cancel</span></div>
+<div class="cell sa"><span class="btn s">Cancel</span></div>
+<div class="cell se"><span class="btn s">Cancel</span></div>
+<div class="cell sx"><span class="btn s">Cancel</span></div>
+<div class="cell sl"><span class="btn s">◌ Wait</span></div>
+<div class="cell ser"><span class="btn s">Retry</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+
+<div class="rl">Tertiary btn</div>
+<div class="cell sd"><span class="btn t">More</span></div>
+<div class="cell sh"><span class="btn t">More</span></div>
+<div class="cell sf"><span class="btn t">More</span></div>
+<div class="cell sa"><span class="btn t">More</span></div>
+<div class="cell se"><span class="btn t">More</span></div>
+<div class="cell sx"><span class="btn t">More</span></div>
+<div class="cell sl"><span class="btn t">◌ More</span></div>
+<div class="cell ser"><span class="btn t">More</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+
+<div class="rl">Link</div>
+<div class="cell sd"><a class="lnk" href="#1d">Details</a></div>
+<div class="cell sh"><a class="lnk" href="#1d">Details</a></div>
+<div class="cell sf"><a class="lnk" href="#1d">Details</a></div>
+<div class="cell sa"><a class="lnk" href="#1d">Details</a></div>
+<div class="cell se"><a class="lnk" href="#1d">Details</a></div>
+<div class="cell sx"><span class="lnk">Details</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+<div class="cell ser"><a class="lnk" href="#1d">Broken</a></div>
+<div class="cell sro"><span class="lnk">Details</span></div>
+
+<div class="rl">Checkbox</div>
+<div class="cell sd"><span class="cbx">✓</span></div>
+<div class="cell sh"><span class="cbx">✓</span></div>
+<div class="cell sf"><span class="cbx">✓</span></div>
+<div class="cell sa"><span class="cbx">✓</span></div>
+<div class="cell se"><span class="cbx">✓</span></div>
+<div class="cell sx"><span class="cbx">✓</span></div>
+<div class="cell sl"><span class="cbx">✓</span></div>
+<div class="cell ser"><span class="cbx">✓</span></div>
+<div class="cell sro"><span class="cbx">✓</span></div>
+
+<div class="rl">Toggle</div>
+<div class="cell sd"><span class="tgl"><i></i></span></div>
+<div class="cell sh"><span class="tgl"><i></i></span></div>
+<div class="cell sf"><span class="tgl"><i></i></span></div>
+<div class="cell sa"><span class="tgl"><i></i></span></div>
+<div class="cell se"><span class="tgl"><i></i></span></div>
+<div class="cell sx"><span class="tgl"><i></i></span></div>
+<div class="cell sl"><span class="tgl"><i></i></span></div>
+<div class="cell ser"><span class="tgl"><i></i></span></div>
+<div class="cell sro"><span class="tgl"><i></i></span></div>
+
+<div class="rl">Nav item</div>
+<div class="cell sd"><span class="nav">Reports</span></div>
+<div class="cell sh"><span class="nav">Reports</span></div>
+<div class="cell sf"><span class="nav">Reports</span></div>
+<div class="cell sa"><span class="nav">Reports</span></div>
+<div class="cell se"><span class="nav">Reports</span></div>
+<div class="cell sx"><span class="nav">Reports</span></div>
+<div class="cell sl"><span class="nav">◌ Reports</span></div>
+<div class="cell"><span class="na">n/a</span></div>
+<div class="cell sro"><span class="nav">Reports</span></div>
+</div>
+<ul class="rules">
+<li><b>Rule:</b> no two states share a channel, so they stack legibly — a focused, engaged nav item still reads as both.<span class="tag">3 tokens + 4 effects</span></li>
+<li><b>Disabled is grey, never faded</b> (opacity is reserved for loading), so "off" never looks like "busy".</li>
+<li><b>Cost:</b> the most rules to remember — needs the cheat sheet <a class="dv-oid" href="#1d">1d</a> implies, one line per channel.</li>
+</ul>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "take <a class="dv-oid" href="#1d">1d</a> to hi-fi as a real spec sheet" · "riff on <a class="dv-oid" href="#1c">1c</a> for dark mode" · "add inputs and menu items to <a class="dv-oid" href="#1b">1b</a>"</p>
+</section>
+
+</x-dc>
+</body>
+</html>

@@ -129,6 +129,35 @@
 .bx-actionable:focus{outline:none}
 .bx-actionable:focus-visible{outline:2px dashed var(--ink);outline-offset:2px}
 
+/* pressed feedback -- same actionable boxes, own channel (inset shadow)
+   so it never collides with hover's brightness or focus's ring; a
+   focused+pressed box still reads as both at once. Native :active, same
+   free-on-any-element precedent as :hover/:focus-visible above --
+   doesn't fire from ui/actions.js's synthetic el.click() (Enter/Space),
+   only real pointer press, matching the doc's "hold it down" concept. */
+.bx-actionable:active{box-shadow:inset 0 2px 0 rgba(0,0,0,.22)}
+
+/* loading/error/read-only -- own classes, not :pseudo-classes (unlike
+   hover/focus/pressed above, these are held states a caller sets/clears
+   explicitly, not driven by user input) per
+   docs/superpowers/specs/2026-08-30-state-rules-design.md. Distinct
+   names/mechanisms even where two look alike at rest (read-only vs
+   disabled both dim + inert) -- C2: different concepts, kept separate
+   so one can change without silently moving the other. */
+.bx-loading{opacity:.7;pointer-events:none}
+/* border-color, not outline -- outline is already focus's channel (below);
+   an errored+focused box needs both rings to survive at once. Verified
+   live: outline is a single non-stacking property, a plain .bx-error{
+   outline:...} silently lost to :focus-visible's outline on tab-focus
+   (higher specificity, two selectors vs one) -- this is why. The 2nd
+   rule matches mockup's .bx-solid box-shadow/border-color override
+   (tokens.css above) at equal-or-higher specificity so error still wins
+   there too; hairline/dashed + error under mockup skin isn't covered
+   (no fixture exercises that combination yet). */
+.bx-error{border-color:var(--accent)}
+:root[data-style="mockup"] .bx-solid.bx-error{border-color:var(--accent)}
+.bx-readonly{opacity:.55;pointer-events:none}
+
 /* quiz answer states -- page-mount concern (ui/quiz.js), not a box
    dial: selection/result aren't part of the vocabulary model, same
    precedent as .bx-actionable above. Tints, not solid fills, per
