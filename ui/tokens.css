@@ -115,6 +115,21 @@
   font-size:8px; line-height:1; padding:1px 5px; border-radius:2px;
 }
 
+/* inspector toggle -- same control, mounted by ui/inspector.js's
+   mountInspectorToggle. Mirrors .style-toggle exactly but at the opposite
+   side (left vs right) in both variants, so the two never overlap when a
+   screen mounts both (every real screen does). */
+.ins-toggle{
+  position:fixed; top:10px; left:10px; z-index:9999;
+  font:11px var(--mono); padding:4px 10px; border:1px solid var(--rule);
+  border-radius:4px; background:var(--paper); color:var(--muted); cursor:pointer;
+}
+.ins-toggle:hover{color:var(--text); border-color:var(--dash)}
+.ins-toggle.ins-toggle-inline{
+  position:absolute; top:auto; left:4px; right:auto; bottom:2px; z-index:1;
+  font-size:8px; line-height:1; padding:1px 5px; border-radius:2px;
+}
+
 /* hover feedback for anything wired via ui/actions.js#wireAction --
    generic, works regardless of the element's own fill/tint (no new
    token needed, C2: hover isn't a box dial). */

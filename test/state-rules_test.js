@@ -96,4 +96,50 @@ tr.addBlock('error\'s channel (border-color) never overlaps focus-visible\'s (ou
   });
 });
 
+// Full channel audit across every state rule -- generalizes the error/focus
+// check above. Two overlaps are EXPECTED and allowed (both pre-existing/
+// by-design, see docs/superpowers/specs/2026-08-30-state-rules-design.md):
+//   focus-visible <-> selected: same outline collision as error had, logged
+//     there as a known pre-existing gap, not retrofitted.
+//   loading/readonly/disabled: all three are "dim + inert" by nature and
+//     are mutually exclusive states on one element by usage convention (a
+//     box is never loading AND disabled AND read-only at once, same as the
+//     doc's own state matrix -- one column applies at a time), so sharing
+//     opacity/pointer-events is harmless in practice even though the
+//     magnitudes differ (.7/.55/.45).
+// Any OTHER overlap -- most importantly anything touching hover's `filter`
+// -- is a real regression.
+const STATE_SELECTORS = [
+  '.bx-actionable:hover', '.bx-actionable:focus-visible', '.bx-actionable:active',
+  '.bx-loading', '.bx-error', '.bx-readonly', '.bx-disabled', '.bx-selected',
+];
+const ALLOWED_OVERLAPS = new Set([
+  ['.bx-actionable:focus-visible', '.bx-selected'].sort().join('|'),
+  ['.bx-loading', '.bx-readonly'].sort().join('|'),
+  ['.bx-loading', '.bx-disabled'].sort().join('|'),
+  ['.bx-readonly', '.bx-disabled'].sort().join('|'),
+]);
+
+tr.addBlock('full channel audit: hover has zero overlap with any other state; only the 2 known/logged overlaps exist elsewhere', (r) => {
+  r.run(() => {
+    const props = Object.fromEntries(STATE_SELECTORS.map(s => [s, declaredProps(s) || []]));
+    r.check(props['.bx-actionable:hover'].includes('filter') && props['.bx-actionable:hover'].length === 1,
+      'hover\'s channel is exactly `filter`, nothing else', props['.bx-actionable:hover']);
+
+    const unexpected = [];
+    for (let i = 0; i < STATE_SELECTORS.length; i++) {
+      for (let j = i + 1; j < STATE_SELECTORS.length; j++) {
+        const a = STATE_SELECTORS[i], b = STATE_SELECTORS[j];
+        const shared = props[a].filter(p => props[b].includes(p));
+        if (!shared.length) continue;
+        if (a.includes('hover') || b.includes('hover'))
+          r.check(false, null, `hover channel collides with ${a === '.bx-actionable:hover' ? b : a}`, shared.join(','));
+        else if (!ALLOWED_OVERLAPS.has([a, b].sort().join('|')))
+          unexpected.push([a, b, shared]);
+      }
+    }
+    r.check(unexpected.length === 0, 'no unexpected channel overlaps beyond the 2 logged ones', unexpected);
+  });
+});
+
 await tr.runBlocks();

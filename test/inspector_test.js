@@ -1,4 +1,4 @@
-import { exportPayload, mountInspector } from '../ui/inspector.js';
+import { exportPayload, mountInspector, mountInspectorToggle } from '../ui/inspector.js';
 import { resolve } from '../ui/model.js';
 import { render } from '../ui/render.js';
 
@@ -379,6 +379,95 @@ tr.addBlock('destroy() removes the panel from the DOM', (r) => {
 
     destroy();
     r.check(document.querySelectorAll('.ins-panel').length === before, 'destroy() removes exactly the panel it added');
+    container.remove();
+  });
+});
+
+// Detail-panel insets: a screen with named topbar/statusbar boxes (the
+// screens/math-trainer-dashboard.json convention) should get a panel docked
+// between them, not spanning the full viewport over both. Isolated fresh
+// fixture -- the shared fixture above has neither region.
+tr.addBlock('panel docks between topbar/statusbar when a screen has them, not over them', (r) => {
+  r.run(() => {
+    const doc = { box: 'stack, fixed, w:400, h:300', name: 'chromeroot', children: [
+      { box: 'fixed, h:40', name: 'topbar', content: 'top' },
+      { box: 'fixed, h:200', name: 'mid', content: 'content' },
+      { box: 'fixed, h:20', name: 'statusbar', content: 'status' },
+    ] };
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const el = render(resolve(doc));
+    container.appendChild(el);
+    const { destroy } = mountInspector(el, { sourceId: 'chrome/fixture' });
+    const panels = document.querySelectorAll('.ins-panel');
+    const panel = panels[panels.length - 1];
+
+    // Tolerance, not exact string equality: two independent
+    // getBoundingClientRect() reads of the same static layout can differ by
+    // a hair of a pixel (sub-pixel layout rounding) even with no real DOM
+    // change in between -- verified empirically running this suite. The
+    // property under test is "docked to the chrome, not painted over it",
+    // not bit-exact float equality.
+    const topbarRect = el.querySelector('[data-name="topbar"]').getBoundingClientRect();
+    const statusbarRect = el.querySelector('[data-name="statusbar"]').getBoundingClientRect();
+    const panelTop = parseFloat(panel.style.top);
+    const panelBottom = parseFloat(panel.style.bottom);
+    r.check(Math.abs(panelTop - topbarRect.bottom) < 1, 'panel top docks to topbar\'s bottom edge', `${panelTop} vs ${topbarRect.bottom}`);
+    r.check(Math.abs(panelBottom - (window.innerHeight - statusbarRect.top)) < 1,
+      'panel bottom docks to statusbar\'s top edge', `${panelBottom} vs ${window.innerHeight - statusbarRect.top}`);
+
+    destroy();
+    container.remove();
+  });
+});
+
+tr.addBlock('panel spans full height (old behavior) when a screen has no topbar/statusbar', (r) => {
+  r.run(() => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const el = render(resolve({ box: 'hug', name: 'no-chrome', content: 'x' }));
+    container.appendChild(el);
+    const { destroy } = mountInspector(el, { sourceId: 'no-chrome/fixture' });
+    const panels = document.querySelectorAll('.ins-panel');
+    const panel = panels[panels.length - 1];
+    r.check(panel.style.top === '0px', 'no topbar -> panel starts at viewport top', panel.style.top);
+    r.check(panel.style.bottom === '0px', 'no statusbar -> panel reaches viewport bottom', panel.style.bottom);
+    destroy();
+    container.remove();
+  });
+});
+
+// mountInspectorToggle: opt-in wrapper real pages use instead of an
+// unconditional mountInspector, same reproducible-URL pattern as
+// ui/style-mode.js's mountStyleToggle (?inspect=1). Restores the page's
+// real URL at the end so this test doesn't leak into the address bar for
+// whatever runs next.
+tr.addBlock('mountInspectorToggle: off by default, click mounts/unmounts, URL stays reproducible', (r) => {
+  r.run(() => {
+    const originalUrl = location.href;
+    r.check(!location.search.includes('inspect='), 'starts with no ?inspect= param', location.search);
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const el = render(resolve({ box: 'hug', name: 'toggle-fixture', content: 'x' }));
+    container.appendChild(el);
+    const before = document.querySelectorAll('.ins-panel').length;
+
+    const btn = mountInspectorToggle(el, { sourceId: 'toggle/fixture', target: container });
+    r.check(document.querySelectorAll('.ins-panel').length === before, 'starts off -- no panel mounted yet');
+    r.check(btn.textContent === 'inspect: off', 'button reads "inspect: off" initially');
+
+    btn.click();
+    r.check(document.querySelectorAll('.ins-panel').length === before + 1, 'click mounts the panel');
+    r.check(btn.textContent === 'inspect: on', 'button reads "inspect: on" after click');
+    r.check(location.search.includes('inspect=1'), 'URL persists the on state', location.search);
+
+    btn.click();
+    r.check(document.querySelectorAll('.ins-panel').length === before, 'second click unmounts the panel');
+    r.check(btn.textContent === 'inspect: off', 'button reads "inspect: off" again');
+    r.check(!location.search.includes('inspect='), 'URL param cleared once off again', location.search);
+
+    history.replaceState(null, '', originalUrl);
     container.remove();
   });
 });

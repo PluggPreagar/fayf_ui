@@ -177,6 +177,20 @@ function buildPanel() {
   return panel;
 }
 
+// Detail-panel insets: a screen's own "topbar"/"statusbar" boxes (named by
+// that convention -- screens/math-trainer-dashboard.json has both; a screen
+// without them, e.g. screens/quiz.json, just gets the old full-height
+// panel, unchanged) are measured live so the panel docks *between* them
+// instead of painting over the page's own header/footer chrome. Queried
+// from `rootEl` (not the original `container` param) so this keeps working
+// after a root-level edit replaces the root element (see onChange below).
+function updateInsets(panel, rootEl) {
+  const topbar = rootEl.querySelector('[data-name="topbar"]');
+  const statusbar = rootEl.querySelector('[data-name="statusbar"]');
+  panel.style.top = topbar ? `${topbar.getBoundingClientRect().bottom}px` : '0px';
+  panel.style.bottom = statusbar ? `${window.innerHeight - statusbar.getBoundingClientRect().top}px` : '0px';
+}
+
 export function mountInspector(container, { sourceId, provenance } = {}) {
   const panel = buildPanel();
   document.body.appendChild(panel);
@@ -187,6 +201,9 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
 
   let rootEl = container;
   let selected = null;
+  updateInsets(panel, rootEl);
+  const onResize = () => updateInsets(panel, rootEl);
+  window.addEventListener('resize', onResize);
   // Tagged once, against the tree exactly as it stood at mount time -- see
   // tagProvenance's own comment for why identity (not path) is the key.
   const elementProvenance = tagProvenance(container, provenance);
@@ -221,7 +238,7 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
     if (entry) elementProvenance.set(fresh, entry);
     const wasRoot = selected === rootEl;
     selected.replaceWith(fresh);
-    if (wasRoot) rootEl = fresh;
+    if (wasRoot) { rootEl = fresh; updateInsets(panel, rootEl); }
     select(fresh);
   }
 
@@ -256,8 +273,49 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
   function destroy() {
     if (selected) { detachHandles(selected); selected.classList.remove('ins-selected'); }
     clickTarget.removeEventListener('click', handleClick);
+    window.removeEventListener('resize', onResize);
     panel.remove();
   }
 
   return { select, destroy };
+}
+
+// Toggle mount/unmount, same reproducible-URL pattern as
+// ui/style-mode.js's mountStyleToggle -- state lives in the URL
+// (?inspect=1), never memory-only, so a link with the panel open is
+// shareable/debuggable same as a link in mockup skin. Off by default
+// (mountInspector itself is unconditional/always-on; this is the opt-in
+// wrapper real pages use instead, per
+// docs/superpowers/specs/2026-08-30-state-rules-design.md's sibling ask).
+const PARAM = 'inspect';
+
+function readInspectMode() {
+  return new URLSearchParams(location.search).get(PARAM) === '1';
+}
+
+function setInspectMode(on) {
+  const url = new URL(location.href);
+  if (on) url.searchParams.set(PARAM, '1');
+  else url.searchParams.delete(PARAM);
+  history.replaceState(null, '', url);
+}
+
+export function mountInspectorToggle(container, { sourceId, provenance, target = document.body, inline = false } = {}) {
+  const btn = (target.ownerDocument ?? document).createElement('button');
+  btn.className = inline ? 'ins-toggle ins-toggle-inline' : 'ins-toggle';
+  let instance = null;
+  const sync = () => { btn.textContent = instance ? 'inspect: on' : 'inspect: off'; };
+  function apply(on) {
+    if (on && !instance) instance = mountInspector(container, { sourceId, provenance });
+    else if (!on && instance) { instance.destroy(); instance = null; }
+    sync();
+  }
+  apply(readInspectMode());
+  btn.addEventListener('click', () => {
+    const next = !instance;
+    setInspectMode(next);
+    apply(next);
+  });
+  target.appendChild(btn);
+  return btn;
 }
