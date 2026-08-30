@@ -53,6 +53,11 @@ tr.addBlock('quiz: hint reveal and multiple-choice flow', (r) => {
      // that fact visible/inert instead of silently misleading.
      answers.forEach((a, i) => r.check(a.classList.contains('bx-readonly'), `answer ${i} marked read-only once revealed`));
      r.check(answers[0].tabIndex === -1, 'read-only answer dropped from tab order');
+
+     // Same fix, same reasoning, for btn-lock: exitAnswering already
+     // removed its click listener, it just hadn't been honest about it
+     // (used to stay fully enabled-looking after already locking in).
+     r.check(lockBtn.classList.contains('bx-disabled'), 'lock button disabled once locked in -- no longer misleadingly actionable');
    });
 });
 

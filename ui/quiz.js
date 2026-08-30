@@ -113,6 +113,11 @@ function exitAnswering(ctx) {
 
 function enterRevealed(ctx, send, triggerEvent) {
   const q = ctx.quizData.questions[ctx.qIndex];
+  // Same honesty fix as the answer rows below: exitAnswering already
+  // removed btnLock's click listener (multiple mode only -- single mode
+  // never enables it in the first place, see enterAnswering), so it was
+  // sitting there looking fully actionable while doing nothing on click.
+  setActionableDisabled(ctx.btnLock, true);
   // querySelectorAll, not .children -- buzzer layout nests rows two-per-pair
   // wrapper, so answer cells aren't answersEl's direct children.
   const rows = [...ctx.answersEl.querySelectorAll('[data-name^="answer-"]')];
