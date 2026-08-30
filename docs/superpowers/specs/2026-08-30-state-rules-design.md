@@ -80,14 +80,20 @@ Verified live (browser, `state-rules.html`): tabbing focus onto a box
 first drafted with `.bx-error{outline:...}` made the red ring vanish —
 `:focus-visible`'s own `outline` rule has higher specificity and
 `outline` doesn't stack across rules. Fixed by moving error to
-`border-color` instead (a channel nothing else touches). **Not fixed,
-logged only**: `.bx-selected` (engaged) has the exact same collision —
-it also uses `outline`, predates this doc, and is load-bearing,
-tested, shipped quiz behavior. Retrofitting it is out of scope here;
-a focused *and* engaged box today will show the focus ring OR the
-selection ring, not both, whichever the cascade favours. Follow-up if
-this ever bites in practice: same fix shape as error's, give
-`.bx-selected` its own non-`outline` channel.
+`border-color` instead (a channel nothing else touches).
+
+`.bx-selected` (engaged, quiz's answer-choice class) had the identical
+collision — also `outline`, predating this doc. **Fixed** (same
+session, follow-up round): moved to `border-left:4px solid var(--ink)`
+— matches the doc's own "engaged owns a 4px left edge" description
+more closely than the old outline ever did, and `box-sizing:border-box`
+(global) means the extra border doesn't grow the box or trip C10's
+nested-BBox rule. Now overlaps `.bx-error` on `border-left-color`
+instead (both resolve to the same ink/accent-per-rule value, harmless
+by convention — error is for buttons, selected is for quiz answers,
+never the same element). `test/quiz_test.js`'s own assertions only
+check `classList.contains('bx-selected')`, never the rule's pixel
+geometry, so this was a safe visual-only change.
 
 ## Non-goals (this spec)
 

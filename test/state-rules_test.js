@@ -97,16 +97,23 @@ tr.addBlock('error\'s channel (border-color) never overlaps focus-visible\'s (ou
 });
 
 // Full channel audit across every state rule -- generalizes the error/focus
-// check above. Two overlaps are EXPECTED and allowed (both pre-existing/
-// by-design, see docs/superpowers/specs/2026-08-30-state-rules-design.md):
-//   focus-visible <-> selected: same outline collision as error had, logged
-//     there as a known pre-existing gap, not retrofitted.
+// check above. focus-visible <-> selected USED to be here (both used
+// outline, same collision class as error's original draft) -- fixed by
+// giving .bx-selected its own channel (border-left, tokens.css), so it's
+// gone from the allow-list below; a regression there should fail loudly.
+// Two overlaps remain EXPECTED and allowed (both by-design, see
+// docs/superpowers/specs/2026-08-30-state-rules-design.md):
 //   loading/readonly/disabled: all three are "dim + inert" by nature and
 //     are mutually exclusive states on one element by usage convention (a
 //     box is never loading AND disabled AND read-only at once, same as the
 //     doc's own state matrix -- one column applies at a time), so sharing
 //     opacity/pointer-events is harmless in practice even though the
 //     magnitudes differ (.7/.55/.45).
+//   error/selected: both touch border-left-color (error via the all-sides
+//     border-color shorthand, selected via border-left specifically) --
+//     mutually exclusive by component (error is for actionable buttons,
+//     selected is for quiz answers), same "different components never
+//     combine" reasoning as the trio above.
 // Any OTHER overlap -- most importantly anything touching hover's `filter`
 // -- is a real regression.
 const STATE_SELECTORS = [
@@ -114,13 +121,23 @@ const STATE_SELECTORS = [
   '.bx-loading', '.bx-error', '.bx-readonly', '.bx-disabled', '.bx-selected',
 ];
 const ALLOWED_OVERLAPS = new Set([
-  ['.bx-actionable:focus-visible', '.bx-selected'].sort().join('|'),
   ['.bx-loading', '.bx-readonly'].sort().join('|'),
   ['.bx-loading', '.bx-disabled'].sort().join('|'),
   ['.bx-readonly', '.bx-disabled'].sort().join('|'),
+  ['.bx-error', '.bx-selected'].sort().join('|'),
 ]);
 
-tr.addBlock('full channel audit: hover has zero overlap with any other state; only the 2 known/logged overlaps exist elsewhere', (r) => {
+tr.addBlock('selected survives focus -- both channels visible at once (fix for the logged .bx-selected/focus collision)', (r) => {
+  r.run(() => {
+    const selectedProps = declaredProps('.bx-selected');
+    const focusProps = declaredProps('.bx-actionable:focus-visible');
+    r.check(!!selectedProps, '.bx-selected rule found in tokens.css', selectedProps);
+    const overlap = (selectedProps || []).filter(p => (focusProps || []).includes(p));
+    r.check(overlap.length === 0, 'no shared CSS property between selected and focus-visible', overlap);
+  });
+});
+
+tr.addBlock('full channel audit: hover has zero overlap with any other state; only the allow-listed overlaps exist elsewhere', (r) => {
   r.run(() => {
     const props = Object.fromEntries(STATE_SELECTORS.map(s => [s, declaredProps(s) || []]));
     r.check(props['.bx-actionable:hover'].includes('filter') && props['.bx-actionable:hover'].length === 1,
@@ -138,7 +155,7 @@ tr.addBlock('full channel audit: hover has zero overlap with any other state; on
           unexpected.push([a, b, shared]);
       }
     }
-    r.check(unexpected.length === 0, 'no unexpected channel overlaps beyond the 2 logged ones', unexpected);
+    r.check(unexpected.length === 0, 'no unexpected channel overlaps beyond the allow-listed ones', unexpected);
   });
 });
 

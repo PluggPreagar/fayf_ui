@@ -181,7 +181,17 @@ class TestRunner {
 
     run(fn, label = null) {  // B2 fix: check inside chain
         this.chain = this.chain.then(() => {
-            if (this.check(typeof fn === 'function', 'run: fn ok', 'run: not a function', label)) fn();
+            // Return (not just call) fn() -- when fn is `async`, this makes
+            // the outer .then() await it, so a later block's run()/waitFor()
+            // can't start executing (and mutate shared page state) while this
+            // one's async body is still mid-flight. Found live: an async
+            // run() body doing `await fetch(...)` then asserting against the
+            // DOM raced a later block's synchronous click on the same shared
+            // page, since the un-awaited promise let the chain move on before
+            // the fetch resolved. A plain (sync) fn's return value is
+            // whatever it is, not a promise, so this is a no-op for every
+            // existing synchronous run() call in the suite.
+            if (this.check(typeof fn === 'function', 'run: fn ok', 'run: not a function', label)) return fn();
         });
         return this;
     }

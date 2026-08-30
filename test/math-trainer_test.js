@@ -37,4 +37,23 @@ tr.addBlock('math trainer dashboard renders and matches model', (r) => {
      r.check(toggle && toggle.parentElement === root, 'style toggle is a direct sibling of the resolved tree, not nested in it');
    });
 });
+tr.addBlock('starting the quiz shows loading on primary-action for the real fetch gap, clears once mounted', (r) => {
+  r.run(() => {
+    const root = document.querySelector('body > .bx');
+    const primary = root.querySelector('[data-name="primary-action"]');
+    r.check(!primary.classList.contains('bx-loading'), 'primary-action starts without bx-loading');
+    primary.click(); // enters the quiz state; enterQuiz sets loading synchronously before its await
+    r.check(primary.classList.contains('bx-loading'), 'bx-loading set synchronously, before the content fetch resolves');
+    r.check(primary.tabIndex === -1, 'dropped from tab order while loading');
+  })
+  .waitFor(() => document.querySelector('[data-name="primary-action"]').classList.contains('bx-loading') === false, 3000,
+    50, 'loading cleared once quiz content is fetched and mounted')
+  .run(() => {
+    const root = document.querySelector('body > .bx');
+    const primary = root.querySelector('[data-name="primary-action"]');
+    r.check(primary.tabIndex === 0, 'tab order restored once loading clears');
+    r.check(!!root.querySelector('[data-name="quiz-body"]'), 'quiz content actually mounted into work');
+  });
+});
+
 await tr.runBlocks();

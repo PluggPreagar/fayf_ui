@@ -176,8 +176,14 @@
 /* quiz answer states -- page-mount concern (ui/quiz.js), not a box
    dial: selection/result aren't part of the vocabulary model, same
    precedent as .bx-actionable above. Tints, not solid fills, per
-   explicit "eye-friendly" correction during design. */
-.bx-selected{outline:2px solid var(--ink);outline-offset:-2px}
+   explicit "eye-friendly" correction during design.
+   border-left, not outline -- was outline (same channel as focus-visible,
+   below), so tabbing to an already-selected answer silently lost the
+   focus ring, same bug class as .bx-error's original draft (see that
+   rule's comment). box-sizing:border-box (global, top of file) means
+   this doesn't grow the box or violate C10's nested-BBox rule -- it eats
+   into the row's own padding, not its footprint. */
+.bx-selected{border-left:4px solid var(--ink)}
 .bx-correct{background:rgba(47,125,79,.16)}
 .bx-wrong{background:rgba(192,57,43,.16)}
 

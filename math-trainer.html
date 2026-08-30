@@ -18,7 +18,7 @@ import { wireRelations } from './ui/relation.js';
 import { applyMotion } from './ui/motion.js';
 import { mountIcons } from './ui/icons.js';
 import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
-import { wireAction, wireBreadcrumbs, markActionable, unmarkActionable } from './ui/actions.js';
+import { wireAction, wireBreadcrumbs, markActionable, unmarkActionable, setActionableLoading } from './ui/actions.js';
 import { createMachine } from './ui/state-machine.js';
 import { mountQuiz } from './ui/quiz.js';
 import { mountInspectorToggle } from './ui/inspector.js';
@@ -56,6 +56,11 @@ function exitDashboard(ctx) {
 }
 
 async function enterQuiz(ctx, send) {
+  // Real state-rules wiring (docs/superpowers/specs/2026-08-30-state-rules-design.md):
+  // the only genuine async gap on this screen is the content fetch below --
+  // primary-action stays on screen the whole time (only "work" swaps), so
+  // it's the one honest place "loading" belongs here, not a synthetic demo.
+  setActionableLoading(primaryAction, true);
   work.replaceChildren();
   // screens/quiz.json horizontally centers its content (mid) within
   // its own root box; embedding here only takes that root's
@@ -68,6 +73,7 @@ async function enterQuiz(ctx, send) {
   resolve(reg['screens/quiz'], reg).children.forEach(c => work.appendChild(render(c)));
   const quizData = await (await fetch('/content/quiz/lesson1.json')).json();
   mountQuiz(work, quizData, reg);
+  setActionableLoading(primaryAction, false);
 
   navDashboard.classList.replace('bx-tint3', 'bx-tint1');
   breadcrumb.appendChild(render(resolve('>')));
