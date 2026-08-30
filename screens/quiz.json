@@ -1,6 +1,6 @@
-{ "box": "stack, fill, mid, clip, tint0, pad:3",
+{ "box": "stack, fill, mid, evenly, clip, tint0, pad:3",
   "children": [
-    { "name": "quiz-body", "box": "stack, fill, w:380, packed, gap:1",
+    { "name": "quiz-body", "box": "stack, fixed, h:400, w:380, packed, gap:2++",
       "children": [
         { "name": "prompt", "extends": "atom/text.title", "box": "clamp" },
         { "name": "answers", "box": "stack, gap:2, clamp" },
