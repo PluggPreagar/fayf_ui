@@ -134,17 +134,22 @@
 }
 
 /* inspector toggle -- same control, mounted by ui/inspector.js's
-   mountInspectorToggle. Mirrors .style-toggle exactly but at the opposite
-   side (left vs right) in both variants, so the two never overlap when a
-   screen mounts both (every real screen does). */
+   mountInspectorToggle. Mirrors .style-toggle, parked immediately to its
+   left (both variants) so the two sit together on the same side --
+   fixed right-offset, not a shared flex container: the two toggles mount
+   independently (separate functions, separate call sites) with no
+   common parent to put a real gap on. Offset is sized to the longest
+   label either button shows ("wireframe", "inspect: off") plus a small
+   gap -- measured live: fixed variant "wireframe" is ~76.5px wide at
+   10px right, inline variant ~51.5px wide at 4px right. */
 .ins-toggle{
-  position:fixed; top:10px; left:10px; z-index:9999;
+  position:fixed; top:10px; right:96px; z-index:9999;
   font:11px var(--mono); padding:4px 10px; border:1px solid var(--rule);
   border-radius:4px; background:var(--paper); color:var(--muted); cursor:pointer;
 }
 .ins-toggle:hover{color:var(--text); border-color:var(--dash)}
 .ins-toggle.ins-toggle-inline{
-  position:absolute; top:auto; left:4px; right:auto; bottom:2px; z-index:1;
+  position:absolute; top:auto; left:auto; right:64px; bottom:2px; z-index:1;
   font-size:8px; line-height:1; padding:1px 5px; border-radius:2px;
 }
 
