@@ -16,8 +16,17 @@
               "children": [
                 { "extends": "atom/image-placeholder", "box": "w:180, h:110" },
                 { "extends": "component/chart", "box": "fill, h:110" } ] },
-            { "extends": "component/data-table", "box": "w:520" },
-            { "extends": "component/pagination" } ] },
+            { "name": "records-list", "box": "stack, gap:1, w:520, pad:1",
+              "children": [
+                { "name": "record-0", "box": "row, mid, gap:1, pad:1, hairline", "content": "Q1 planning notes" },
+                { "name": "record-1", "box": "row, mid, gap:1, pad:1, hairline", "content": "Budget review" },
+                { "name": "record-2", "box": "row, mid, gap:1, pad:1, hairline", "content": "2024 audit (archived)" } ] },
+            { "name": "pagination", "box": "bare, square, row, mid, gap:1, hug",
+              "children": [
+                { "name": "page-prev", "box": "row, mid, packed, fixed, w:18, h:18, solid, rounded", "content": "‹" },
+                { "name": "page-1", "box": "row, mid, packed, fixed, w:18, h:18, solid, rounded, tint1", "content": "1" },
+                { "name": "page-2", "box": "row, mid, packed, fixed, w:18, h:18, solid, rounded", "content": "2" },
+                { "name": "page-next", "box": "row, mid, packed, fixed, w:18, h:18, solid, rounded", "content": "›" } ] } ] },
         { "extends": "component/scrollbar", "box": "h:340" } ] },
     { "extends": "component/status-bar", "box": "w:640, square" },
     { "extends": "component/toast", "box": "floating, center, bottom" },

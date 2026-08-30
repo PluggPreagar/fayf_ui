@@ -1,0 +1,14 @@
+{
+  "pages": {
+    "1": [
+      { "label": "Q1 planning notes", "archived": false },
+      { "label": "Budget review", "archived": false },
+      { "label": "2024 audit (archived)", "archived": true }
+    ],
+    "2": [
+      { "label": "Client onboarding", "archived": false },
+      { "label": "Legacy migration (archived)", "archived": true },
+      { "label": "Roadmap draft", "archived": false }
+    ]
+  }
+}
