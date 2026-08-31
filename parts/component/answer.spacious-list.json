@@ -1,5 +1,5 @@
 { "extends": "component/answer",
-  "box": "gap:2, h:52, pad:2",
+  "box": "gap:2, h:52, pad:4",
   "children": [
     { "box": "fixed, w:18, h:18, solid, mid, evenly, circle" },
     { "extends": "cluster/line" } ] }

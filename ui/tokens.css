@@ -214,9 +214,32 @@
    rule's comment). box-sizing:border-box (global, top of file) means
    this doesn't grow the box or violate C10's nested-BBox rule -- it eats
    into the row's own padding, not its footprint. */
-.bx-selected{border-left:4px solid var(--ink)}
+/* --ok, not --ink: found live after this session's pill-shaped answers --
+   a pill (radius:999px, no flat edge) has no straight segment for a
+   same-color border-left to read as a "flag" against; it just thickens
+   the curve a hair, imperceptible even at 8px (tested). --ok (green,
+   already in the palette, unused elsewhere) is clearly visible on the
+   curve and matches the original design doc's own pick for "engaged".
+   2nd rule: same fix shape as .bx-error's mockup override above (this
+   bug was always latent here too -- invisible only because --ink used
+   to equal --ink, so which rule "won" didn't matter until the color
+   actually differed). Found live: without it, mockup's
+   .bx-solid{border-color:var(--ink)} (higher specificity) silently
+   overrides the green back to ink. */
+.bx-selected{border-left:4px solid var(--ok)}
+:root[data-style="mockup"] .bx-solid.bx-selected{border-left-color:var(--ok)}
 .bx-correct{background:rgba(47,125,79,.16)}
 .bx-wrong{background:rgba(192,57,43,.16)}
+/* Title (prompt) and hint text: text colour, not the answer rows' own
+   background tint -- explicit request. Attribute-selector specificity
+   is enough to beat the plain .bx-correct/.bx-wrong rules above for
+   `background` (must be set explicitly to `none`, cascade is per
+   property, not per rule -- the generic rule's background would
+   otherwise still apply since nothing else overrides it). */
+[data-name="prompt"].bx-correct{background:none;color:var(--ok)}
+[data-name="prompt"].bx-wrong{background:none;color:var(--accent)}
+[data-name="hint-text"].bx-correct{color:var(--ok)}
+[data-name="hint-text"].bx-wrong{color:var(--accent)}
 
 /* inspector panel selection outline -- page-mount concern (ui/inspector.js),
    own class so it never collides with quiz's .bx-selected above (different

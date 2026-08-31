@@ -56,14 +56,18 @@ function enterAnswering(ctx, send) {
   ctx.selected = new Set();
   ctx.promptEl.textContent = q.prompt;
   ctx.promptEl.classList.remove('bx-correct', 'bx-wrong');
+  ctx.hintTextEl.classList.remove('bx-correct', 'bx-wrong');
   ctx.hintTextEl.textContent = q.hint;
   // visibility, not display: this keeps hint-panel's own footprint
   // reserved in the layout at all times, so revealing it never
   // shifts anything below (e.g. "controls") -- fixed as possible.
   ctx.hintPanelEl.style.visibility = 'hidden';
   ctx.answersEl.replaceChildren();
-  setActionableDisabled(ctx.btnNext, true);
-  setActionableDisabled(ctx.btnLock, q.mode !== 'multiple');
+  // One button does both jobs (explicit request): "Check" while
+  // answering, becomes "Next" once revealed (enterRevealed/enterNextReady
+  // below) -- same element throughout, never two buttons on screen.
+  ctx.btnAction.textContent = 'Check';
+  setActionableDisabled(ctx.btnAction, q.mode !== 'multiple');
 
   const env = q.layout ? ['spacious'] : [];
   const rows = q.answers.map((a, i) => render(resolve(answerNode(i, a.text, q.mode, q.layout), ctx.reg, env)));
@@ -101,23 +105,26 @@ function enterAnswering(ctx, send) {
   ctx.onHint = () => { ctx.hintPanelEl.style.visibility = 'visible'; };
   ctx.hintBtn.addEventListener('click', ctx.onHint);
 
-  ctx.onLock = q.mode === 'multiple' ? (e) => send('lockIn', e) : null;
-  if (ctx.onLock) ctx.btnLock.addEventListener('click', ctx.onLock);
+  ctx.onCheck = q.mode === 'multiple' ? (e) => send('lockIn', e) : null;
+  if (ctx.onCheck) ctx.btnAction.addEventListener('click', ctx.onCheck);
 }
 
 function exitAnswering(ctx) {
   ctx.rowListeners.forEach(([row, fn]) => row.removeEventListener('click', fn));
   ctx.hintBtn.removeEventListener('click', ctx.onHint);
-  if (ctx.onLock) ctx.btnLock.removeEventListener('click', ctx.onLock);
+  if (ctx.onCheck) ctx.btnAction.removeEventListener('click', ctx.onCheck);
 }
 
 function enterRevealed(ctx, send, triggerEvent) {
   const q = ctx.quizData.questions[ctx.qIndex];
-  // Same honesty fix as the answer rows below: exitAnswering already
-  // removed btnLock's click listener (multiple mode only -- single mode
-  // never enables it in the first place, see enterAnswering), so it was
-  // sitting there looking fully actionable while doing nothing on click.
-  setActionableDisabled(ctx.btnLock, true);
+  // Relabel now, before next-ready enables it -- same honesty fix as the
+  // answer rows below: exitAnswering already removed the Check listener
+  // (multiple mode only -- single mode never enables it in the first
+  // place, see enterAnswering), so leaving it enabled-looking here would
+  // repeat the "looks actionable, does nothing" bug this button already
+  // had once before (Next's own listener isn't added until next-ready).
+  ctx.btnAction.textContent = 'Next';
+  setActionableDisabled(ctx.btnAction, true);
   // querySelectorAll, not .children -- buzzer layout nests rows two-per-pair
   // wrapper, so answer cells aren't answersEl's direct children.
   const rows = [...ctx.answersEl.querySelectorAll('[data-name^="answer-"]')];
@@ -145,6 +152,12 @@ function enterRevealed(ctx, send, triggerEvent) {
   const correct = grade(q.answers, ctx.selected);
   ctx.promptEl.classList.toggle('bx-correct', correct);
   ctx.promptEl.classList.toggle('bx-wrong', !correct);
+  ctx.hintPanelEl.classList.toggle('bx-correct', correct);
+  ctx.hintPanelEl.classList.toggle('bx-wrong', !correct);
+  // Explicit request: a wrong answer reveals the hint automatically
+  // (a correct one doesn't need it) -- same visibility mechanism the
+  // manual Hint!! button already uses.
+  if (!correct) ctx.hintPanelEl.style.visibility = 'visible';
 
   ctx.timer = setTimeout(() => send('paused'), PAUSE_MS);
   // The click that just caused the answering -> revealed transition (lock-in,
@@ -165,21 +178,21 @@ function exitRevealed(ctx) {
 }
 
 function enterNextReady(ctx) {
-  setActionableDisabled(ctx.btnNext, false);
+  setActionableDisabled(ctx.btnAction, false);
   ctx.onNext = () => {
     const isLast = ctx.qIndex + 1 >= ctx.quizData.questions.length;
     if (isLast) { ctx.send('finish'); }
     else { ctx.qIndex += 1; ctx.send('next'); }
   };
-  ctx.btnNext.addEventListener('click', ctx.onNext);
+  ctx.btnAction.addEventListener('click', ctx.onNext);
 }
 
 function exitNextReady(ctx) {
-  ctx.btnNext.removeEventListener('click', ctx.onNext);
+  ctx.btnAction.removeEventListener('click', ctx.onNext);
 }
 
 function enterFinished(ctx) {
-  setActionableDisabled(ctx.btnNext, true);
+  setActionableDisabled(ctx.btnAction, true);
 }
 
 const states = {
@@ -207,10 +220,9 @@ export function mountQuiz(root, quizData, reg = {}) {
     hintPanelEl: root.querySelector('[data-name="hint-panel"]'),
     hintTextEl: root.querySelector('[data-name="hint-text"]'),
     hintBtn: root.querySelector('[data-name="btn-hint"]'),
-    btnLock: root.querySelector('[data-name="btn-lock"]'),
-    btnNext: root.querySelector('[data-name="btn-next"]'),
+    btnAction: root.querySelector('[data-name="btn-action"]'),
   };
-  [ctx.hintBtn, ctx.btnLock, ctx.btnNext].forEach(markActionable);
+  [ctx.hintBtn, ctx.btnAction].forEach(markActionable);
   const machine = createMachine({ states, initial: 'answering', context: ctx });
   ctx.send = machine.send;
   return machine;

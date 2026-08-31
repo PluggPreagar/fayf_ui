@@ -21,8 +21,9 @@ tr.addBlock('quiz: hint reveal and multiple-choice flow', (r) => {
      const answers = [...root.querySelectorAll('[data-name^="answer-"]')];
      r.check(answers.length === 4, 'renders 4 answers for lesson1');
 
-     const lockBtn = root.querySelector('[data-name="btn-lock"]');
-     r.check(!lockBtn.classList.contains('bx-disabled'), 'lock button enabled in multiple mode');
+     const actionBtn = root.querySelector('[data-name="btn-action"]'); // "Check" while answering, becomes "Next" once revealed
+     r.check(!actionBtn.classList.contains('bx-disabled'), 'Check enabled in multiple mode');
+     r.check(actionBtn.textContent === 'Check', 'labeled Check while answering');
 
      const selector0 = root.querySelector('[data-name="selector-0"]');
      const selector1 = root.querySelector('[data-name="selector-1"]');
@@ -40,7 +41,7 @@ tr.addBlock('quiz: hint reveal and multiple-choice flow', (r) => {
      r.check(selector1.textContent === '', 'checkbox 1 unticks on deselect');
 
      answers[2].click(); // "5", correct -- now selected = {0, 2}, the exact correct set
-     lockBtn.click();
+     actionBtn.click(); // Check -> lockIn -> revealed
 
      r.check(answers[0].classList.contains('bx-correct'), 'correct answer 0 colorized correct');
      r.check(answers[2].classList.contains('bx-correct'), 'correct answer 2 colorized correct');
@@ -54,28 +55,30 @@ tr.addBlock('quiz: hint reveal and multiple-choice flow', (r) => {
      answers.forEach((a, i) => r.check(a.classList.contains('bx-readonly'), `answer ${i} marked read-only once revealed`));
      r.check(answers[0].tabIndex === -1, 'read-only answer dropped from tab order');
 
-     // Same fix, same reasoning, for btn-lock: exitAnswering already
-     // removed its click listener, it just hadn't been honest about it
-     // (used to stay fully enabled-looking after already locking in).
-     r.check(lockBtn.classList.contains('bx-disabled'), 'lock button disabled once locked in -- no longer misleadingly actionable');
+     // Same fix, same reasoning, for the action button: exitAnswering
+     // already removed its Check click listener, it just hadn't been
+     // honest about it (used to stay fully enabled-looking after already
+     // checking in) -- relabels to "Next" here too (enterRevealed).
+     r.check(actionBtn.classList.contains('bx-disabled'), 'disabled once checked in -- no longer misleadingly actionable');
+     r.check(actionBtn.textContent === 'Next', 'relabeled to Next once revealed');
    });
 });
 
 tr.addBlock('quiz: pause gate then next, click-to-continue skips the timer', (r) => {
   r.run(() => {
     const root = document.querySelector('body > .bx');
-    const nextBtn = root.querySelector('[data-name="btn-next"]');
+    const nextBtn = root.querySelector('[data-name="btn-action"]');
     r.check(nextBtn.classList.contains('bx-disabled'), 'next stays disabled immediately after reveal');
   })
   .run(() => { document.querySelector('body > .bx').click(); }) // click-to-continue, skip the 900ms wait
   .waitFor(() => {
-    const nextBtn = document.querySelector('body > .bx [data-name="btn-next"]');
+    const nextBtn = document.querySelector('body > .bx [data-name="btn-action"]');
     return !nextBtn.classList.contains('bx-disabled');
   }, 1000, 50, 'next enabled after click-to-continue')
   .run(() => {
     const root = document.querySelector('body > .bx');
-    root.querySelector('[data-name="btn-next"]').click();
-    r.check(root.querySelector('[data-name="btn-next"]').classList.contains('bx-disabled'),
+    root.querySelector('[data-name="btn-action"]').click();
+    r.check(root.querySelector('[data-name="btn-action"]').classList.contains('bx-disabled'),
       'next disabled again -- entering question 2 fresh (lesson1 now has 2 questions)');
     r.check(root.querySelector('[data-name="prompt"]').textContent.includes('prime numbers is true'),
       'prompt advanced to question 2');
@@ -98,13 +101,13 @@ tr.addBlock('quiz: question 2 renders the sentence (spacious-list) answer layout
   })
   .run(() => { document.querySelector('body > .bx').click(); }) // click-to-continue past the pause
   .waitFor(() => {
-    const nextBtn = document.querySelector('body > .bx [data-name="btn-next"]');
+    const nextBtn = document.querySelector('body > .bx [data-name="btn-action"]');
     return !nextBtn.classList.contains('bx-disabled');
   }, 1000, 50, 'next enabled after question 2 reveal')
   .run(() => {
     const root = document.querySelector('body > .bx');
-    root.querySelector('[data-name="btn-next"]').click();
-    r.check(root.querySelector('[data-name="btn-next"]').classList.contains('bx-disabled'),
+    root.querySelector('[data-name="btn-action"]').click();
+    r.check(root.querySelector('[data-name="btn-action"]').classList.contains('bx-disabled'),
       'next disabled again -- question 2 was the last one, this is real "finish"');
   });
 });
@@ -145,7 +148,7 @@ tr.addBlock('quiz: single-mode answer click transitions straight to revealed', (
     const answers = [...freshRoot.querySelectorAll('[data-name^="answer-"]')];
     r.check(answers.length === 3, 'renders 3 answers for the synthetic single-mode question');
 
-    const nextBtn = freshRoot.querySelector('[data-name="btn-next"]');
+    const nextBtn = freshRoot.querySelector('[data-name="btn-action"]');
     answers[1].click(); // "B", the single correct answer -- no separate lock-in click in single mode
     r.check(answers[1].classList.contains('bx-correct'),
       'single-mode click transitions straight to revealed (correct answer colorized)');
@@ -188,7 +191,7 @@ tr.addBlock('quiz: real PAUSE_MS timer reaches next-ready with no click-to-conti
   .run(() => {
     const { freshRoot } = syntheticPause;
     const answers = [...freshRoot.querySelectorAll('[data-name^="answer-"]')];
-    const nextBtn = freshRoot.querySelector('[data-name="btn-next"]');
+    const nextBtn = freshRoot.querySelector('[data-name="btn-action"]');
     answers[1].click(); // "B" -- single mode locks in immediately, entering revealed
     r.check(nextBtn.classList.contains('bx-disabled'),
       'next still disabled right after reveal, before PAUSE_MS has elapsed');
@@ -196,7 +199,7 @@ tr.addBlock('quiz: real PAUSE_MS timer reaches next-ready with no click-to-conti
   .wait(1100, 'wait past PAUSE_MS -- no click on root/panel anywhere in this block')
   .run(() => {
     const { freshRoot, container } = syntheticPause;
-    const nextBtn = freshRoot.querySelector('[data-name="btn-next"]');
+    const nextBtn = freshRoot.querySelector('[data-name="btn-action"]');
     r.check(!nextBtn.classList.contains('bx-disabled'),
       'next enabled once the real PAUSE_MS timer fires on its own');
     container.remove();
@@ -247,12 +250,12 @@ tr.addBlock('quiz: next -> answering re-entry loads the second question correctl
 
     const answers = [...freshRoot.querySelectorAll('[data-name^="answer-"]')];
     answers[0].click(); // "A", the correct answer
-    freshRoot.querySelector('[data-name="btn-lock"]').click(); // lock in -> revealed
+    freshRoot.querySelector('[data-name="btn-action"]').click(); // lock in -> revealed
   })
   .wait(1100, 'wait past PAUSE_MS to reach next-ready for question 1')
   .run(() => {
     const { freshRoot } = syntheticMulti;
-    const nextBtn = freshRoot.querySelector('[data-name="btn-next"]');
+    const nextBtn = freshRoot.querySelector('[data-name="btn-action"]');
     r.check(!nextBtn.classList.contains('bx-disabled'), 'next-ready reached after question 1');
     nextBtn.click(); // not the last question -> re-enters "answering" for question 2
   })
@@ -271,7 +274,7 @@ tr.addBlock('quiz: next -> answering re-entry loads the second question correctl
     const hintPanel = freshRoot.querySelector('[data-name="hint-panel"]');
     r.check(getComputedStyle(hintPanel).visibility === 'hidden', 'hint panel hidden again on re-entry');
 
-    const nextBtn = freshRoot.querySelector('[data-name="btn-next"]');
+    const nextBtn = freshRoot.querySelector('[data-name="btn-action"]');
     r.check(nextBtn.classList.contains('bx-disabled'), 'next disabled again on re-entry into answering');
 
     answers[1].click(); // "Y", correct -- single mode locks in immediately
@@ -279,7 +282,7 @@ tr.addBlock('quiz: next -> answering re-entry loads the second question correctl
   .wait(1100, 'wait past PAUSE_MS to reach next-ready for question 2')
   .run(() => {
     const { freshRoot, container } = syntheticMulti;
-    const nextBtn = freshRoot.querySelector('[data-name="btn-next"]');
+    const nextBtn = freshRoot.querySelector('[data-name="btn-action"]');
     r.check(!nextBtn.classList.contains('bx-disabled'), 'next-ready reached after question 2');
     nextBtn.click(); // question 2 is the last one -> "finish"
     r.check(nextBtn.classList.contains('bx-disabled'),
@@ -321,7 +324,7 @@ tr.addBlock('quiz: a missed correct answer is colored wrong, not just left blank
     const { freshRoot } = syntheticMissed;
     const answers = [...freshRoot.querySelectorAll('[data-name^="answer-"]')];
     answers[0].click(); // "2", correct -- but leave "5" (also correct) unselected
-    freshRoot.querySelector('[data-name="btn-lock"]').click();
+    freshRoot.querySelector('[data-name="btn-action"]').click();
 
     r.check(answers[0].classList.contains('bx-correct'), 'selected correct answer colorized correct');
     r.check(!!answers[0].querySelector('use[href="#icon-done"]'), 'selected correct answer got the done icon');
@@ -332,7 +335,57 @@ tr.addBlock('quiz: a missed correct answer is colored wrong, not just left blank
     r.check(!!answers[2].querySelector('use[href="#icon-cancelled"]'),
       'missed correct answer got the cancelled icon, same as a wrongly-selected one');
 
+    // Explicit request: wrong overall -> title/hint get coloured TEXT, not
+    // the answer rows' own background tint, and the hint auto-reveals
+    // (a correct overall result doesn't need the help, see the block below).
+    const prompt = freshRoot.querySelector('[data-name="prompt"]');
+    const hintText = freshRoot.querySelector('[data-name="hint-text"]');
+    const hintPanel = freshRoot.querySelector('[data-name="hint-panel"]');
+    r.check(prompt.classList.contains('bx-wrong'), 'title marked wrong (overall result -- missed a correct answer)');
+    r.check(getComputedStyle(prompt).backgroundColor === 'rgba(0, 0, 0, 0)',
+      'title background stays untouched', getComputedStyle(prompt).backgroundColor);
+    r.check(getComputedStyle(prompt).color !== getComputedStyle(freshRoot).color,
+      'title text colour actually changes from the page default');
+    r.check(hintText.classList.contains('bx-wrong'), 'hint text marked wrong to match');
+    r.check(getComputedStyle(hintPanel).visibility === 'visible', 'hint auto-revealed on a wrong overall result');
+
     const { container } = syntheticMissed;
+    container.remove();
+  });
+});
+
+// Negative case for the block above: a correct overall result must NOT
+// auto-reveal the hint (nothing to help with) -- isolated fresh fixture
+// since the shared lesson1 flow above deliberately clicks Hint!! manually
+// before locking in, which would mask this exact regression.
+let syntheticCorrectNoHint = null;
+
+tr.addBlock('quiz: a correct overall result does not auto-reveal the hint', (r) => {
+  r.run(() => {
+    (async () => {
+      const reg = await (await fetch('/registry.json')).json();
+      const container = document.createElement('div');
+      container.id = 'synthetic-correct-no-hint-quiz';
+      document.body.appendChild(container);
+      const freshRoot = render(resolve(reg['screens/quiz'], reg));
+      container.appendChild(freshRoot);
+      const quizData = {
+        id: 'quiz/synthetic-correct-no-hint', questions: [
+          { prompt: 'Pick B', mode: 'single',
+            answers: [{ text: 'A', correct: false }, { text: 'B', correct: true }],
+            hint: 'synthetic correct-no-hint hint' } ] };
+      mountQuiz(freshRoot, quizData, reg);
+      syntheticCorrectNoHint = { container, freshRoot };
+    })();
+  })
+  .waitFor(() => syntheticCorrectNoHint !== null, 3000, 50, 'synthetic correct-no-hint quiz mounted')
+  .run(() => {
+    const { freshRoot, container } = syntheticCorrectNoHint;
+    freshRoot.querySelectorAll('[data-name^="answer-"]')[1].click(); // "B", correct, single mode locks in immediately
+    const prompt = freshRoot.querySelector('[data-name="prompt"]');
+    const hintPanel = freshRoot.querySelector('[data-name="hint-panel"]');
+    r.check(prompt.classList.contains('bx-correct'), 'title marked correct');
+    r.check(getComputedStyle(hintPanel).visibility === 'hidden', 'hint stays hidden -- correct needs no help');
     container.remove();
   });
 });

@@ -2,17 +2,14 @@
   "children": [
     { "name": "quiz-body", "box": "stack, fixed, h:400, w:380, packed, gap:2++",
       "children": [
-        { "name": "prompt", "extends": "atom/text.title", "box": "clamp, solid, rounded, mid, evenly, pad:2" },
+        { "name": "prompt", "extends": "atom/text.title", "box": "clamp, rounded, mid, evenly, pad:2" },
         { "name": "answers", "box": "stack, gap:2, clamp" },
         { "box": "fixed, h:1, hairline" },
         { "name": "controls", "box": "row, mid, between, clamp",
           "children": [
             { "name": "btn-hint", "extends": "atom/button", "content": "Hint!!" },
-            { "box": "row, mid, gap:2, hug",
-              "children": [
-                { "name": "btn-lock", "extends": "atom/button.primary", "box": "disabled", "content": "Lock answer in" },
-                { "name": "btn-next", "extends": "atom/button.primary", "box": "disabled", "content": "Next" } ] } ] },
-        { "name": "hint-panel", "box": "row, mid, gap:1, hug",
+            { "name": "btn-action", "extends": "atom/button.primary", "box": "disabled", "content": "Check" } ] },
+        { "name": "hint-panel", "box": "row, mid, gap:1, clamp, tint2, rounded, pad:4",
           "children": [
             "!",
-            { "name": "hint-text", "box": "fill", "content": "" } ] } ] } ] }
+            { "name": "hint-text", "box": "", "content": "" } ] } ] } ] }
