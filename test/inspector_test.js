@@ -472,4 +472,138 @@ tr.addBlock('mountInspectorToggle: off by default, click mounts/unmounts, URL st
   });
 });
 
+// Found live (Browser pane): a real click can never select a
+// pointer-events:none box (disabled/loading/readonly, tokens.css) --
+// e.target lands on whatever's behind it, same reason a real mouse
+// click can't hit it either. Fixed with a mounted-inspector-scoped CSS
+// override. A synthetic .click()/dispatchEvent doesn't exercise real
+// hit-testing (verified manually against this exact bug elsewhere this
+// session), so this checks the mechanism the fix actually relies on --
+// the computed pointer-events value -- not a real click's target.
+//
+// This fixture page (inspector.html) keeps its OWN inspector mounted
+// for the whole test run, so document.documentElement already carries
+// .ins-inspecting throughout -- there's no "zero inspectors mounted"
+// moment to observe here. What IS testable: the override rule exists
+// and does what it claims, and reference-counting correctly survives
+// partial teardown (destroying one instance while another -- here, the
+// page's own -- is still mounted).
+tr.addBlock('mounting an inspector makes disabled/loading/readonly boxes selectable (pointer-events override)', (r) => {
+  r.run(() => {
+    const rule = [...document.styleSheets]
+      .flatMap(s => { try { return [...s.cssRules]; } catch { return []; } })
+      .find(rl => rl.selectorText === '.ins-inspecting .bx-disabled, .ins-inspecting .bx-loading, .ins-inspecting .bx-readonly');
+    r.check(!!rule, '.ins-inspecting override rule exists');
+    r.check(rule?.style.pointerEvents === 'auto', 'the rule sets pointer-events:auto', rule?.style.pointerEvents);
+
+    const doc = { box: 'row, disabled', name: 'inert-check', content: 'x' };
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const el = render(resolve(doc));
+    container.appendChild(el);
+    r.check(getComputedStyle(el).pointerEvents === 'auto',
+      'selectable -- an inspector (this fixture\'s own permanent one) is already mounted');
+    container.remove();
+  });
+});
+
+tr.addBlock('mounting/destroying inspectors: the override survives destroying just one of several', (r) => {
+  r.run(() => {
+    const doc = { box: 'row, disabled', name: 'shared-inert', content: 'x' };
+    const containerA = document.createElement('div');
+    const containerB = document.createElement('div');
+    document.body.append(containerA, containerB);
+    const elA = render(resolve(doc));
+    const elB = render(resolve(doc));
+    containerA.appendChild(elA);
+    containerB.appendChild(elB);
+
+    const a = mountInspector(elA, { sourceId: 'a' });
+    const b = mountInspector(elB, { sourceId: 'b' });
+    r.check(getComputedStyle(elA).pointerEvents === 'auto', 'selectable with both mounted');
+
+    a.destroy();
+    r.check(getComputedStyle(elB).pointerEvents === 'auto', 'still selectable -- b (and this fixture\'s own) still mounted');
+
+    b.destroy();
+    // Can't assert "back to none" here -- this fixture's own permanent
+    // inspector keeps the count above zero for the rest of the suite.
+    // The reference-count itself not going negative/breaking is what
+    // this block actually verifies (no throw, no premature flip above).
+    r.check(getComputedStyle(elA).pointerEvents === 'auto', 'still auto -- this fixture\'s own inspector remains mounted');
+    containerA.remove();
+    containerB.remove();
+  });
+});
+
+// State classes (selected/correct/wrong/loading/error/readonly) are
+// deliberately not box dials (C2), so they need their own section,
+// separate from the vocabulary-generated fields above -- direct
+// classList/setter toggles, no capture()/render() round-trip.
+tr.addBlock('state classes: checkbox toggles the real class (+ tabIndex for loading/readonly), populates on select', (r) => {
+  r.run(() => {
+    const doc = { box: 'stack', name: 'stateroot', children: [
+      { box: 'row, solid', name: 'plain', content: 'x' },
+    ] };
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const el = render(resolve(doc));
+    container.appendChild(el);
+    mountInspector(el, { sourceId: 'state/fixture' });
+
+    const target = el.querySelector('[data-name="plain"]');
+    target.click();
+    // Multiple .ins-panel elements exist at once here -- this fixture
+    // page's own permanent inspector, plus earlier blocks' fixtures --
+    // take the most recently mounted one, same convention every other
+    // multi-panel block in this file already follows.
+    const panels = document.querySelectorAll('.ins-panel');
+    const panel = panels[panels.length - 1];
+    const readonlyCb = panel.querySelector('[data-state="readonly"] input');
+    r.check(!!readonlyCb, 'readonly checkbox exists in the panel');
+    r.check(!readonlyCb.checked, 'starts unchecked -- target has no state classes yet');
+
+    readonlyCb.checked = true;
+    readonlyCb.dispatchEvent(new Event('change'));
+    r.check(target.classList.contains('bx-readonly'), 'checking readonly sets the real class');
+    r.check(target.tabIndex === -1, 'readonly also drops tab order, same as setActionableReadonly elsewhere');
+
+    // Deselect and reselect: the checkbox should reflect the class that's
+    // actually still on the element, not reset to unchecked by default.
+    document.body.click();
+    target.click();
+    r.check(panel.querySelector('[data-state="readonly"] input').checked,
+      'reselecting shows readonly still checked -- populated from the live element, not lost');
+  });
+});
+
+tr.addBlock('state classes survive a dial edit (carried onto the freshly re-rendered element)', (r) => {
+  r.run(() => {
+    const doc = { box: 'stack', name: 'carryroot', children: [
+      { box: 'row, solid, square', name: 'target', content: 'x' },
+    ] };
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const el = render(resolve(doc));
+    container.appendChild(el);
+    mountInspector(el, { sourceId: 'carry/fixture' });
+
+    let target = el.querySelector('[data-name="target"]');
+    target.click();
+    const panels = document.querySelectorAll('.ins-panel');
+    const panel = panels[panels.length - 1];
+    panel.querySelector('[data-state="wrong"] input').click();
+    r.check(target.classList.contains('bx-wrong'), 'wrong set before the edit');
+
+    const radiusSelect = panel.querySelector('[data-dial="radius"] select');
+    radiusSelect.value = 'rounded';
+    radiusSelect.dispatchEvent(new Event('change'));
+
+    target = el.querySelector('[data-name="target"]'); // fresh element post-edit
+    r.check(target.classList.contains('bx-rounded'), 'the dial edit itself applied');
+    r.check(target.classList.contains('bx-wrong'), 'wrong survived the re-render, not silently dropped');
+    r.check(panel.querySelector('[data-state="wrong"] input').checked, 'checkbox reflects the carried-over state too');
+  });
+});
+
 await tr.runBlocks();

@@ -60,9 +60,18 @@ function start() {
   }, 100);
 }
 
+// Remembers the tabIndex attachHandles overwrites, so detachHandles can put
+// it back. Without this, selecting ANY inert box (disabled/loading/readonly,
+// tabIndex -1 by design) through the inspector permanently promoted it to
+// tabIndex 0 -- attachHandles needs it focusable for keyboard reveal
+// (focusin/focusout below) while selected, but nothing ever reversed that
+// once the box was deselected again.
+const priorTabIndex = new WeakMap();
+
 export function attachHandles(el) {
   start();
   el.dataset.handles = '1';
+  if (!priorTabIndex.has(el)) priorTabIndex.set(el, el.tabIndex);
   el.tabIndex = 0;
   const w = el.getBoundingClientRect().width;
   const pills = w >= 280 ? [0.25, 0.75] : w >= 140 ? [0.5] : [];
@@ -98,4 +107,8 @@ export function detachHandles(el) {
   _engine.hosts.delete(el);
   delete el.dataset.handles;
   el.querySelectorAll('.hx-square, .hx-pill').forEach(h => h.remove());
+  if (priorTabIndex.has(el)) {
+    el.tabIndex = priorTabIndex.get(el);
+    priorTabIndex.delete(el);
+  }
 }

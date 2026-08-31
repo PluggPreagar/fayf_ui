@@ -12,12 +12,20 @@
 import { attachHandles, detachHandles } from './handles.js';
 import { parse } from './model.js';
 import { render, capture } from './render.js';
+import { setActionableLoading, setActionableError, setActionableReadonly } from './actions.js';
 import vocabulary from './vocabulary.json' with { type: 'json' };
 
 const ENUM_DIALS = Object.keys(vocabulary.box);
 const NUMERIC_DIALS = vocabulary.box_numeric;
 const PLACE_DIALS = ['place-h', 'place-v'];
 const PLACE_REQUIRES = ['docked', 'floating', 'anchored', 'sticky'];
+// Interaction-state classes (docs/superpowers/specs/2026-08-30-state-rules-design.md)
+// are deliberately NOT box dials (C2: "hover isn't a box dial", same for
+// selected/correct/wrong/loading/error/readonly) -- capture()/render() never
+// see them, so the vocabulary-driven fields above can't show or edit them.
+// disabled is the one exception (a real `state` dial value already) and
+// stays governed by that dropdown, not duplicated here.
+const STATE_CLASSES = ['selected', 'correct', 'wrong', 'loading', 'error', 'readonly'];
 
 const style = document.createElement('style');
 style.textContent = `
@@ -30,12 +38,28 @@ style.textContent = `
 .ins-field select,.ins-field input{font:11px var(--mono);width:100px}
 .ins-field input.ins-value{width:56px}
 .ins-field select.ins-growth{width:52px}
+.ins-states-label{color:var(--muted);margin:8px 0 4px;font-size:10px}
 .ins-actions{display:flex;gap:6px;margin-top:8px;pointer-events:auto}
 .ins-actions button{font:11px var(--mono);padding:3px 8px;border:1px solid var(--rule);border-radius:4px;
   background:var(--paper);color:var(--muted);cursor:pointer}
 .ins-actions button:hover{color:var(--text);border-color:var(--dash)}
+/* While any inspector is mounted, let a click actually reach an inert
+   box instead of falling through to whatever's behind it -- selection
+   needs a real e.target, which pointer-events:none never produces
+   (tokens.css's .bx-disabled/.bx-loading/.bx-readonly). Higher
+   specificity than those single-class rules, no !important needed. */
+.ins-inspecting .bx-disabled,.ins-inspecting .bx-loading,.ins-inspecting .bx-readonly{pointer-events:auto}
 `;
 document.head.appendChild(style);
+
+// Reference-counted, not a plain boolean: multiple mountInspector() calls
+// can be alive at once (tests do this deliberately), and one's destroy()
+// must not turn off selectability for another still-mounted instance.
+let inspectingCount = 0;
+function setInspecting(on) {
+  inspectingCount += on ? 1 : -1;
+  document.documentElement.classList.toggle('ins-inspecting', inspectingCount > 0);
+}
 
 // Child-index path from `root` to `el`, counting only real `.bx` nodes --
 // matches how render()/capture() address children (spacers excluded, see
@@ -171,12 +195,56 @@ function buildPanel() {
     <div class="ins-form" hidden>
       <div class="ins-source"></div>
       <div class="ins-fields"></div>
+      <div class="ins-states-label">state classes (not box dials)</div>
+      <div class="ins-states"></div>
       <div class="ins-actions">
         <button type="button" class="ins-copy">Copy JSON</button>
         <button type="button" class="ins-download">Download JSON</button>
       </div>
     </div>`;
   return panel;
+}
+
+// Own section, own mechanism -- direct classList/setter toggles on the
+// live element, no capture()/render() round-trip (there's no dial to
+// round-trip through). loading/error/readonly reuse ui/actions.js's own
+// setters so tabIndex stays correct, same as any other caller of those.
+function buildStateToggles(container, onToggle) {
+  const controls = {};
+  for (const name of STATE_CLASSES) {
+    const row = document.createElement('label');
+    row.className = 'ins-field';
+    row.dataset.state = name;
+    row.textContent = name;
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.addEventListener('change', () => onToggle(name, cb.checked));
+    row.appendChild(cb);
+    container.appendChild(row);
+    controls[name] = cb;
+  }
+  return controls;
+}
+
+function populateStateToggles(controls, el) {
+  for (const name of STATE_CLASSES) controls[name].checked = el.classList.contains(`bx-${name}`);
+}
+
+function setStateClass(el, name, on) {
+  if (name === 'loading') setActionableLoading(el, on);
+  else if (name === 'error') setActionableError(el, on);
+  else if (name === 'readonly') setActionableReadonly(el, on);
+  else el.classList.toggle(`bx-${name}`, on);
+}
+
+// Selection-time snapshot of which classes were set on `from`, replayed
+// onto `to` -- same "the edit is a local override, not a fresh thing"
+// principle already applied to provenance carry-over in onChange below.
+// Without this, editing any dial (which replaces the element via
+// capture()+render()) would silently drop every state class the
+// inspector itself just set, since capture() never captures them.
+function carryStateClasses(from, to) {
+  for (const name of STATE_CLASSES) setStateClass(to, name, from.classList.contains(`bx-${name}`));
 }
 
 // Detail-panel insets: a screen's own "topbar"/"statusbar" boxes (named by
@@ -200,16 +268,25 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
   const formEl = panel.querySelector('.ins-form');
   const sourceEl = panel.querySelector('.ins-source');
   const fieldsEl = panel.querySelector('.ins-fields');
+  const statesEl = panel.querySelector('.ins-states');
 
   let rootEl = container;
   let selected = null;
   updateInsets(panel, rootEl);
   const onResize = () => updateInsets(panel, rootEl);
   window.addEventListener('resize', onResize);
+  // Selectable-while-inspecting: disabled/loading/readonly boxes are
+  // pointer-events:none at rest (tokens.css), so a real click never
+  // reaches them -- e.target lands on whatever's behind/around instead,
+  // same reason a real mouse click can't hit them either. Scoped to
+  // "some inspector is mounted" (a shared counter, not per-instance) so
+  // two concurrent mounts (tests do this) don't fight over the flag.
+  setInspecting(true);
   // Tagged once, against the tree exactly as it stood at mount time -- see
   // tagProvenance's own comment for why identity (not path) is the key.
   const elementProvenance = tagProvenance(container, provenance);
   const controls = buildFields(fieldsEl, onChange);
+  const stateControls = buildStateToggles(statesEl, onStateToggle);
   const copyBtn = panel.querySelector('.ins-copy');
   const downloadBtn = panel.querySelector('.ins-download');
 
@@ -218,10 +295,25 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
     selected = el;
     selected.classList.add('ins-selected');
     attachHandles(selected);
+    // Real keyboard focus, not just tabIndex=0 -- without this, clicking to
+    // select never actually focused anything (attachHandles only makes the
+    // box focusABLE), so its own focusin-triggered handle reveal (50%
+    // opacity, ui/handles.js) never fired either. That's the same reason a
+    // small selected box could look handle-less next to a big one like
+    // quiz-body: without a real focus, handles only show via the mouse
+    // physically dwelling nearby -- easy on a wide box, easy to miss on a
+    // small one. preventScroll: selecting shouldn't jump the page.
+    selected.focus({ preventScroll: true });
     emptyEl.hidden = true;
     formEl.hidden = false;
     populateFields(controls, parse(selected.dataset.box || ''));
+    populateStateToggles(stateControls, selected);
     sourceEl.textContent = describeProvenance(elementProvenance.get(selected), sourceId);
+  }
+
+  function onStateToggle(name, checked) {
+    if (!selected?.isConnected) return;
+    setStateClass(selected, name, checked);
   }
 
   function onChange() {
@@ -238,6 +330,7 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
     // has no entry to carry, so it still falls through to the fallback.
     const entry = elementProvenance.get(selected);
     if (entry) elementProvenance.set(fresh, entry);
+    carryStateClasses(selected, fresh);
     const wasRoot = selected === rootEl;
     selected.replaceWith(fresh);
     if (wasRoot) { rootEl = fresh; updateInsets(panel, rootEl); }
@@ -276,6 +369,7 @@ export function mountInspector(container, { sourceId, provenance } = {}) {
     if (selected) { detachHandles(selected); selected.classList.remove('ins-selected'); }
     clickTarget.removeEventListener('click', handleClick);
     window.removeEventListener('resize', onResize);
+    setInspecting(false);
     panel.remove();
   }
 
