@@ -1,4 +1,4 @@
-{ "box": "row, mid, gap:1, clamp, solid, rounded, pad:1",
+{ "box": "row, mid, gap:1, clamp, solid, pill, pad:2",
   "children": [
     { "box": "fixed, w:12, h:12, solid, mid, evenly, circle" },
     { "extends": "cluster/line", "box": "w:64" } ] }
