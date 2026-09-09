@@ -10,9 +10,15 @@ serve:
     @echo "  tests:  http://127.0.0.1:{{port}}/wrapper?test=index.html"
     python3 server.py --port {{port}}
 
-# All node tests -- L0-L1 model + parts conformance
+# All node tests -- L0-L1 model + parts conformance (+ registry.json freshness)
 ci:
     node --test test/node/*.js
+
+# Write registry.json -- static copy of /registry.json for consumers that
+# vendor this repo as a pinned snapshot (no server). Re-run after any
+# parts/screens change; `just ci` fails while it is stale.
+build:
+    python3 server.py --build
 
 # Parts/screens conformance only
 validate:

@@ -18,6 +18,21 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 
 
+def build_registry(root=ROOT):
+    """{id: doc} for every parts/**.json and screens/**.json -- the same map
+    /registry.json serves live. Also written to disk by `just build` so a
+    consumer that vendors this repo (a pinned snapshot, no server) has it as
+    a plain static file; test/node/registry_fresh_test.js fails when that
+    committed copy lags the parts."""
+    reg = {}
+    for base, prefix in (('parts', ''), ('screens', 'screens/')):
+        d = root / base
+        for f in sorted(d.rglob('*.json')) if d.is_dir() else []:
+            rid = prefix + f.relative_to(d).as_posix()[:-5]
+            reg[rid] = json.loads(f.read_text(encoding='utf-8'))
+    return reg
+
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=str(ROOT), **kw)
@@ -57,13 +72,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.reply(200, html, 'text/html; charset=utf-8')
 
     def registry(self):
-        reg = {}
-        for base, prefix in (('parts', ''), ('screens', 'screens/')):
-            d = ROOT / base
-            for f in sorted(d.rglob('*.json')) if d.is_dir() else []:
-                rid = prefix + f.relative_to(d).as_posix()[:-5]
-                reg[rid] = json.loads(f.read_text(encoding='utf-8'))
-        self.reply(200, json.dumps(reg), 'application/json')
+        self.reply(200, json.dumps(build_registry()), 'application/json')
 
     def reply(self, code, text, ctype='text/plain; charset=utf-8'):
         body = text.encode('utf-8')
@@ -77,6 +86,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--port', type=int, default=8017)
+    ap.add_argument('--build', action='store_true',
+                    help='write registry.json (static copy of /registry.json) and exit')
     args = ap.parse_args()
+    if args.build:
+        out = ROOT / 'registry.json'
+        out.write_text(json.dumps(build_registry(), indent=1, ensure_ascii=False) + '\n', encoding='utf-8')
+        print(f'fayf_ui: wrote {out.name} ({len(build_registry())} ids)')
+        raise SystemExit(0)
     print(f'fayf_ui: http://127.0.0.1:{args.port}/index.html')
     http.server.ThreadingHTTPServer(('127.0.0.1', args.port), Handler).serve_forever()
