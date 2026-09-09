@@ -1,0 +1,1 @@
+{ "extends": "atom/button", "box": "ok", "content": "I know it" }

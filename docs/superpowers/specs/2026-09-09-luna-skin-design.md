@@ -4,8 +4,8 @@
 · addendum to [2026-08-27-wireframe-ui-design.md](2026-08-27-wireframe-ui-design.md)
 · builds on [2026-08-30-state-rules-design.md](2026-08-30-state-rules-design.md)
 
-Status: **steps 1–8 shipped 2026-09-09** (skin + fonts + `ok`/`warn` + 3-way toggle,
-proof `quiz.html?style=luna`). Steps 9–11 pending. Deviations from the plan
+Status: **steps 1–9 shipped 2026-09-09** (skin + fonts + `ok`/`warn` + 3-way toggle,
+proof `quiz.html?style=luna`, 6 variants). Steps 10–11 pending (decision 4 open). Deviations from the plan
 below are marked **(shipped as)**.
 
 Source: `D:\_project\202601_THW\thw_lernkarten.html` (external, ~1MB —
@@ -128,7 +128,7 @@ Intended: wireframe = structure only. Hover exclusion list
 | 6 | `MODES = ['wireframe','mockup','luna']`, toggle cycles, label = next mode | `ui/style-mode.js` | inspector/math-trainer toggle tests |
 | 7 | vocabulary `ok` `warn` + CSS + hover exclusion | `ui/vocabulary.json` `tokens.css` | node `model_test`, gallery invariant, hover regression |
 | 8 | **proof**: `quiz.html?style=luna` screenshot vs THW | — | visual, C7 evidence. **(found live)** the committed `ui/quiz.js` tints the hint *panel* on reveal (user edit, "color hint-panel not hint-text") but still reset the *text*'s classes on re-entry → question 2's panel stayed amber. Fixed (`enterAnswering` resets `hintPanelEl`), test asserts the reset; dead `[data-name="hint-text"]` colour rules removed |
-| 9 | variants: `chip.active` `button.hint` `button.know` `text.plate` `badge.ok` `badge.warn` | `parts/` | `parts_validate_test` (Windows path bug pending) · gallery |
+| 9 | variants: `chip.active` `button.hint` `button.know` `text.plate` `badge.ok` `badge.warn` | `parts/` | **(shipped as)** `chip.active` `chip.ok` `chip.warn` `button.hint` `button.know` `text.plate` — THW's status/level pills are small pill *labels*, i.e. `atom/chip` (hug, pill, pad:1), not `atom/badge` (a fixed 14px count circle); `badge.*` would have been the wrong type. Windows `test/node/registry.js` bug fixed on the way (`fileURLToPath` + separator normalisation) → `parts_validate`/`answer_variant` finally run here: node 76/76 · gallery 71/71 |
 | 10 | decision 4 → `screens/thw-card.json` + `thw.html` (+ `content/thw/*.json`) | screens, content | `test/thw_test.js` |
 | 11 | channel audit × 3 skins | `test/state-rules_test.js` | extend |
 | 12 | `.ai/todo.md` TODO-7 rounds · checklist row if a fit bug surfaces | docs | — |

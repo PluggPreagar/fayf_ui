@@ -1,0 +1,1 @@
+{ "extends": "atom/text", "box": "row, mid, packed, pad:3, brand, rounded, font:44", "content": "GKW 1" }

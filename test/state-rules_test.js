@@ -205,6 +205,16 @@ const SKIN_VARS = ['--r-rounded', '--wrong', '--wrong-surf', '--ok-surf', '--war
 // for mockup/luna only, not in the every-skin list above.
 const REALISTIC_VARS = ['--brand', '--brand-surf'];
 const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+// A var's value as the browser would serialise it on an element (rgb(...)),
+// so hex tokens compare against getComputedStyle output.
+const cssVarColor = (name) => {
+  const el = document.createElement('div');
+  el.style.color = `var(${name})`;
+  document.body.appendChild(el);
+  const c = getComputedStyle(el).color;
+  el.remove();
+  return c;
+};
 
 tr.addBlock('skins: every skin-driven var resolves in wireframe, mockup and luna; wireframe/mockup keep their pre-luna values', (r) => {
   const before = document.documentElement.dataset.style;
@@ -235,7 +245,19 @@ tr.addBlock('skins: every skin-driven var resolves in wireframe, mockup and luna
       'mockup: solid shadow unchanged from the old hardcoded value', getComputedStyle(probe).boxShadow);
     r.check(getComputedStyle(probe).borderColor === 'rgb(47, 95, 216)', 'mockup: brand border still brand blue');
 
+    // ok/warn fills (decision 3): grey in wireframe, real colour in luna.
+    const warnProbe = document.createElement('div');
+    warnProbe.className = 'bx bx-solid bx-warn';
+    document.body.appendChild(warnProbe);
+    document.documentElement.dataset.style = 'wireframe';
+    r.check(getComputedStyle(warnProbe).backgroundColor === cssVarColor('--tint3'),
+      'wireframe: warn fill is plain tint3 grey (structure only)', getComputedStyle(warnProbe).backgroundColor);
     document.documentElement.dataset.style = 'luna';
+    r.check(getComputedStyle(warnProbe).backgroundColor === 'rgb(251, 232, 204)',
+      'luna: warn fill is THW amber-tint', getComputedStyle(warnProbe).backgroundColor);
+    r.check(getComputedStyle(warnProbe).borderColor === 'rgb(201, 122, 0)',
+      'luna: solid+warn border is amber', getComputedStyle(warnProbe).borderColor);
+    warnProbe.remove();
     r.check(getComputedStyle(probe).borderRadius === '8px', 'luna: rounded is 8px');
     r.check(cssVar('--wrong') === cssVar('--warn'), 'luna: wrong re-hued to warn (amber)');
     r.check(getComputedStyle(probe).textTransform === 'uppercase', 'luna: brand button uppercase (display role)');
