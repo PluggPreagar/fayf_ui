@@ -147,15 +147,22 @@ tr.addBlock('hover gives bare/untinted actionable boxes a real background wash, 
 //     combine" reasoning as the trio above.
 // Any OTHER overlap -- most importantly anything touching hover's `filter`
 // -- is a real regression.
+// Skin-specific state rules join the audit too (luna spec step 11): a skin
+// may restyle a state only inside that state's own channel. luna's focus
+// rule (solid instead of dashed ring) is the one such rule today -- it
+// touches outline-style, which the base focus rule also declares (via the
+// `outline` shorthand): same state, so allow-listed, not a collision.
 const STATE_SELECTORS = [
   '.bx-actionable:hover', '.bx-actionable:focus-visible', '.bx-actionable:active',
   '.bx-loading', '.bx-error', '.bx-readonly', '.bx-disabled', '.bx-selected',
+  ':root[data-style="luna"] .bx-actionable:focus-visible',
 ];
 const ALLOWED_OVERLAPS = new Set([
   ['.bx-loading', '.bx-readonly'].sort().join('|'),
   ['.bx-loading', '.bx-disabled'].sort().join('|'),
   ['.bx-readonly', '.bx-disabled'].sort().join('|'),
   ['.bx-error', '.bx-selected'].sort().join('|'),
+  ['.bx-actionable:focus-visible', ':root[data-style="luna"] .bx-actionable:focus-visible'].sort().join('|'),
 ]);
 
 tr.addBlock('selected survives focus -- both channels visible at once (fix for the logged .bx-selected/focus collision)', (r) => {
@@ -173,6 +180,9 @@ tr.addBlock('full channel audit: hover has zero overlap with any other state; on
     const props = Object.fromEntries(STATE_SELECTORS.map(s => [s, declaredProps(s) || []]));
     r.check(props['.bx-actionable:hover'].includes('filter') && props['.bx-actionable:hover'].length === 1,
       'hover\'s channel is exactly `filter`, nothing else', props['.bx-actionable:hover']);
+    const lunaFocus = props[':root[data-style="luna"] .bx-actionable:focus-visible'];
+    r.check(lunaFocus.length > 0 && lunaFocus.every(p => p.startsWith('outline')),
+      'luna\'s focus override stays inside focus\'s own channel (outline-*)', lunaFocus);
 
     const unexpected = [];
     for (let i = 0; i < STATE_SELECTORS.length; i++) {

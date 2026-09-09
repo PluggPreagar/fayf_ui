@@ -4,8 +4,8 @@
 · addendum to [2026-08-27-wireframe-ui-design.md](2026-08-27-wireframe-ui-design.md)
 · builds on [2026-08-30-state-rules-design.md](2026-08-30-state-rules-design.md)
 
-Status: **steps 1–10 shipped 2026-09-09** (skin + fonts + `ok`/`warn` + 3-way toggle,
-proof `quiz.html?style=luna`, 6 variants, `thw.html` ladder). Step 11 pending.
+Status: **all 11 steps shipped 2026-09-09** (skin + fonts + `ok`/`warn` + 3-way toggle,
+proof `quiz.html?style=luna`, 6 variants, `thw.html` ladder, channel audit incl. skin rules).
 Decision 4 taken: **new `ui/thw.js` controller** (not a quiz.js extension). Deviations from the plan
 below are marked **(shipped as)**.
 
@@ -131,7 +131,7 @@ Intended: wireframe = structure only. Hover exclusion list
 | 8 | **proof**: `quiz.html?style=luna` screenshot vs THW | — | visual, C7 evidence. **(found live)** the committed `ui/quiz.js` tints the hint *panel* on reveal (user edit, "color hint-panel not hint-text") but still reset the *text*'s classes on re-entry → question 2's panel stayed amber. Fixed (`enterAnswering` resets `hintPanelEl`), test asserts the reset; dead `[data-name="hint-text"]` colour rules removed |
 | 9 | variants: `chip.active` `button.hint` `button.know` `text.plate` `badge.ok` `badge.warn` | `parts/` | **(shipped as)** `chip.active` `chip.ok` `chip.warn` `button.hint` `button.know` `text.plate` — THW's status/level pills are small pill *labels*, i.e. `atom/chip` (hug, pill, pad:1), not `atom/badge` (a fixed 14px count circle); `badge.*` would have been the wrong type. Windows `test/node/registry.js` bug fixed on the way (`fileURLToPath` + separator normalisation) → `parts_validate`/`answer_variant` finally run here: node 76/76 · gallery 71/71 |
 | 10 | decision 4 → `screens/thw-card.json` + `thw.html` (+ `content/thw/*.json`) | screens, content | **(shipped as)** decision 4 = **new `ui/thw.js`** (user pick: THW logic isolated, quiz untouched; accepted duplication: `mountThwFromUrl` mirrors `mountQuizFromUrl`). Ladder ported: Stufe A self-check (button.know / button.hint) → Stufe B (3 peer titles) → Stufe C (3 fantasy names, from content) → Lösung; points 25/15/10/5; wrong pick marks `bx-wrong`, all options read-only, skip disabled, auto-climbs after `WRONG_MS` 650; failed card re-queued; session stats in `chip.ok/.warn/.active`. Slots re-rendered from parts: `level` (chip variant per rung), `prompt` (text.plate + text for code cards, text.title for questions), `body`. NOT ported: XP/ranks/combo, localStorage, category chips, review sampling, FAQ. `card-body h:540` — measured (checklist #3): question card at Stufe B/C fills 480 exactly; a code card's plate prompt is 117px vs 60 → fills 520 with spacers at 9px (base 8) → 540 leaves a 20px cushion for cross-OS font-metric drift (this repo is maintained from Windows and Linux). `content/thw/units.json`: 8 cards (4 per category — Stufe B needs 3 peers), German as in the source. Tests: `test/thw_test.js` (4 blocks: page, deterministic ladder walk, finish, loading/error) · `test/node/thw_test.js` (content schema, `buildOptions` purity with injected rnd) · gallery invariant `screens/thw-card` |
-| 11 | channel audit × 3 skins | `test/state-rules_test.js` | extend |
+| 11 | channel audit × 3 skins | `test/state-rules_test.js` | **(shipped as)** skin-specific state rules join the audit list (today: luna's solid focus ring) with a same-state allow-list entry; asserted to stay inside `outline-*`. Skins can't add channels, only restyle within one — this pins it |
 | 12 | `.ai/todo.md` TODO-7 rounds · checklist row if a fit bug surfaces | docs | — |
 
 Effort: 1–6 ≈ 1 session · 7–9 ≈ 1 · 10–11 ≈ 1–2.
