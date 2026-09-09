@@ -91,7 +91,10 @@ if __name__ == '__main__':
     args = ap.parse_args()
     if args.build:
         out = ROOT / 'registry.json'
-        out.write_text(json.dumps(build_registry(), indent=1, ensure_ascii=False) + '\n', encoding='utf-8')
+        # newline='\n': this repo is maintained from Windows AND Linux -- without it
+        # Python writes CRLF here and the file flips on every other machine.
+        out.write_text(json.dumps(build_registry(), indent=1, ensure_ascii=False) + '\n',
+                       encoding='utf-8', newline='\n')
         print(f'fayf_ui: wrote {out.name} ({len(build_registry())} ids)')
         raise SystemExit(0)
     print(f'fayf_ui: http://127.0.0.1:{args.port}/index.html')
