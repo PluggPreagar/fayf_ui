@@ -8,7 +8,7 @@
     "place-h":    ["left", "center", "right"],
     "place-v":    ["top", "middle", "bottom"],
     "stroke":     ["bare", "hairline", "solid", "dashed"],
-    "fill-tint":  ["tint0", "tint1", "tint2", "tint3", "brand"],
+    "fill-tint":  ["tint0", "tint1", "tint2", "tint3", "brand", "ok", "warn"],
     "radius":     ["square", "rounded", "pill", "circle"],
     "overflow":   ["clip", "scroll"],
     "state":      ["disabled", "running", "paused", "blocked", "cancelled", "done"]

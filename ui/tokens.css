@@ -1,4 +1,18 @@
 /* fayf_ui palette + box classes. One class per token: bx-<token>. */
+
+/* luna skin fonts (docs/superpowers/specs/2026-09-09-luna-skin-design.md).
+   Decoded from the THW source's base64 blocks -> ui/fonts/, all SIL OFL.
+   The source shipped ONE identical file for every Source Sans / JetBrains
+   weight (verified by hash), so those two get a weight range on a single
+   file; Saira has three real cuts. A browser only fetches an @font-face
+   once text actually uses its family -- wireframe/mockup never do, so
+   declaring these here costs them nothing. */
+@font-face{font-family:'Saira Condensed';font-weight:500;font-display:swap;src:url(fonts/saira-condensed-500.woff2) format('woff2')}
+@font-face{font-family:'Saira Condensed';font-weight:600;font-display:swap;src:url(fonts/saira-condensed-600.woff2) format('woff2')}
+@font-face{font-family:'Saira Condensed';font-weight:700;font-display:swap;src:url(fonts/saira-condensed-700.woff2) format('woff2')}
+@font-face{font-family:'Source Sans 3';font-weight:400 700;font-display:swap;src:url(fonts/source-sans-3.woff2) format('woff2')}
+@font-face{font-family:'JetBrains Mono';font-weight:500 700;font-display:swap;src:url(fonts/jetbrains-mono.woff2) format('woff2')}
+
 :root {
   --canvas:#f0eee9; --paper:#fff; --ink:#222; --text:#111;
   --muted:#8a8579; --accent:#c0392b; --ok:#2f7d4f;
@@ -6,6 +20,20 @@
   --dash:#999; --rule:#d5d2cc;
   --prose:'Architects Daughter',cursive;
   --mono:ui-monospace,Menlo,Consolas,monospace;
+  /* skin-driven knobs (luna spec). Base values reproduce exactly what the
+     rules below hardcoded before, so wireframe/mockup render unchanged:
+     ok-surf/wrong-surf = the old .bx-correct/.bx-wrong rgba tints,
+     wrong = accent, focus = ink, r-rounded = 3px, display = prose,
+     shadow = the old mockup .bx-solid shadow. warn (amber) is new in
+     every skin -- it's a real 4th hue for THW's hint/"nochmal" role,
+     kept distinct from accent (error/red) by concept, C2. */
+  --ok-surf:rgba(47,125,79,.16);
+  --warn:#b9770e; --warn-surf:rgba(185,119,14,.16);
+  --wrong:var(--accent); --wrong-surf:rgba(192,57,43,.16);
+  --focus:var(--ink);
+  --r-rounded:3px;
+  --display:var(--prose);
+  --shadow:0 1px 2px rgba(0,0,0,.06);
 }
 .bx { box-sizing:border-box; position:relative; display:flex; flex-direction:row;
       min-width:0; min-height:0; font:12px/1.3 var(--prose); color:var(--text); }
@@ -52,8 +80,15 @@
    name, no aliases" -- primary and tint3 were never really the same
    thing, just shared a class by accident). */
 .bx-brand{background:var(--tint3)}
-/* radius */
-.bx-square{border-radius:0} .bx-rounded{border-radius:3px}
+/* ok / warn -- static fills for THW's "Ich weiss es" (green) / "Hinweis"
+   (amber) roles (luna spec, C9 decision 3). Same shape as brand: wireframe
+   stays monochrome (tint3, indistinguishable from brand on purpose --
+   wireframe = structure only), the realistic skins colour them below.
+   Distinct from the .bx-correct/.bx-wrong STATE classes further down:
+   a fill is what a box is, a state is what just happened to it. */
+.bx-ok{background:var(--tint3)} .bx-warn{background:var(--tint3)}
+/* radius -- rounded is skin-driven (3px wireframe/mockup, 8px luna) */
+.bx-square{border-radius:0} .bx-rounded{border-radius:var(--r-rounded)}
 .bx-pill{border-radius:999px} .bx-circle{border-radius:50%}
 /* overflow */
 .bx-clip{overflow:hidden} .bx-scroll{overflow:auto}
@@ -78,8 +113,18 @@
    fill). Second rule wins the border-color fight against the plain
    .bx-solid mockup rule above (higher specificity, both classes) --
    same pattern .bx-error already uses for the same reason. */
-:root[data-style="mockup"] .bx-brand{background:var(--brand-surf);color:var(--brand)}
-:root[data-style="mockup"] .bx-solid.bx-brand{border-color:var(--brand)}
+:root[data-style="mockup"] .bx-brand,
+:root[data-style="luna"]   .bx-brand{background:var(--brand-surf);color:var(--brand)}
+:root[data-style="mockup"] .bx-solid.bx-brand,
+:root[data-style="luna"]   .bx-solid.bx-brand{border-color:var(--brand)}
+:root[data-style="mockup"] .bx-ok,
+:root[data-style="luna"]   .bx-ok{background:var(--ok-surf);color:var(--ok)}
+:root[data-style="mockup"] .bx-solid.bx-ok,
+:root[data-style="luna"]   .bx-solid.bx-ok{border-color:var(--ok)}
+:root[data-style="mockup"] .bx-warn,
+:root[data-style="luna"]   .bx-warn{background:var(--warn-surf);color:var(--warn)}
+:root[data-style="mockup"] .bx-solid.bx-warn,
+:root[data-style="luna"]   .bx-solid.bx-warn{border-color:var(--warn)}
 /* border follows stroke, same rule in every mode: bare = none (below),
    hairline/solid/dashed = a border, here just recolored for realism.
    Border-*width* stays identical to wireframe's (only color/shadow change)
@@ -87,9 +132,52 @@
    (handles.js, t11) doesn't change any of this -- a stroked handled box
    keeps its fixed border; the handles reveal separately, on top of it,
    from being hidden on approach. */
-:root[data-style="mockup"] .bx-hairline{border-color:var(--rule)}
-:root[data-style="mockup"] .bx-solid{border-color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06)}
-:root[data-style="mockup"] .bx-dashed{border-color:var(--dash)}
+:root[data-style="mockup"] .bx-hairline,
+:root[data-style="luna"]   .bx-hairline{border-color:var(--rule)}
+:root[data-style="mockup"] .bx-solid,
+:root[data-style="luna"]   .bx-solid{border-color:var(--ink);box-shadow:var(--shadow)}
+:root[data-style="mockup"] .bx-dashed,
+:root[data-style="luna"]   .bx-dashed{border-color:var(--dash)}
+
+/* luna skin -- THW-Lernkarten look, docs/superpowers/specs/2026-09-09-luna-skin-design.md
+   (token map there). Same role split as mockup: --ink = stroke, --text =
+   text. Every "realistic rendering" rule in this file is a selector list
+   `mockup, luna` -- explicit on purpose, NOT :not([data-style="wireframe"]):
+   fixture pages that never call initStyleMode have no data-style at all
+   and must keep rendering as wireframe (the dotted-outline rule below
+   relies on exactly that). */
+:root[data-style="luna"] {
+  --canvas:#e8edf1; --paper:#fff; --ink:#c3cfd8; --text:#0f1c26; --muted:#516272;
+  --tint0:#f4f7f9; --tint1:#e8edf1; --tint2:#dbe4ea; --tint3:#c3cfd8;
+  --dash:#8fa2b1; --rule:#c3cfd8;
+  --brand:#00518c; --brand-surf:#dbe9f4;
+  --ok:#1f7a4d; --ok-surf:#d9efe1;
+  --warn:#c97a00; --warn-surf:#fbe8cc;
+  /* THW marks a wrong answer amber ("nochmal"), not red -- red stays
+     error's. Per-skin var, not a unification. */
+  --wrong:var(--warn); --wrong-surf:var(--warn-surf);
+  --focus:#0b6fb3;
+  --r-rounded:8px;
+  --display:'Saira Condensed',sans-serif;
+  /* Unlike mockup, luna DOES swap --prose: it's a product skin, not a
+     side-by-side compare skin, so the hug-box reflow mockup avoids is
+     accepted here (spec, "known tradeoffs"). */
+  --prose:'Source Sans 3','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  --shadow:0 1px 2px rgba(15,28,38,.06),0 8px 24px -12px rgba(15,28,38,.18);
+}
+/* luna: display face on the filled button roles + the quiz title -- THW
+   sets Saira Condensed, uppercase, tracked on button.action / h1 / chips.
+   Only the fill roles, not every .bx-actionable: THW's mc-option (our
+   answer row) is body type. Focus ring goes solid (THW), same channel
+   (outline) so the state-rules channel audit is unaffected. THW's blue
+   hover BORDER is deliberately NOT ported: border-color is error's
+   channel (and border-left-color selected's) -- channel rule wins. */
+:root[data-style="luna"] .bx-brand,
+:root[data-style="luna"] .bx-ok,
+:root[data-style="luna"] .bx-warn{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+:root[data-style="luna"] [data-name="prompt"]{font-family:var(--display);font-weight:600}
+:root[data-style="luna"] .bx-actionable:focus-visible{outline-style:solid}
 
 /* wireframe (default, not mockup): force a faint structure guide on every
    box that has no stroke of its own (bare, or no stroke dial at all), so
@@ -98,7 +186,7 @@
    content area, inflates hug's fit-content size) present only in
    wireframe, which shifted content on every toggle. outline never
    participates in layout in either mode, so this can't happen. */
-:root:not([data-style="mockup"]) .bx:not(.bx-hairline):not(.bx-solid):not(.bx-dashed){
+:root:not([data-style="mockup"]):not([data-style="luna"]) .bx:not(.bx-hairline):not(.bx-solid):not(.bx-dashed){
   outline:1px dotted var(--rule);
   outline-offset:-1px;
 }
@@ -111,7 +199,12 @@
 :root[data-style="mockup"] [data-name="work"],
 :root[data-style="mockup"] [data-name="tile-score"],
 :root[data-style="mockup"] [data-name="tile-progress"],
-:root[data-style="mockup"] [data-name="tile-time"]{
+:root[data-style="mockup"] [data-name="tile-time"],
+:root[data-style="luna"] [data-name="topbar"],
+:root[data-style="luna"] [data-name="work"],
+:root[data-style="luna"] [data-name="tile-score"],
+:root[data-style="luna"] [data-name="tile-progress"],
+:root[data-style="luna"] [data-name="tile-time"]{
   border-color:transparent; box-shadow:none;
 }
 
@@ -164,7 +257,7 @@
    wash instead, so the whole row highlights like the fill-tint case
    does implicitly via the filter. */
 .bx-actionable:hover{filter:brightness(.94)}
-.bx-actionable:hover:not([class*="bx-tint"]):not(.bx-brand){background:var(--tint1)}
+.bx-actionable:hover:not([class*="bx-tint"]):not(.bx-brand):not(.bx-ok):not(.bx-warn){background:var(--tint1)}
 
 /* focus feedback for the same actionable boxes (ui/actions.js#markActionable) --
    dashed ring per the design concept, offset outside so it never collides
@@ -173,7 +266,7 @@
    does. Disabled boxes drop out of tab order (setActionableDisabled), so no
    extra guard needed here. */
 .bx-actionable:focus{outline:none}
-.bx-actionable:focus-visible{outline:2px dashed var(--ink);outline-offset:2px}
+.bx-actionable:focus-visible{outline:2px dashed var(--focus);outline-offset:2px}
 
 /* pressed feedback -- same actionable boxes, own channel (inset shadow)
    so it never collides with hover's brightness or focus's ring; a
@@ -201,7 +294,8 @@
    there too; hairline/dashed + error under mockup skin isn't covered
    (no fixture exercises that combination yet). */
 .bx-error{border-color:var(--accent)}
-:root[data-style="mockup"] .bx-solid.bx-error{border-color:var(--accent)}
+:root[data-style="mockup"] .bx-solid.bx-error,
+:root[data-style="luna"]   .bx-solid.bx-error{border-color:var(--accent)}
 .bx-readonly{opacity:.55;pointer-events:none}
 
 /* quiz answer states -- page-mount concern (ui/quiz.js), not a box
@@ -227,19 +321,21 @@
    .bx-solid{border-color:var(--ink)} (higher specificity) silently
    overrides the green back to ink. */
 .bx-selected{border-left:4px solid var(--ok)}
-:root[data-style="mockup"] .bx-solid.bx-selected{border-left-color:var(--ok)}
-.bx-correct{background:rgba(47,125,79,.16)}
-.bx-wrong{background:rgba(192,57,43,.16)}
-/* Title (prompt) and hint text: text colour, not the answer rows' own
-   background tint -- explicit request. Attribute-selector specificity
-   is enough to beat the plain .bx-correct/.bx-wrong rules above for
-   `background` (must be set explicitly to `none`, cascade is per
-   property, not per rule -- the generic rule's background would
-   otherwise still apply since nothing else overrides it). */
+:root[data-style="mockup"] .bx-solid.bx-selected,
+:root[data-style="luna"]   .bx-solid.bx-selected{border-left-color:var(--ok)}
+/* tints via vars so a skin can re-hue "wrong" (luna: amber) -- base
+   values are the exact rgba these rules hardcoded before. */
+.bx-correct{background:var(--ok-surf)}
+.bx-wrong{background:var(--wrong-surf)}
+/* Title (prompt): text colour, not the answer rows' own background tint
+   -- explicit request. Attribute-selector specificity is enough to beat
+   the plain .bx-correct/.bx-wrong rules above for `background` (must be
+   set explicitly to `none`, cascade is per property, not per rule -- the
+   generic rule's background would otherwise still apply since nothing
+   else overrides it). The hint PANEL (not its text) takes the plain
+   .bx-correct/.bx-wrong tint above -- "color hint-panel not hint-text". */
 [data-name="prompt"].bx-correct{background:none;color:var(--ok)}
-[data-name="prompt"].bx-wrong{background:none;color:var(--accent)}
-[data-name="hint-text"].bx-correct{color:var(--ok)}
-[data-name="hint-text"].bx-wrong{color:var(--accent)}
+[data-name="prompt"].bx-wrong{background:none;color:var(--wrong)}
 
 /* inspector panel selection outline -- page-mount concern (ui/inspector.js),
    own class so it never collides with quiz's .bx-selected above (different

@@ -56,7 +56,10 @@ function enterAnswering(ctx, send) {
   ctx.selected = new Set();
   ctx.promptEl.textContent = q.prompt;
   ctx.promptEl.classList.remove('bx-correct', 'bx-wrong');
-  ctx.hintTextEl.classList.remove('bx-correct', 'bx-wrong');
+  // The result tint sits on the PANEL (enterRevealed), so the panel is what
+  // must be reset here -- was hintTextEl, which left question 2's panel
+  // still tinted from question 1 (found live under the luna skin).
+  ctx.hintPanelEl.classList.remove('bx-correct', 'bx-wrong');
   ctx.hintTextEl.textContent = q.hint;
   // visibility, not display: this keeps hint-panel's own footprint
   // reserved in the layout at all times, so revealing it never

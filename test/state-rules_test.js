@@ -104,17 +104,17 @@ tr.addBlock('error\'s channel (border-color) never overlaps focus-visible\'s (ou
 // pseudo-class-avoidance (see the file-top comment).
 tr.addBlock('hover gives bare/untinted actionable boxes a real background wash, tinted ones are unaffected', (r) => {
   r.run(() => {
-    const bareProps = declaredProps('.bx-actionable:hover:not([class*="bx-tint"]):not(.bx-brand)');
+    const bareProps = declaredProps('.bx-actionable:hover:not([class*="bx-tint"]):not(.bx-brand):not(.bx-ok):not(.bx-warn)');
     r.check(!!bareProps, 'bare-hover rule found in tokens.css', bareProps);
     r.check(bareProps.includes('background-color'), 'bare-hover rule sets a real background', bareProps);
 
     const bareEl = document.querySelector('[data-name="default"]');
-    r.check(bareEl.matches('.bx-actionable:not([class*="bx-tint"]):not(.bx-brand)'),
+    r.check(bareEl.matches('.bx-actionable:not([class*="bx-tint"]):not(.bx-brand):not(.bx-ok):not(.bx-warn)'),
       'the fixture\'s bare box (no tint class) matches the bare-hover selector');
 
     const tintedEl = document.createElement('div');
     tintedEl.className = 'bx bx-actionable bx-tint3';
-    r.check(!tintedEl.matches('.bx-actionable:not([class*="bx-tint"]):not(.bx-brand)'),
+    r.check(!tintedEl.matches('.bx-actionable:not([class*="bx-tint"]):not(.bx-brand):not(.bx-ok):not(.bx-warn)'),
       'a tinted box does NOT match -- keeps only the brightness filter, no double treatment');
 
     // .bx-brand (atom/button.primary) isn't a bx-tint* class -- it needs
@@ -122,7 +122,7 @@ tr.addBlock('hover gives bare/untinted actionable boxes a real background wash, 
     // its own brand fill (mockup) / tint3 fill (wireframe).
     const brandEl = document.createElement('div');
     brandEl.className = 'bx bx-actionable bx-brand';
-    r.check(!brandEl.matches('.bx-actionable:not([class*="bx-tint"]):not(.bx-brand)'),
+    r.check(!brandEl.matches('.bx-actionable:not([class*="bx-tint"]):not(.bx-brand):not(.bx-ok):not(.bx-warn)'),
       'a brand (primary button) box does NOT match either -- already has its own fill');
   });
 });
@@ -187,6 +187,79 @@ tr.addBlock('full channel audit: hover has zero overlap with any other state; on
       }
     }
     r.check(unexpected.length === 0, 'no unexpected channel overlaps beyond the allow-listed ones', unexpected);
+  });
+});
+
+// Skins (docs/superpowers/specs/2026-09-09-luna-skin-design.md). The
+// skin-driven knobs introduced for luna (--r-rounded, --wrong, --focus,
+// --display, --shadow, ...) must (a) resolve in EVERY skin -- a missing
+// var silently falls back to `initial` and the box just loses its radius
+// or colour -- and (b) reproduce the pre-luna hardcoded values exactly in
+// wireframe/mockup, so this test pins those, not just luna's own values.
+// Computed custom properties come back var()-substituted (verified live:
+// luna's --wrong reads "#c97a00", not "var(--warn)").
+const SKIN_VARS = ['--r-rounded', '--wrong', '--wrong-surf', '--ok-surf', '--warn', '--warn-surf',
+  '--focus', '--display', '--prose', '--mono', '--shadow'];
+// brand is realistic-skin-only by design: wireframe's .bx-brand is plain
+// tint3 grey and never reads these (tokens.css) -- so they're asserted
+// for mockup/luna only, not in the every-skin list above.
+const REALISTIC_VARS = ['--brand', '--brand-surf'];
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+tr.addBlock('skins: every skin-driven var resolves in wireframe, mockup and luna; wireframe/mockup keep their pre-luna values', (r) => {
+  const before = document.documentElement.dataset.style;
+  const probe = document.createElement('div');
+  probe.className = 'bx bx-solid bx-rounded bx-brand bx-actionable';
+  probe.textContent = 'probe';
+  r.run(() => {
+    document.body.appendChild(probe);
+    for (const mode of ['wireframe', 'mockup', 'luna']) {
+      document.documentElement.dataset.style = mode;
+      const missing = SKIN_VARS.filter(v => cssVar(v) === '');
+      r.check(missing.length === 0, `${mode}: all skin vars resolve`, missing);
+      if (mode !== 'wireframe') {
+        const missingBrand = REALISTIC_VARS.filter(v => cssVar(v) === '');
+        r.check(missingBrand.length === 0, `${mode}: brand vars resolve`, missingBrand);
+      }
+    }
+    document.documentElement.dataset.style = 'wireframe';
+    r.check(getComputedStyle(probe).borderRadius === '3px', 'wireframe: rounded stays 3px');
+    r.check(cssVar('--wrong') === cssVar('--accent'), 'wireframe: wrong is still accent red');
+    r.check(cssVar('--focus') === cssVar('--ink'), 'wireframe: focus ring colour still ink');
+    r.check(cssVar('--display') === cssVar('--prose'), 'wireframe: display face = prose face (no second font)');
+    r.check(getComputedStyle(probe).boxShadow === 'none', 'wireframe: solid box has no shadow');
+
+    document.documentElement.dataset.style = 'mockup';
+    r.check(getComputedStyle(probe).borderRadius === '3px', 'mockup: rounded stays 3px');
+    r.check(getComputedStyle(probe).boxShadow === 'rgba(0, 0, 0, 0.06) 0px 1px 2px 0px',
+      'mockup: solid shadow unchanged from the old hardcoded value', getComputedStyle(probe).boxShadow);
+    r.check(getComputedStyle(probe).borderColor === 'rgb(47, 95, 216)', 'mockup: brand border still brand blue');
+
+    document.documentElement.dataset.style = 'luna';
+    r.check(getComputedStyle(probe).borderRadius === '8px', 'luna: rounded is 8px');
+    r.check(cssVar('--wrong') === cssVar('--warn'), 'luna: wrong re-hued to warn (amber)');
+    r.check(getComputedStyle(probe).textTransform === 'uppercase', 'luna: brand button uppercase (display role)');
+    r.check(getComputedStyle(probe).fontFamily.includes('Saira Condensed'), 'luna: brand button uses the display face');
+  })
+  .waitFor(() => document.fonts.check("600 12px 'Saira Condensed'") && document.fonts.check("12px 'Source Sans 3'"),
+    3000, 50, 'luna: Saira Condensed + Source Sans 3 loaded from ui/fonts/')
+  .run(() => {
+    probe.remove();
+    document.documentElement.dataset.style = before;
+  });
+});
+
+tr.addBlock('skins: realistic-rendering rules are explicit mockup+luna selector lists (fixture pages with no data-style stay wireframe)', (r) => {
+  r.run(() => {
+    const solid = declaredProps(':root[data-style="mockup"] .bx-solid, :root[data-style="luna"] .bx-solid');
+    r.check(!!solid && solid.includes('box-shadow'), 'mockup+luna .bx-solid rule found with its shadow', solid);
+    const brand = declaredProps(':root[data-style="mockup"] .bx-brand, :root[data-style="luna"] .bx-brand');
+    r.check(!!brand && brand.includes('background-color'), 'mockup+luna .bx-brand rule found', brand);
+    const ok = declaredProps(':root[data-style="mockup"] .bx-ok, :root[data-style="luna"] .bx-ok');
+    r.check(!!ok && ok.includes('color'), 'mockup+luna .bx-ok rule found (new fill token)', ok);
+    const wireframeOutline = [...document.styleSheets].flatMap(s => { try { return [...s.cssRules]; } catch { return []; } })
+      .find(rl => rl.selectorText && rl.selectorText.startsWith(':root:not([data-style="mockup"]):not([data-style="luna"])'));
+    r.check(!!wireframeOutline, 'wireframe dotted-outline rule excludes both realistic skins');
   });
 });
 

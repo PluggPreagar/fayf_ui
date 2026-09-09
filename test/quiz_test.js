@@ -273,6 +273,10 @@ tr.addBlock('quiz: next -> answering re-entry loads the second question correctl
 
     const hintPanel = freshRoot.querySelector('[data-name="hint-panel"]');
     r.check(getComputedStyle(hintPanel).visibility === 'hidden', 'hint panel hidden again on re-entry');
+    // Found live (luna skin): enterAnswering reset the TEXT's classes while
+    // enterRevealed tints the PANEL -- question 2's panel stayed amber.
+    r.check(!hintPanel.classList.contains('bx-correct') && !hintPanel.classList.contains('bx-wrong'),
+      'hint panel result tint cleared on re-entry');
 
     const nextBtn = freshRoot.querySelector('[data-name="btn-action"]');
     r.check(nextBtn.classList.contains('bx-disabled'), 'next disabled again on re-entry into answering');
@@ -339,14 +343,17 @@ tr.addBlock('quiz: a missed correct answer is colored wrong, not just left blank
     // the answer rows' own background tint, and the hint auto-reveals
     // (a correct overall result doesn't need the help, see the block below).
     const prompt = freshRoot.querySelector('[data-name="prompt"]');
-    const hintText = freshRoot.querySelector('[data-name="hint-text"]');
     const hintPanel = freshRoot.querySelector('[data-name="hint-panel"]');
     r.check(prompt.classList.contains('bx-wrong'), 'title marked wrong (overall result -- missed a correct answer)');
     r.check(getComputedStyle(prompt).backgroundColor === 'rgba(0, 0, 0, 0)',
       'title background stays untouched', getComputedStyle(prompt).backgroundColor);
     r.check(getComputedStyle(prompt).color !== getComputedStyle(freshRoot).color,
       'title text colour actually changes from the page default');
-    r.check(hintText.classList.contains('bx-wrong'), 'hint text marked wrong to match');
+    // The PANEL carries the result tint ("color hint-panel not hint-text"),
+    // its text keeps the page colour.
+    r.check(hintPanel.classList.contains('bx-wrong'), 'hint panel marked wrong to match');
+    r.check(!freshRoot.querySelector('[data-name="hint-text"]').classList.contains('bx-wrong'),
+      'hint text itself carries no state class');
     r.check(getComputedStyle(hintPanel).visibility === 'visible', 'hint auto-revealed on a wrong overall result');
 
     const { container } = syntheticMissed;
