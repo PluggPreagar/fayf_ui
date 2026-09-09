@@ -185,6 +185,21 @@ the `processor` skin reuses the same var-block mechanism twice-proven.
 Gate: processor CG7 (constitution spine + `frontend_developer.md`) and
 its `communication-formats.md` before any edit there.
 
+**(shipped 2026-09-09, processor TODO-189)** — simpler than planned on two points:
+- no 4th skin: the processor **re-points our existing `mockup` vars** from its own
+  `frontend/mockups/fayf-skin.css` (`--brand: var(--color-interactive-700)` …) —
+  zero edits in the vendored copy, their tokens stay the single truth, dark mode free.
+- no converter: option 4's spike is answered by the ui-kit's `Embed` widget hosting
+  `render(resolve(doc, reg))` as-is (`fayf.html?shell=1`). A dial→token converter
+  only matters if fayf_ui output ever has to become *product* ui-kit spec — not for
+  design review.
+- our `state` dial (`done/running/blocked/cancelled`) maps 1:1 onto their
+  `--color-status-*` family — their TODO-37 "filled pill" delta is two CSS rules per
+  status on top of `atom/chip`.
+- this repo gained `just build` → committed `registry.json` (+ freshness test) so a
+  vendored snapshot works without our server; their server gained `.json`/`.woff2`
+  MIME types (our ESM JSON import was served as octet-stream).
+
 ## Found live during step 8 (unrelated to luna, fixed in the same round)
 
 - `render()` wrote `data-box` unconditionally (`""` for a box-less node) while
