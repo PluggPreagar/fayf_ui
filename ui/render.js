@@ -33,7 +33,14 @@ export function render(node, doc = document) {
   if ('depth' in d) el.style.zIndex = d.depth;
   if ('opacity' in d) el.style.opacity = d.opacity;
   if ('rotate' in d) el.style.transform = `rotate(${d.rotate}deg)`;
-  el.dataset.box = print(d, 'box');
+  // Presence mirrors the model exactly: a node without `box` gets no
+  // data-box at all, a node with `box: ""` (legal: zero dials, {}) gets an
+  // empty one -- capture() below reads presence, not truthiness. Found
+  // live (gallery invariant on screens/quiz's hint-text, box:""): the old
+  // unconditional write + `if (dataset.box)` read made "" and absent
+  // collapse into undefined on the way back. Same bug class as content:""
+  // (dataset.hasContent), same fix shape.
+  if (node.box != null) el.dataset.box = print(d, 'box');
   if (node.name) el.dataset.name = node.name;
   const extra = {};
   for (const k of PASSTHRU) if (node[k] != null) extra[k] = node[k];
@@ -70,7 +77,7 @@ export function excess(container, island, axis = 'height') {
 export function capture(el) {
   const node = {};
   if (el.dataset.name) node.name = el.dataset.name;
-  if (el.dataset.box) node.box = parse(el.dataset.box, 'box');
+  if (el.dataset.box !== undefined) node.box = parse(el.dataset.box, 'box');
   if (el.dataset.extra) Object.assign(node, JSON.parse(el.dataset.extra));
   const kids = [...el.children].filter(c => c.classList?.contains('bx'));
   if (kids.length) node.children = kids.map(capture);

@@ -103,6 +103,27 @@ suite('render — empty-string content round-trips');
   assert('diff(capture(render(resolve)), resolve) empty for content:""', diff(capture(elEmpty), rEmpty), []);
 }
 
+suite('render — empty-string box round-trips, absent box stays absent');
+{
+  // box:"" = zero dials ({}), distinct from "no box key at all". Found live
+  // via the gallery invariant on screens/quiz (hint-text, box:"").
+  const docZero = { box: '', content: 'x' };
+  const rZero = resolve(docZero);
+  const elZero = render(rZero);
+  host.appendChild(elZero);
+  assert('box:"" renders an (empty) data-box attribute', elZero.dataset.box, '');
+  assert('box:"" captures back as {} (not undefined)', JSON.stringify(capture(elZero).box), '{}');
+  assert('diff empty for box:""', diff(capture(elZero), rZero), []);
+
+  const docNone = { name: 'wrap', children: [{ box: 'fixed, w:10, h:10' }] };
+  const rNone = resolve(docNone);
+  const elNone = render(rNone);
+  host.appendChild(elNone);
+  assert('no box key -> no data-box attribute at all', 'box' in elNone.dataset, false);
+  assert('no box key -> capture has no box either', 'box' in capture(elNone), false);
+  assert('diff empty for a box-less node', diff(capture(elNone), rNone), []);
+}
+
 suite('render — reserved-key pass-through');
 const p = resolve({ box: 'fixed, w:80, h:24', path: 'curve, solid', from: 'free:0,12', to: 'free:80,12' });
 const pe = render(p);
