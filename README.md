@@ -7,4 +7,7 @@ Governed by [CONSTITUTION.md](CONSTITUTION.md). Spec: [docs/superpowers/specs/20
     just ci        # node tests: model + parts conformance
     just test PAGE # browser test URL (index / render / handles / anatomy)
 
-Pages: `index.html` gallery · `anatomy.html` screen · `handles.html` proximity demo.
+Pages: `index.html` gallery · `anatomy.html` screen · `handles.html` proximity demo
+· `quiz.html` · `math-trainer.html` · `thw.html` (THW-Lernkarten ladder; try `?style=luna`).
+
+Skins: `?style=wireframe` (default) · `mockup` · `luna` — `ui/style-mode.js`, `ui/tokens.css`.

@@ -1,0 +1,21 @@
+{ "box": "stack, fill, mid, evenly, clip, tint0, pad:3",
+  "children": [
+    { "name": "card-body", "box": "stack, fixed, h:540, w:380, packed, gap:2++",
+      "children": [
+        { "name": "meta", "box": "row, mid, between, clamp",
+          "children": [
+            { "name": "cat-label", "box": "hug", "content": "Kategorie" },
+            { "name": "level", "box": "row, hug",
+              "children": [ { "extends": "atom/chip.active", "content": "Stufe A · 25 Pkt" } ] } ] },
+        { "name": "progress", "extends": "component/progress-indicator", "box": "w:380",
+          "children": [ { "name": "progress-fill", "box": "fixed, w:0, h:6, brand" } ] },
+        { "name": "progress-label", "box": "hug", "content": "Karte 1 / 1" },
+        { "name": "prompt", "box": "stack, mid, evenly, clamp, gap:1, pad:2",
+          "children": [ { "extends": "atom/text.title", "content": "Frage" } ] },
+        { "name": "body", "box": "stack, gap:2, clamp" },
+        { "box": "fixed, h:1, hairline" },
+        { "name": "stats", "box": "row, mid, between, clamp",
+          "children": [
+            { "name": "stat-known", "extends": "atom/chip.ok", "content": "0 gewusst" },
+            { "name": "stat-again", "extends": "atom/chip.warn", "content": "0 nochmal" },
+            { "name": "stat-points", "extends": "atom/chip.active", "content": "0 Punkte" } ] } ] } ] }
