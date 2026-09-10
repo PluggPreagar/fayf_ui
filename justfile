@@ -6,6 +6,7 @@ default:
 
 # Dev server (Ctrl-C to stop)
 serve:
+    @echo "  app:    http://127.0.0.1:{{port}}/math-trainer.html"
     @echo "  app:    http://127.0.0.1:{{port}}/index.html"
     @echo "  tests:  http://127.0.0.1:{{port}}/wrapper?test=index.html"
     python3 server.py --port {{port}}
