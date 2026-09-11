@@ -10,11 +10,12 @@ Governed by [CONSTITUTION.md](CONSTITUTION.md). Spec: [docs/superpowers/specs/20
 
 Pages: `index.html` gallery · `anatomy.html` screen · `handles.html` proximity demo
 · `quiz.html` · `math-trainer.html` · `thw.html` (THW-Lernkarten ladder; try `?style=luna`)
-· `machine.html` (L9 controller fixture) · `shell.html` (workspace shell: head · side-panel · content · detail · status).
+· `machine.html` (L9 controller fixture) · `table.html` (windowed table controller, 2000 rows) · `shell.html` (workspace shell: head · side-panel · content · detail · status).
 
 Controllers (L9, C11): `ui/machine.js` — machine JSON (`initial` + `states{ enter?, <trigger>: <state> }`),
 pure handlers `(status, payload) → { status, effects? }`, pure `view(status) → { slot: content }`,
 effects `fetch · emit · timer · send` run by the controller. `step()`/`init()` tested under node.
-`ui/quiz.js` + `machines/quiz.json` is the first real controller on it.
+`ui/quiz.js` + `machines/quiz.json` is the first real controller on it. `ui/table.js` = table sub-controller
+(windowed rows as boxes, sort, select → `emit`), composed on a status slice.
 
 Skins: `?style=wireframe` (default) · `mockup` · `luna` — `ui/style-mode.js`, `ui/tokens.css`.

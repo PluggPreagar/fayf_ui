@@ -11,6 +11,10 @@
 //   trigger = "<name>.<event>" (always a dot); `enter` = effects on every entry.
 //   DOM trigger: <name> = the element's data-name, <event> = DOM event type
 //     ("refresh.click"). `root` is reserved: the mounted element itself.
+//     Bound as one capture-phase listener per event type on the mounted
+//     element (capture, so non-bubbling events like "scroll" arrive too).
+//     Payload = { name, event, target, path } -- path = data-names from the
+//     event target upward; "scroll" adds scrollTop + clientHeight of e.target.
 //     A control (trigger element without trigger elements inside) is enabled
 //     iff one of its triggers fires in the current state (guard = machine);
 //     a surface (root, or a trigger element holding controls) is never disabled.
@@ -184,9 +188,28 @@ export function mountMachine(root, screen, machine, handlers = {}, opts = {}) {
       const sends = r.effects.filter(e => 'send' in e);
       r.effects.filter(e => !('send' in e)).forEach(run);
       sends.forEach(e => ctl.dispatch(e.send, e.payload));
+      measureScroll();
       return status;
     },
   };
+
+  // A `<name>.scroll` trigger also means "this element's viewport matters":
+  // after a paint, deliver its metrics once whenever clientHeight changed
+  // (first paint, a resize, content arriving) -- windowing needs a measure
+  // before the user ever scrolls. Unchanged height -> nothing, no loop.
+  const measured = new Map();
+  function measureScroll() {
+    for (const name of names) {
+      const trigger = `${name}.scroll`;
+      if (!known.has(trigger)) continue;
+      const t = byName(name);
+      if (!t) continue;
+      const m = { scrollTop: t.scrollTop, clientHeight: t.clientHeight };
+      if (measured.get(name) === m.clientHeight) continue;
+      measured.set(name, m.clientHeight);
+      if (active().has(trigger)) ctl.dispatch(trigger, { name, event: 'scroll', target: name, path: [name], ...m });
+    }
+  }
 
   function run(e) {
     validateEffect(e);
@@ -270,11 +293,14 @@ export function mountMachine(root, screen, machine, handlers = {}, opts = {}) {
       if (!candidates.length) return;
       const on = active();
       const name = candidates.find(n => on.has(`${n}.${ev}`)) ?? candidates[0];
-      ctl.dispatch(`${name}.${ev}`, { name, event: ev, target: path[0] ?? ROOT, path });
-    });
+      const payload = { name, event: ev, target: path[0] ?? ROOT, path };
+      if (ev === 'scroll') Object.assign(payload, { scrollTop: e.target.scrollTop, clientHeight: e.target.clientHeight });
+      ctl.dispatch(`${name}.${ev}`, payload);
+    }, true);   // capture: `scroll` does not bubble
   }
 
   paint();
   effects.forEach(run);
+  measureScroll();
   return ctl;
 }

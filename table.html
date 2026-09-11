@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fayf_ui — table (L9 fixture)</title>
+<link rel="stylesheet" href="ui/tokens.css">
+<style>html,body{height:100%;margin:0}
+body{background:var(--canvas);display:flex;flex-direction:column;gap:16px;padding:16px}</style>
+</head>
+<body>
+<!-- C11 fixture: the table controller (ui/table.js) drives one scroll slot of a
+     JSON screen through the generic machine. 2000 rows, windowed paint, sort by
+     header click, single select by row click -> emit. Handlers + view pure. -->
+<script type="module">
+import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
+import { mountMachine } from './ui/machine.js';
+import { tableInit, tableHandlers, tableView, ROW_H } from './ui/table.js';
+initStyleMode();
+
+const reg = await (await fetch('/registry.json')).json();
+
+const SCREEN = {
+  name: 'fixture', box: 'stack, gap:2, pad:3, solid, rounded, hug, w:640',
+  children: [
+    { name: 'title',    box: 'hug, font:18', content: 'Runs' },
+    { name: 'sel-line', box: 'hug', content: '' },
+    { name: 'runs',     box: 'stack, scroll, fixed, w:600, h:300, solid, rounded', content: '' } ] };
+
+const MACHINE = {
+  initial: 'ready',
+  states: { ready: { 'runs.click': 'ready', 'runs.scroll': 'ready' } },
+};
+
+const SPEC = {
+  name: 'runs', rowKey: 'id',
+  columns: [
+    { key: 'id',       label: '#',        w: 60 },
+    { key: 'pipeline', label: 'Pipeline', w: 200 },
+    { key: 'status',   label: 'Status',   w: 100 },
+    { key: 'when',     label: 'When' } ] };
+
+const STATUS = ['done', 'running', 'failed', 'blocked'];
+const rows = Array.from({ length: 2000 }, (_, i) => ({
+  id: i,
+  pipeline: 'pipe-' + (i % 37),
+  status: STATUS[i % 4],
+  when: '2026-09-' + String(1 + i % 28).padStart(2, '0'),
+}));
+
+const data = { runs: tableInit(SPEC, rows) };
+const handlers = { ...tableHandlers(SPEC) };
+const view = (s) => ({
+  ...tableView(SPEC, s.data.runs),
+  'sel-line': s.data.runs.sel == null ? 'nothing selected' : 'selected #' + s.data.runs.sel,
+});
+
+const emitted = [];
+window.__emitted = emitted;
+window.ROW_H = ROW_H;
+window.__ctl = mountMachine(document.body, SCREEN, MACHINE, handlers, {
+  reg, view, data, onEmit: (t, p) => emitted.push([t, p]),
+});
+mountStyleToggle();
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>
