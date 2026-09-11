@@ -1921,6 +1921,10 @@
       ]
      },
      {
+      "name": "detail-splitter",
+      "box": "fixed, w:6, bare"
+     },
+     {
       "name": "detail",
       "box": "stack, fixed, w:280, pad:3, gap:2, scroll, solid, rounded",
       "children": [
@@ -2249,6 +2253,10 @@
         "content": ""
        }
       ]
+     },
+     {
+      "name": "detail-splitter",
+      "box": "fixed, w:6, bare"
      },
      {
       "name": "detail",
@@ -2673,6 +2681,10 @@
       ]
      },
      {
+      "name": "detail-splitter",
+      "box": "fixed, w:6, bare"
+     },
+     {
       "name": "detail",
       "box": "stack, fixed, w:280, pad:3, gap:2, scroll, solid, rounded",
       "children": [
@@ -2930,6 +2942,10 @@
         "content": ""
        }
       ]
+     },
+     {
+      "name": "detail-splitter",
+      "box": "fixed, w:6, bare"
      },
      {
       "name": "detail",
@@ -3343,6 +3359,10 @@
         "content": ""
        }
       ]
+     },
+     {
+      "name": "detail-splitter",
+      "box": "fixed, w:6, bare"
      },
      {
       "name": "detail",
@@ -4211,6 +4231,10 @@
         "content": ""
        }
       ]
+     },
+     {
+      "name": "detail-splitter",
+      "box": "fixed, w:6, bare"
      },
      {
       "name": "detail",

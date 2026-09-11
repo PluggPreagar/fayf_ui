@@ -82,6 +82,7 @@
             { "name": "recent-runs", "box": "stack, scroll, fixed, h:240, solid, rounded", "content": "" },
             { "name": "issues-title", "box": "hug", "content": "Issues" },
             { "name": "issues", "box": "stack, scroll, fixed, h:240, solid, rounded", "content": "" } ] },
+        { "name": "detail-splitter", "box": "fixed, w:6, bare" },
         { "name": "detail", "box": "stack, fixed, w:280, pad:3, gap:2, scroll, solid, rounded",
           "children": [
             { "name": "detail-title", "extends": "atom/text.title", "content": "Detail" },

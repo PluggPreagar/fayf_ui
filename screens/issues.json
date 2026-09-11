@@ -60,6 +60,7 @@
           "children": [
             { "name": "content-title", "extends": "atom/text.title", "content": "Issues" },
             { "name": "master", "box": "stack, gap:1, fill", "content": "" } ] },
+        { "name": "detail-splitter", "box": "fixed, w:6, bare" },
         { "name": "detail", "box": "stack, fixed, w:280, pad:3, gap:2, scroll, solid, rounded",
           "children": [
             { "name": "detail-title", "extends": "atom/text.title", "content": "Detail" },
