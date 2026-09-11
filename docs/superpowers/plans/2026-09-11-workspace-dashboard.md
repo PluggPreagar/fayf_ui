@@ -241,6 +241,23 @@ than issues/list's `gap:1`, since raw text lines read better tight, not field-ro
   windowOf fallback until an unrelated resize" bug list.js hit and fixed locally (see the bug note above) — not
   fixed there (out of this task's scope, `dashboard_test.js`'s refresh block doesn't check row count so it's
   unnoticed today); flagged as a follow-up for whoever next touches `ui/dashboard.js`.
+- browse.html v1 (files explorer) ships READ only, same as the ground truth's own deferred scope: no file editing/
+  save. Also out of scope, all explicitly bounded by the task: structural JSON table projection + drill-down
+  breadcrumbs (ground truth's `UI.project`/`UI.build`, bespoke and large), the artefact-grouping heuristic that folds
+  `<prefix>_<hash>.<ext>` siblings into synthetic groups (cosmetic de-noising, every entry shown as-is instead), and
+  deep-link URL sync (`?mount=&path=&at=`).
+- `ui/filetree.js`'s `pendingPath` allows only ONE directory fetch in flight at a time — a click on a second,
+  not-yet-loaded directory while one is pending still toggles that node's `open` flag (so it visibly "opens" empty)
+  but starts no fetch; clicking it again once the first finishes retries. Deliberate v1 limit: true concurrent-fetch
+  tracking would need the fetch response to echo back which path it was for, which the real API doesn't do.
+- browse.html has no `nav-browse`/`nav-files` side-panel item, since this repo's shared NAV set is still the
+  6-item S4/S5 simplification (`dashboard/pipelines/graph/records/issues/settings`, not the real 9 destinations) —
+  `screens/browse.json` uses `component/side-panel`'s untouched default (Dashboard marked active), the same
+  pre-existing "always shows Dashboard active" gap already logged above for `shell.json`/`dashboard.json` (issues.json
+  and list.json each fixed it locally for their OWN nav item; browse.json can't, since no `nav-browse` item exists to
+  mark active).
+- browse.html's detail pane caps rendered content at 500 lines (a trailing `'… truncated'` row beyond that) — bounded
+  like the real tree-level API's own entry cap, not configurable in this v1.
 
 ## Open (next C9, one at a time)
 
