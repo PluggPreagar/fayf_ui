@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fayf_ui — machine (L9 fixture)</title>
+<link rel="stylesheet" href="ui/tokens.css">
+<style>html,body{height:100%;margin:0}
+body{background:var(--canvas);display:flex;flex-direction:column;gap:16px;padding:16px}</style>
+</head>
+<body>
+<!-- C11 fixture: one JSON machine drives one JSON screen. Handlers + view are pure;
+     the controller renders slots, guards buttons by state, runs effects. -->
+<script type="module">
+import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
+import { mountMachine } from './ui/machine.js';
+initStyleMode();
+
+const reg = await (await fetch('/registry.json')).json();
+
+const SCREEN = {
+  name: 'loader', box: 'stack, gap:2, pad:3, solid, rounded, hug, w:420',
+  children: [
+    { name: 'title', box: 'hug, font:18', content: 'Loader' },
+    { name: 'status-line', box: 'hug', content: '' },
+    { name: 'body', box: 'stack, gap:1, pad:2, tint0, rounded, fixed, w:388, h:72', content: '' },
+    { box: 'row, gap:2, hug', children: [
+      { name: 'refresh', extends: 'atom/button', content: 'Refresh' },
+      { name: 'pause',   extends: 'atom/button', content: 'Pause' },
+      { name: 'retry',   extends: 'atom/button', content: 'Retry' } ] } ] };
+
+const MACHINE = {
+  initial: 'loading',
+  states: {
+    loading: { enter: [{ fetch: '/content/quiz/lesson1.json', ok: 'quiz.loaded', err: 'quiz.failed' }],
+               'quiz.loaded': 'ready', 'quiz.failed': 'error' },
+    ready:   { 'refresh.click': 'loading', 'pause.click': 'pausing' },
+    pausing: { enter: [{ timer: 200, trigger: 'timer.done' }], 'timer.done': 'ready' },
+    error:   { 'retry.click': 'loading' },
+  },
+};
+
+const handlers = {
+  'quiz.loaded': (s, quiz) => ({ status: { ...s, data: { ...s.data, count: quiz.questions.length, loads: (s.data.loads || 0) + 1, error: null } } }),
+  'quiz.failed': (s, p) => ({ status: { ...s, data: { ...s.data, error: p.error } } }),
+  'refresh.click': (s) => ({ status: s, effects: [{ emit: 'loader.refreshing' }] }),
+};
+
+const view = (s) => ({
+  'status-line': `state: ${s.state}`,
+  body: s.state === 'ready'   ? { box: 'hug', content: `${s.data.count} questions · load #${s.data.loads}` }
+      : s.state === 'error'   ? { box: 'hug', content: `failed: ${s.data.error}` }
+      : s.state === 'pausing' ? 'paused 200 ms…'
+      : 'loading…',
+});
+
+const emitted = [];
+window.__emitted = emitted;
+window.__mount = (io) => mountMachine(document.body, SCREEN, MACHINE, handlers, {
+  reg, view, io, onEmit: (t, p) => emitted.push([t, p]),
+});
+window.__ctl = window.__mount();
+mountStyleToggle();
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>
