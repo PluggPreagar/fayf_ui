@@ -276,10 +276,16 @@
 }
 .style-toggle:hover{color:var(--text); border-color:var(--dash)}
 .style-toggle.style-toggle-grouped{
+  /* no border/radius here -- the button-group rule above already clears
+     both (and adds the shared divider) at the right specificity to win;
+     redeclaring `border:none` on this class would tie its specificity and
+     win by source order, silently swallowing the divider on this control
+     specifically (found live: only the LAST grouped child ever showed a
+     divider). */
   position:static; height:16px; padding:0 8px;
-  font-size:10px; border:none; border-radius:0; background:none;
+  font-size:10px; background:none;
 }
-.style-toggle.style-toggle-grouped:hover{background:var(--tint1); border-color:transparent}
+.style-toggle.style-toggle-grouped:hover{background:var(--tint1)}
 /* inline variant -- a non-modeled overlay (appended to the screen root, a
    sibling of the resolved tree, same trick as the fixed-corner default)
    positioned to sit over the status bar instead of a page corner; shrunk
