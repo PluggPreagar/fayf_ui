@@ -1,5 +1,5 @@
 // ui/render.js -- L2. The ONLY DOM writer (C5).
-import { parse, print, parseGapGrowth } from './model.js';
+import { parse, print, parseGapGrowth, parseSizeWeight } from './model.js';
 
 const PASSTHRU = ['path', 'from', 'to', 'relation', 'motion', 'field'];
 
@@ -34,12 +34,19 @@ export function render(node, doc = document) {
   const d = node.box ?? {};
   const growth = parseGapGrowth(d.gap);
   el.className = ['bx', ...Object.entries(d)
-    .filter(([k, v]) => typeof v === 'string' && k !== 'gap')
+    .filter(([k, v]) => typeof v === 'string' && k !== 'gap' && k !== 'w' && k !== 'h')
     .map(([, v]) => `bx-${v}`)].join(' ');
   if ('pad' in d) el.style.padding = `${d.pad * 4}px`;
   if ('gap' in d && !growth) el.style.gap = `${d.gap * 4}px`;
-  if ('w' in d) el.style.width = `${d.w}px`;
-  if ('h' in d) el.style.height = `${d.h}px`;
+  // A size fraction ('3/12') is a growth WEIGHT among a row/stack's `fill`
+  // siblings (flex-grow), not a literal pixel size -- see parseSizeWeight's
+  // own comment. A plain number stays the existing literal px width/height.
+  const wWeight = parseSizeWeight(d.w);
+  if (wWeight != null) el.style.flexGrow = wWeight;
+  else if ('w' in d) el.style.width = `${d.w}px`;
+  const hWeight = parseSizeWeight(d.h);
+  if (hWeight != null) el.style.flexGrow = hWeight;
+  else if ('h' in d) el.style.height = `${d.h}px`;
   if ('font' in d) el.style.fontSize = `${d.font}px`;
   if ('depth' in d) el.style.zIndex = d.depth;
   if ('opacity' in d) el.style.opacity = d.opacity;

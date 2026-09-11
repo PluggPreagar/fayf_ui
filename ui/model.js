@@ -17,6 +17,12 @@ export function parse(tokens, primitive = 'box') {
       throw new Error(`place token '${tok}' requires position docked|floating|anchored|sticky`);
     }
   }
+  if (primitive === 'box') {
+    for (const key of ['w', 'h']) {
+      if (typeof dials[key] === 'string' && dials.size !== 'fill')
+        throw new Error(`'${key}:${dials[key]}' (a growth-weight fraction) requires size 'fill', got '${dials.size}'`);
+    }
+  }
   return dials;
 }
 
@@ -25,10 +31,12 @@ function tokenDial(tok, primitive) {
   if (!enums) throw new Error(`unknown primitive '${primitive}'`);
   for (const [dial, values] of Object.entries(enums))
     if (values.includes(tok)) return [dial, tok];
-  const kv = /^([a-z-]+):(-?\d*\.?\d+)(\+{1,2})?$/.exec(tok);
+  const kv = /^([a-z-]+):(-?\d*\.?\d+)(\/\d+)?(\+{1,2})?$/.exec(tok);
   if (kv && vocabulary[`${primitive}_numeric`].includes(kv[1])) {
-    if (kv[3] && kv[1] !== 'gap') throw new Error(`growth suffix only valid on 'gap', got '${tok}'`);
-    return [kv[1], kv[3] ? `${kv[2]}${kv[3]}` : Number(kv[2])];
+    if (kv[4] && kv[1] !== 'gap') throw new Error(`growth suffix only valid on 'gap', got '${tok}'`);
+    if (kv[3] && kv[1] !== 'w' && kv[1] !== 'h') throw new Error(`size fraction only valid on 'w'/'h', got '${tok}'`);
+    if (kv[3]) return [kv[1], `${kv[2]}${kv[3]}`];
+    return [kv[1], kv[4] ? `${kv[2]}${kv[4]}` : Number(kv[2])];
   }
   throw new Error(`unknown token '${tok}' for ${primitive}`);
 }
@@ -106,6 +114,22 @@ export function parseGapGrowth(value) {
   const m = /^(\d+)(\+{1,2})$/.exec(value);
   if (!m) throw new Error(`invalid gap growth token '${value}'`);
   return { base: Number(m[1]), allow: vocabulary.grow_class[m[2]] };
+}
+
+// Decodes a size dial's growth-weight fraction ('3/12') into the plain
+// flex-grow number the L2 renderer applies (3). The denominator is a
+// readability convention only ("this box claims 3 of a 12-unit raster") --
+// flex-grow is a ratio among a row/stack's `fill` siblings, so '3/12' and
+// '1/4' render identically. Same "distinct value form on the same numeric
+// dial, decoded by a dedicated pure function" shape as parseGapGrowth
+// above, not a new dial (C2/C8) -- 'w'/'h' always mean "size", the token's
+// own form (plain number vs N/D) says whether that's a literal fixed pixel
+// width or a proportional fill-weight. null for a plain fixed size.
+export function parseSizeWeight(value) {
+  if (typeof value !== 'string') return null;
+  const m = /^(\d+)\/(\d+)$/.exec(value);
+  if (!m) throw new Error(`invalid size weight '${value}'`);
+  return Number(m[1]);
 }
 
 // L1 -- pure excess -> gap distribution. slots: [{base, allow}], same unit as excess.

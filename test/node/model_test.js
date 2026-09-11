@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parse, print, distributeGrowth, parseGapGrowth, classify } from '../../ui/model.js';
+import { parse, print, distributeGrowth, parseGapGrowth, parseSizeWeight, classify } from '../../ui/model.js';
 
 test('parse enum tokens', () => {
   assert.deepEqual(parse('row, hug, solid, rounded'),
@@ -64,6 +64,42 @@ test('growth suffix on a non-gap numeric throws', () => {
 test('growth suffix print round-trip', () => {
   assert.equal(print(parse('gap:2+')), 'gap:2+');
   assert.deepEqual(parse(print(parse('gap:2++'))), parse('gap:2++'));
+});
+
+// size fraction (12-column rasterize, TODO-208 follow-up) -- growth WEIGHT
+// among `fill` siblings, not a literal pixel width. Same "distinct value
+// form on the same numeric dial" shape as gap's growth suffix above.
+test('w without a fraction stays a plain number (needs no size dial)', () => {
+  assert.deepEqual(parse('w:80'), { w: 80 });
+});
+test('w fraction on a fill box parses as a string token', () => {
+  assert.deepEqual(parse('fill, w:3/12'), { size: 'fill', w: '3/12' });
+});
+test('h fraction on a fill box parses as a string token', () => {
+  assert.deepEqual(parse('fill, h:1/12'), { size: 'fill', h: '1/12' });
+});
+test('size fraction on a non-w/h numeric throws', () => {
+  assert.throws(() => parse('fill, pad:3/12'), /size fraction only valid on 'w'\/'h'/);
+});
+test('size fraction on a fixed (non-fill) box throws', () => {
+  assert.throws(() => parse('fixed, w:3/12'), /requires size 'fill'/);
+});
+test('size fraction with no size dial at all throws', () => {
+  assert.throws(() => parse('w:3/12'), /requires size 'fill'/);
+});
+test('size fraction print round-trip', () => {
+  assert.equal(print(parse('fill, w:3/12')), 'fill, w:3/12');
+  assert.deepEqual(parse(print(parse('fill, w:8/12'))), parse('fill, w:8/12'));
+});
+test('parseSizeWeight: N/D fraction returns the numerator as a flex-grow weight', () => {
+  assert.equal(parseSizeWeight('3/12'), 3);
+  assert.equal(parseSizeWeight('1/12'), 1);
+});
+test('parseSizeWeight: plain number (no fraction) returns null', () => {
+  assert.equal(parseSizeWeight(80), null);
+});
+test('parseSizeWeight: malformed fraction throws', () => {
+  assert.throws(() => parseSizeWeight('3/'), /invalid size weight/);
 });
 
 // distributeGrowth -- pure excess->gap distribution (too-much-space mechanism 1)

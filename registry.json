@@ -3894,7 +3894,7 @@
      },
      {
       "name": "content",
-      "box": "stack, fill, pad:3, gap:3, scroll, solid, rounded",
+      "box": "stack, fill, w:3/12, pad:3, gap:3, scroll, solid, rounded",
       "children": [
        {
         "name": "content-title",
@@ -3914,7 +3914,7 @@
      },
      {
       "name": "detail",
-      "box": "stack, fixed, w:360, pad:3, gap:2, scroll, solid, rounded",
+      "box": "stack, fill, w:8/12, pad:3, gap:2, scroll, solid, rounded",
       "children": [
        {
         "name": "detail-title",
@@ -3930,7 +3930,7 @@
      },
      {
       "name": "inspect",
-      "box": "stack, fixed, w:160, pad:3, gap:2, scroll, solid, rounded",
+      "box": "stack, fill, w:1/12, pad:3, gap:2, scroll, solid, rounded",
       "children": [
        {
         "name": "inspect-title",

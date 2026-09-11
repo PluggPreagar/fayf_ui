@@ -56,16 +56,16 @@
               "children": [
                 { "name": "icon-profile", "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
                 "Profile" ] } ] },
-        { "name": "content", "box": "stack, fill, pad:3, gap:3, scroll, solid, rounded",
+        { "name": "content", "box": "stack, fill, w:3/12, pad:3, gap:3, scroll, solid, rounded",
           "children": [
             { "name": "content-title", "extends": "atom/text.title", "content": "Records" },
             { "name": "tree", "box": "stack, gap:1, fill", "content": "" } ] },
         { "name": "detail-splitter", "box": "fixed, w:6, bare" },
-        { "name": "detail", "box": "stack, fixed, w:360, pad:3, gap:2, scroll, solid, rounded",
+        { "name": "detail", "box": "stack, fill, w:8/12, pad:3, gap:2, scroll, solid, rounded",
           "children": [
             { "name": "detail-title", "extends": "atom/text.title", "content": "Detail" },
             { "name": "detail-body", "box": "stack, gap:0, fill", "content": "Select a record" } ] },
-        { "name": "inspect", "box": "stack, fixed, w:160, pad:3, gap:2, scroll, solid, rounded",
+        { "name": "inspect", "box": "stack, fill, w:1/12, pad:3, gap:2, scroll, solid, rounded",
           "children": [
             { "name": "inspect-title", "extends": "atom/text.title", "content": "Inspect" },
             { "name": "inspect-body", "box": "stack, gap:1, fill", "content": "Select a record" } ] } ] },
