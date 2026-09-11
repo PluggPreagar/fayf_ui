@@ -133,6 +133,12 @@ export const handlers = makeHandlers(FIXTURE_URLS);   // this repo's own default
 
 const RETRY = { name: 'btn-retry', box: 'row, mid, packed, pad:2, solid, rounded', content: 'Retry' };
 
+// Pure. A tiny label/value pair for the inspect panel -- stacked, not a row
+// (list.js/dashboard.js's fieldRow puts label+value side by side, but that's
+// too cramped for a real pipeline name in a 160px-wide column).
+const inspectRow = (label, value) => ({ box: 'stack, gap:0, hug',
+  children: [{ box: 'hug', content: label }, { box: 'hug', content: String(value ?? '—') }] });
+
 // Pure. status -> { name: patch }. Object.entries order = paint order:
 // content-level slots first, tree row patches last.
 export function view(s) {
@@ -140,6 +146,12 @@ export function view(s) {
   const t = d[TREE.name];
   const loading = s.state === 'loading';
   const selPath = t && t.sel != null ? t.sel : null;
+  // Generic, schema-agnostic metadata about the SELECTION -- deliberately not
+  // per-record-type field splitting (session_nr/speaker_name/etc, only known
+  // for THIS run's step types), which the header comment already scopes out
+  // of v1 (no diff views, no in-place edit -- same discipline). Everything
+  // here is already on status.data regardless of what kind of record it is.
+  const [stepId, recordId] = selPath ? selPath.split('/') : [null, null];
   const patches = {
     'crumb-page': 'Records',
     'status-text': loading ? 'loading…' : s.state === 'error' ? `failed: ${d.error}` : `${d.runMeta ? d.runMeta.pipeline + ' · ' : ''}run ${d.runId}`,
@@ -148,6 +160,13 @@ export function view(s) {
     // response is a bare value or { value, version } -- adapt it here, a
     // small call-site wrapper, not a change to browse.js's own contract.
     'detail-body': d.detail ? detailBody({ format: 'json', content: JSON.stringify(d.detail.value ?? d.detail) }) : d.detailLoading ? 'Loading…' : 'Select a record',
+    'inspect-body': selPath ? [
+      inspectRow('Step', stepId),
+      inspectRow('Record', recordId),
+      inspectRow('Run', d.runId),
+      ...(d.runMeta ? [inspectRow('Pipeline', d.runMeta.pipeline)] : []),
+      ...(d.detail && d.detail.version != null ? [inspectRow('Version', d.detail.version)] : []),
+    ] : 'Select a record',
   };
   if (loading) {
     patches[TREE.name] = { content: [], state: 'loading' };

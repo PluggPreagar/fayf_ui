@@ -426,3 +426,15 @@
 *::-webkit-scrollbar-track{background:transparent}
 *::-webkit-scrollbar-thumb{background:var(--rule);border-radius:4px}
 *::-webkit-scrollbar-thumb:hover{background:var(--dash)}
+
+/* splitter handle -- mounted by ui/splitter.js (page-mount concern, not a
+   box dial: dragging isn't part of the vocabulary model, same precedent as
+   ui/style-mode.js's toggle). A screen just declares a plain named `fixed,
+   w:6, bare` box between two panels; this is purely a hover/cursor
+   affordance layer on top, keyed off the same data-name pattern every
+   other page-mount concern already uses ([data-name="status-buttons"] etc).
+   Matched by suffix, not one hardcoded id, so any screen can name its own
+   handle `<panel>-splitter` and get the same affordance for free. */
+[data-name$="-splitter"]{cursor:col-resize}
+[data-name$="-splitter"]:hover,
+[data-name$="-splitter"]:active{background:var(--tint2)}
