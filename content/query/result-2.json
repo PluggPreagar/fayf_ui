@@ -1,0 +1,6 @@
+{ "columns": ["expression", "party", "person", "utterance"],
+  "rows": [
+    { "expression": "Zuruf", "party": "AfD", "person": "M. Mustermann", "utterance": "Das ist doch völliger Unsinn, was Sie hier erzählen!" },
+    { "expression": "Zuruf", "party": "SPD", "person": "E. Beispiel", "utterance": "Hört, hört! Genau das habe ich schon immer gesagt." },
+    { "expression": "Zuruf", "party": "CDU", "person": "K. Muster", "utterance": "Unglaublich, dass Sie das jetzt behaupten, Frau Kollegin." } ],
+  "total": 3 }

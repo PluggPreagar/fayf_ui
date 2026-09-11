@@ -22,7 +22,7 @@ Commands `refresh · theme` · data = GET `/api/runs` `/api/pipelines` `/api/iss
 | S3 ✓ | **table controller** `ui/table.js` — rows JSON → `stack` of `row`s, cells `fixed w`; windowed (`scroll` box, visible slice), sort, select → trigger `<name>.select`. Columns = part `component/table` | fayf_ui | JS + JSON | node: window math (2000 rows → ≤ 40 boxes); browser: sort/select/scroll |
 | S4 ✓ | **dashboard screen** `screens/dashboard.json` = `extends screens/shell` + content: `at-a-glance` (4 `atom/chip` counts), `recent-runs` (table slot), `issues` (table slot); `machines/dashboard.json` (states `loading · ready · error`; effects 3× fetch); fixture `content/dashboard/*.json` | fayf_ui | JSON | gallery, node machine test, browser table tests |
 | S5 | **processor stub** `frontend/fayf/dashboard.html` (~60 lines): screen refs · machine JSON · handlers (`status-dot` map, `e2e-deploy-` filter, counts) · effect targets `/api/…`. `fayf-skin.css`: luna aliases for repo tokens. Re-vendor pin | processor | HTML + JSON + handlers.js | `?test=1` parity with `dashboard.js` (counts, rows, nav, commands); old page kept as `dashboard-kit.html` until S6 done |
-| S6 | **page by page** issues ✓ → list ✓ → browse ✓ (filetree ctrl) → records ✓ (filetree ctrl, reused) / run (deferred, SSE) → profile/query/annotate → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
+| S6 | **page by page** issues ✓ → list ✓ → browse ✓ (filetree ctrl) → records ✓ (filetree ctrl, reused) / run (deferred, SSE) → profile ✓ → query ✓ (dynamic per-query table spec) → annotate → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
 
 ## Controller set (C11: one file each, no more)
 
@@ -121,7 +121,7 @@ Sub-controller pattern = ui/table.js (status slice + spread handlers + self-tran
    "screen JSON + machine JSON + pure handlers; DOM only in fayf_ui".
 
 ### S6 — page by page
-issues ✓ → list ✓ → browse ✓ → records ✓ / run (deferred) → profile ✓ → query/annotate → graph last via `Embed`. Each:
+issues ✓ → list ✓ → browse ✓ → records ✓ / run (deferred) → profile ✓ → query ✓ → annotate → graph last via `Embed`. Each:
 parity test, old page removed, nav points to new.
 
 **`field:"text"|"textarea"` shipped 2026-09-11** (see the "Known small items" note below for the full contract):
@@ -322,6 +322,77 @@ run-picker `run-picker-title` — a real substring-prefix collision with the dyn
 `qa('[data-name^="run-picker-"]')`-style assertion, the SAME idiom `test/list_test.js`'s `rowsOf()` helper and this
 page's own click handler rely on) — renamed to `picker-title` before shipping.
 
+**query shipped 2026-09-11**: sixth S6 page, a raw FQL query tool over the JSON artefacts (ground truth reference:
+`fayf_processor/frontend/query.js`, 262 lines — behaviour only, not copied — a textarea + optional run-scope selector
++ example-query chips + a results table, GET-only; its own guided query-builder driven by `Api.querySchema()` is
+deferred IN THE GROUND TRUTH ITSELF, not a v1 cut made here). `machines/query.json` is deliberately simpler than
+every prior page: ONE state (`ready`), no loading/error split — the ground truth's own design tolerates a failed
+runs-list fetch gracefully (toasts, keeps working scoped to "All runs") and treats a QUERY error as DATA
+(`res.error`), not a page-level mode, so there is no `loading`/`error` machine state to model here at all. No new
+sub-controller: one `ui/table.js` instance for the results grid, but genuinely UNLIKE every prior page (dashboard's
+`RUNS`/`ISSUES`, list's `PIPELINES`/`RUNS`, profile's `SPEAKERS`), its spec is not a fixed top-level constant — a
+query result's own columns vary per query (from the response's `columns` field, or derived from row keys, mirroring
+the ground truth's own `deriveColumns`/`cellText`). The spec is built fresh inside the `query.loaded` handler and
+stored in `status.data.resultsSpec` alongside the table's own `status.data.results` (`tableInit(spec, rows)`);
+`results.click`/`results.scroll` look the current spec up from status at call time rather than closing over a
+module-level constant, since `tableHandlers(spec)`/`tableView(spec, t)` both take `spec` explicitly per call.
+`ui/query.js`: `RUN_PICKER` (single-select run chip, exclusive — clicking the selected run again clears it to "All
+runs", clicking another replaces it outright, never a toggle-SET the way profile.js's multi-pick works), `EXAMPLES`
+(6 static chips, ground-truth-identical query strings), `FIXTURE_URLS` (documented fixture-query-matching scheme:
+since free-typed FQL text can't be turned into a path the way other pages built one from an id, the fixture URL is
+keyed off which `EXAMPLES` entry `data.q` currently equals exactly — `/content/query/result-<index>.json`; `run` is
+tacked on as a harmless `?run=` query string the static file server ignores when resolving the path, so the run
+selection is still visible on the actual fetch URL/effect without needing a second fixture per run; a query that
+matches no `EXAMPLES` entry — free-typed, or an example whose own fixture wasn't authored — falls back to
+`/content/query/result-none.json`, a path this repo deliberately does not ship, so the resulting 404 drives the
+real `err` trigger cleanly, same as a real API's own miss would; the real consumer's own `urls.query` needs none of
+this indexing: `(q, run) => '/api/query?q=' + encodeURIComponent(q) + (run ? '&run=' + encodeURIComponent(run) : '')`,
+`urls.runs` is just `/api/runs` per this repo's existing convention), `makeHandlers(urls)` factory (same pattern
+`ui/issues.js`/`ui/list.js`/`ui/profile.js` established). `screens/query.json` (dashboard.json's ws-head/status-bar
+pattern) — **one deliberate structural deviation from every other S6 page**: no `detail` side panel at all (every
+prior page kept the 3-column `side-panel`/`content`/`detail` body, even when, like browse.json/profile.json, it left
+`detail` at a plain default) — this page has no "select a row, see its detail elsewhere" concept the other pages
+share (issues/browse/profile/records all have one), the query RESULT itself is the thing being inspected, and a
+results table with a genuinely dynamic column count needs the full content width more than a decorative 280px panel
+would earn its keep. Everything (run-picker chips, example chips, the FQL field, Run, results) lives in `content`.
+**Real bug found + fixed while building this, caught only by the full node suite, not by writing the code**:
+`test/node/parts_validate_test.js`'s closed static-JSON key vocabulary (C2's `RESERVED` set) does not include
+`field` — same reason `ui/list.js`'s `start-record-id` field node is never written into `screens/list.json` itself,
+only built inside `view()`'s content patch. First draft put `field:'textarea'` directly on a `fql` node inside
+`screens/query.json`, which fails that invariant; fixed by making `screens/query.json`'s `fql-row` a plain static
+container (`content: ""`) and building the real field node (named `fql`, matching the `fql.input` trigger) inside
+`ui/query.js`'s `view()` as a content patch on `fql-row`, exactly mirroring list.js's own established pattern.
+**Second real bug, found only by a live `.click()` on the actual rendered DOM element per this task's explicit
+"be extra careful, a past round's real bug was only caught by manual click-through" instruction — the automated
+node suite and a shallow browser assertion on class names alone would NOT have caught it**: the example-chip
+container was named `examples` (plural, matching its title label "Examples") in `screens/query.json`, while the
+machine trigger is `example.click` (singular). `ui/machine.js`'s click routing matches a trigger by an EXACT
+ancestor data-name (never a prefix) walking up from the click target — neither the container (`examples`) nor an
+individual chip (`example-0`) equals `example`, so no candidate trigger was ever found and every real example-chip
+click silently no-op'd; state happened to still look plausible at rest (the click did fire on a genuinely
+`bx-actionable` element with no thrown error), so only checking the RESULT of a real click (results table
+populated, fql textarea changed) exposed it, not just checking that the chip existed and had the right CSS classes.
+Fixed by renaming the container to `example` (singular, exact match) — mirrors `RUN_PICKER`'s own
+container-name-equals-trigger-name pattern (`run-picker` the container, `run-picker-<id>` the chips) exactly; the
+lesson generalizes to any future page adding a new generic (non-per-item) chip-row trigger. Fixtures:
+`content/query/runs.json` (5 runs) + `content/query/result-0.json` (`EXAMPLES[0]` "reactions by party", `grouped:
+true`) + `content/query/result-2.json` (`EXAMPLES[2]` "who heckled", flat, 4 columns incl. a long `utterance` text
+column proving long text renders fine with `ui/table.js`'s plain equal-`fill` column width, no `WIDE_RE`-style
+special-casing needed). `query.html`; `test/node/query_machine_test.js` (20 tests) + `test/query_test.js` (10
+blocks) → node 275/275 (was 255), registry 86 ids. Browser-verified live: automated `?test=query.html` console
+sweep all green, PLUS a manual pass driving real `.click()` calls on the actual rendered chips/textarea/button in
+both wireframe and luna skins (the second real bug above was caught exactly this way, not by the automated suite
+alone — screenshots confirm run-picker/example selection, a rendered 4-column results table, and single-select
+toggle-clear all work against the live DOM). **v1 simplifications** (same KISS discipline as every prior S6 page,
+all noted here and in `.ai/todo.md`'s TODO-9 row): no `?q=&run=` deep-link URL sync (same class of drop as
+browse.html's own `?mount=&path=&at=`); the query runs ONLY on an explicit `btn-run` click, never on textarea
+blur/commit (the ground truth also runs on textarea "commit" — typing here just updates `data.q`); no per-column
+custom/wide-column widths (`ui/table.js`'s existing default: every column gets equal `fill` width, no `w` set,
+in place of the ground truth's `WIDE_RE` heuristic); no client-side result filtering/export (ground truth's
+`DataTable` had `filterable`/`export` built in, same class of drop as prior pages' table simplifications). The
+ground truth's own guided query-builder (dynamic From/Join/Where/Show/Group rows driven by `Api.querySchema()`) is
+NOT ported — already deferred in the ground truth itself, not a cut made here.
+
 ### Known small items
 - js_runner prints "Checks: 0" before async blocks (another session is fixing it — do not touch test/js_runner.js).
 - shell ws-head `between` with 3 children centres the crumbs; luna nav icon dots faint (checklist #14 class).
@@ -388,6 +459,16 @@ page's own click handler rely on) — renamed to `picker-title` before shipping.
   buttons — all real, larger features/cosmetic extras, deferred.
 - records.html's "run" counterpart (the live SSE event-stream watch view) is a separate, still-fully-deferred page —
   a different engine gap (server-sent events), not scoped into this "records" step at all.
+- query.html has no `?q=&run=` deep-link URL sync (same class of drop as browse.html's `?mount=&path=&at=`); Run
+  fires only on an explicit button click, never on textarea blur/commit like the ground truth's own textarea
+  "commit" event (typing just updates `data.q`); no per-column custom/wide-column widths (`ui/table.js`'s plain
+  equal-`fill` default for every result column, in place of the ground truth's `WIDE_RE` heuristic); no client-side
+  result filtering/export (ground truth's `DataTable` had `filterable`/`export`). The ground truth's own guided
+  query-builder (`Api.querySchema()`-driven From/Join/Where/Show/Group rows) is not ported — already deferred in the
+  ground truth itself, not a v1 cut made here.
+- query.html has no `detail` side panel — the only S6 page to drop it outright rather than leave it at a default —
+  since there is no "select a row, see detail elsewhere" concept here (the query result IS the detail); everything
+  lives in `content`.
 
 ## Open (next C9, one at a time)
 

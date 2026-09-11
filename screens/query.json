@@ -1,0 +1,39 @@
+{ "box": "stack, fill, clip, tint0",
+  "children": [
+    { "name": "ws-head", "extends": "component/ws-head",
+      "children": [
+        { "name": "brand", "extends": "atom/text.title", "content": "fayf_ui" },
+        { "name": "crumbs", "extends": "component/breadcrumb-trail",
+          "children": [
+            { "name": "crumb-home", "box": "hug", "content": "Workspace" },
+            ">",
+            { "name": "crumb-page", "box": "hug", "content": "Query" } ] },
+        { "name": "head-actions", "box": "row, mid, gap:2, hug",
+          "children": [
+            { "name": "btn-refresh", "extends": "atom/button", "content": "Refresh" },
+            { "name": "user", "box": "row, mid, gap:1, hug",
+              "children": [
+                { "extends": "atom/avatar", "content": "P" },
+                "Peter" ] } ] } ] },
+    { "name": "body", "box": "row, fill",
+      "children": [
+        { "name": "side-panel", "extends": "component/side-panel" },
+        { "name": "content", "box": "stack, fill, pad:3, gap:3, scroll, solid, rounded",
+          "children": [
+            { "name": "content-title", "extends": "atom/text.title", "content": "Query" },
+            { "name": "picker-title", "box": "hug", "content": "Runs" },
+            { "name": "run-picker", "box": "row, mid, gap:1, scroll", "content": "" },
+            { "name": "examples-title", "box": "hug", "content": "Examples" },
+            { "name": "example", "box": "row, mid, gap:1, scroll", "content": "" },
+            { "name": "fql-title", "box": "hug", "content": "FQL" },
+            { "name": "fql-row", "box": "stack, fixed, h:70", "content": "" },
+            { "name": "btn-run", "extends": "atom/button.primary", "content": "Run query" },
+            { "name": "results-title", "box": "hug", "content": "Results" },
+            { "name": "results", "box": "stack, fill, scroll, solid, rounded", "content": "" } ] } ] },
+    { "name": "status-bar", "extends": "component/shell-status",
+      "children": [
+        { "name": "status-text", "box": "hug", "content": "Enter an FQL query and run it." },
+        { "name": "status-right", "box": "row, mid, gap:2, hug",
+          "children": [
+            { "name": "status-version", "box": "hug", "content": "v0.1" },
+            { "name": "btn-theme", "extends": "atom/icon-button", "box": "w:16, h:16", "content": "◐" } ] } ] } ] }

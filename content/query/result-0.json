@@ -1,0 +1,8 @@
+{ "columns": ["party", "count"],
+  "rows": [
+    { "party": "CDU", "count": 12 },
+    { "party": "SPD", "count": 9 },
+    { "party": "GRÜNE", "count": 6 },
+    { "party": "AfD", "count": 15 } ],
+  "total": 4,
+  "grouped": true }

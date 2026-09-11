@@ -1,0 +1,7 @@
+[
+ {"run_id":"r-0008","pipeline":"bundestag-unified","status":"done"},
+ {"run_id":"r-0018","pipeline":"record-ingest","status":"done"},
+ {"run_id":"r-0041","pipeline":"speech-annotate","status":"done"},
+ {"run_id":"r-0063","pipeline":"e2e-deploy-20260911T064200Z","status":"running"},
+ {"run_id":"r-0064","pipeline":"bundestag-unified","status":"failed"}
+]
