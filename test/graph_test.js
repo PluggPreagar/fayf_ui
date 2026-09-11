@@ -14,7 +14,8 @@ const root = () => document.querySelector('body > .bx');
 const q = (name, scope = root()) => scope.querySelector(`[data-name="${name}"]`);
 const text = (name, scope) => (q(name, scope)?.textContent ?? '').trim();
 const state = (scope = root()) => scope.dataset.machineState;
-const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues', 'nav-settings'];
+const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues',
+  'nav-browse', 'nav-query', 'nav-annotate', 'nav-profile'];
 
 tr.addBlock('graph: load -- ready immediately (no loading state), crumb, no status-bar, no detail panel', (r) => {
   r.waitFor(() => document.body.dataset.ready === '1', 3000)

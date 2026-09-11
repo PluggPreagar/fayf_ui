@@ -18,7 +18,8 @@ const q = (name, scope = root()) => scope.querySelector(`[data-name="${name}"]`)
 const qa = (sel, scope = root()) => [...scope.querySelectorAll(sel)];
 const text = (name, scope) => (q(name, scope)?.textContent ?? '').trim();
 const state = (scope = root()) => scope.dataset.machineState;
-const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues', 'nav-settings'];
+const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues',
+  'nav-browse', 'nav-query', 'nav-annotate', 'nav-profile'];
 const READY_RE = /^\d+ runs available$/;
 const runsFixture = async () => (await fetch('/content/profile/runs.json')).json();
 const doneRuns = (runs) => runs.filter(r => r.status === 'done').sort((a, b) => String(b.started_at).localeCompare(String(a.started_at)));
@@ -33,7 +34,10 @@ tr.addBlock('profile: load -- 1 fetch -> ready, status-text, a run-picker chip p
      const done = doneRuns(runs);
      r.check(READY_RE.test(text('status-text')), 'status-text: "<n> runs available"', text('status-text'));
      r.check(text('status-text') === `${done.length} runs available`, 'status-text count matches done-only runs', text('status-text'));
-     r.check(q('nav-profile') == null, 'no nav-profile item exists in this shared side-panel (pre-existing gap)');
+     // Was a documented gap (no real nav-profile item; only reachable via
+     // the unrelated "settings" slot) -- fixed by the nav-rail commit
+     // (d810b03): profile.json now has its own nav-profile item, active.
+     r.check(q('nav-profile') && q('nav-profile').classList.contains('bx-brand'), 'nav-profile shows active (own side-panel override)');
      for (const run of done) r.check(!!q(`run-picker-${run.run_id}`), `run-picker chip for ${run.run_id} present`);
      r.check(qa('[data-name^="run-picker-"]').length === done.length, 'exactly one chip per done run, no extras', qa('[data-name^="run-picker-"]').length);
      for (const w of ['wahlperiode', 'jahr', 'monat', 'woche', 'tag', 'jahrzehnt']) r.check(!!q(`fenster-${w}`), `fenster chip ${w} present`);

@@ -20,7 +20,8 @@ const q = (name, scope = root()) => scope.querySelector(`[data-name="${name}"]`)
 const qa = (sel, scope = root()) => [...scope.querySelectorAll(sel)];
 const text = (name, scope) => (q(name, scope)?.textContent ?? '').trim();
 const state = (scope = root()) => scope.dataset.machineState;
-const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues', 'nav-settings'];
+const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues',
+  'nav-browse', 'nav-query', 'nav-annotate', 'nav-profile'];
 const rowsOf = (table, scope) => qa(`[data-name^="${table}-row-"]`, scope);
 const colsOf = (table, scope) => qa(`[data-name^="${table}-col-"]`, scope);
 

@@ -20,7 +20,8 @@ const text = (name, scope) => (q(name, scope)?.textContent ?? '').trim();
 const isInt = (s) => /^\d+$/.test(s);
 const READY_RE = /^\d+ runs · \d+ pipelines$/;
 const STATS = ['stat-running', 'stat-failed', 'stat-pipelines', 'stat-issues'];
-const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues', 'nav-settings'];
+const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues',
+  'nav-browse', 'nav-query', 'nav-annotate', 'nav-profile'];
 const rowsOf = (table, scope) => qa(`[data-name^="${table}-row-"]`, scope);
 const rowId = (table, el) => el.dataset.name.slice(`${table}-row-`.length);
 const state = (scope = root()) => scope.dataset.machineState;

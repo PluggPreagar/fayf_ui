@@ -18,7 +18,8 @@ const q = (name, scope = root()) => scope.querySelector(`[data-name="${name}"]`)
 const qa = (sel, scope = root()) => [...scope.querySelectorAll(sel)];
 const text = (name, scope) => (q(name, scope)?.textContent ?? '').trim();
 const state = (scope = root()) => scope.dataset.machineState;
-const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues', 'nav-settings'];
+const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues',
+  'nav-browse', 'nav-query', 'nav-annotate', 'nav-profile'];
 const nodeSel = (path) => `tree-node-${encodeURIComponent(path)}`;
 
 const fixture = async (rel) => (await fetch(`/content/browse/${rel}`)).json();
@@ -33,7 +34,11 @@ tr.addBlock('browse: load -- real fetch -> ready, status-text, mount roots rende
      r.check(text('status-text') === `${mounts.length} mounts`, 'status-text "<n> mounts" matches fixture', text('status-text'));
      for (const m of mounts) r.check(!!q(nodeSel(m.name)), `mount root row present: ${m.name}`);
      r.check(text('detail-title') === 'No file open', 'detail-title default', text('detail-title'));
-     r.check(q('nav-dashboard') && q('nav-dashboard').classList.contains('bx-brand'), 'nav-dashboard shows active (default side-panel, pre-existing gap -- no nav-browse item exists yet, per plan doc)');
+     // Was a documented gap (default side-panel showed Dashboard active, no
+     // nav-browse item existed yet) -- fixed by the nav-rail commit (d810b03):
+     // browse.json now has its own nav-browse item, correctly active.
+     r.check(q('nav-browse') && q('nav-browse').classList.contains('bx-brand'), 'nav-browse shows active (own side-panel override)');
+     r.check(q('nav-dashboard') && !q('nav-dashboard').classList.contains('bx-brand'), 'nav-dashboard is NOT active');
    });
 });
 

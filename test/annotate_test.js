@@ -25,7 +25,8 @@ const q = (name, scope = root()) => scope.querySelector(`[data-name="${name}"]`)
 const qa = (sel, scope = root()) => [...scope.querySelectorAll(sel)];
 const text = (name, scope) => (q(name, scope)?.textContent ?? '').trim();
 const state = (scope = root()) => scope.dataset.machineState;
-const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues', 'nav-settings'];
+const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues',
+  'nav-browse', 'nav-query', 'nav-annotate', 'nav-profile'];
 // Sentence rows have no data-name (built inline, like query.js's chip rows) --
 // a row is any direct child of 'sentences' with 2 nested divs (badge + text);
 // a paragraph header has 0 (its content is a plain textContent string).
