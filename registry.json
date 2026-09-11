@@ -92,6 +92,9 @@
   "box": "row, mid, pad:1, hug, solid, rounded, tint1",
   "content": "Tip"
  },
+ "cluster/button-group": {
+  "box": "row, mid, packed, hug, solid, rounded, clip"
+ },
  "cluster/dot": {
   "box": "stack, bare, fixed, w:8, h:8, tint3, circle"
  },
@@ -949,10 +952,16 @@
       "content": "v0.1"
      },
      {
-      "name": "btn-theme",
-      "extends": "atom/icon-button",
-      "box": "w:16, h:16",
-      "content": "◐"
+      "name": "status-buttons",
+      "extends": "cluster/button-group",
+      "children": [
+       {
+        "name": "btn-theme",
+        "extends": "atom/icon-button",
+        "box": "w:16, h:16, bare",
+        "content": "◐"
+       }
+      ]
      }
     ]
    }
@@ -1704,10 +1713,16 @@
         "content": "v0.1"
        },
        {
-        "name": "btn-theme",
-        "extends": "atom/icon-button",
-        "box": "w:16, h:16",
-        "content": "◐"
+        "name": "status-buttons",
+        "extends": "cluster/button-group",
+        "children": [
+         {
+          "name": "btn-theme",
+          "extends": "atom/icon-button",
+          "box": "w:16, h:16, bare",
+          "content": "◐"
+         }
+        ]
        }
       ]
      }
@@ -1942,10 +1957,16 @@
         "content": "v0.1"
        },
        {
-        "name": "btn-theme",
-        "extends": "atom/icon-button",
-        "box": "w:16, h:16",
-        "content": "◐"
+        "name": "status-buttons",
+        "extends": "cluster/button-group",
+        "children": [
+         {
+          "name": "btn-theme",
+          "extends": "atom/icon-button",
+          "box": "w:16, h:16, bare",
+          "content": "◐"
+         }
+        ]
        }
       ]
      }
@@ -2266,10 +2287,16 @@
         "content": "v0.1"
        },
        {
-        "name": "btn-theme",
-        "extends": "atom/icon-button",
-        "box": "w:16, h:16",
-        "content": "◐"
+        "name": "status-buttons",
+        "extends": "cluster/button-group",
+        "children": [
+         {
+          "name": "btn-theme",
+          "extends": "atom/icon-button",
+          "box": "w:16, h:16, bare",
+          "content": "◐"
+         }
+        ]
        }
       ]
      }
@@ -2682,10 +2709,16 @@
         "content": "v0.1"
        },
        {
-        "name": "btn-theme",
-        "extends": "atom/icon-button",
-        "box": "w:16, h:16",
-        "content": "◐"
+        "name": "status-buttons",
+        "extends": "cluster/button-group",
+        "children": [
+         {
+          "name": "btn-theme",
+          "extends": "atom/icon-button",
+          "box": "w:16, h:16, bare",
+          "content": "◐"
+         }
+        ]
        }
       ]
      }
@@ -2935,10 +2968,16 @@
         "content": "v0.1"
        },
        {
-        "name": "btn-theme",
-        "extends": "atom/icon-button",
-        "box": "w:16, h:16",
-        "content": "◐"
+        "name": "status-buttons",
+        "extends": "cluster/button-group",
+        "children": [
+         {
+          "name": "btn-theme",
+          "extends": "atom/icon-button",
+          "box": "w:16, h:16, bare",
+          "content": "◐"
+         }
+        ]
        }
       ]
      }
@@ -3342,10 +3381,16 @@
         "content": "v0.1"
        },
        {
-        "name": "btn-theme",
-        "extends": "atom/icon-button",
-        "box": "w:16, h:16",
-        "content": "◐"
+        "name": "status-buttons",
+        "extends": "cluster/button-group",
+        "children": [
+         {
+          "name": "btn-theme",
+          "extends": "atom/icon-button",
+          "box": "w:16, h:16, bare",
+          "content": "◐"
+         }
+        ]
        }
       ]
      }
@@ -3604,10 +3649,16 @@
         "content": "v0.1"
        },
        {
-        "name": "btn-theme",
-        "extends": "atom/icon-button",
-        "box": "w:16, h:16",
-        "content": "◐"
+        "name": "status-buttons",
+        "extends": "cluster/button-group",
+        "children": [
+         {
+          "name": "btn-theme",
+          "extends": "atom/icon-button",
+          "box": "w:16, h:16, bare",
+          "content": "◐"
+         }
+        ]
        }
       ]
      }
@@ -3894,10 +3945,16 @@
         "content": "v0.1"
        },
        {
-        "name": "btn-theme",
-        "extends": "atom/icon-button",
-        "box": "w:16, h:16",
-        "content": "◐"
+        "name": "status-buttons",
+        "extends": "cluster/button-group",
+        "children": [
+         {
+          "name": "btn-theme",
+          "extends": "atom/icon-button",
+          "box": "w:16, h:16, bare",
+          "content": "◐"
+         }
+        ]
        }
       ]
      }
@@ -4168,10 +4225,16 @@
         "content": "v0.1"
        },
        {
-        "name": "btn-theme",
-        "extends": "atom/icon-button",
-        "box": "w:16, h:16",
-        "content": "◐"
+        "name": "status-buttons",
+        "extends": "cluster/button-group",
+        "children": [
+         {
+          "name": "btn-theme",
+          "extends": "atom/icon-button",
+          "box": "w:16, h:16, bare",
+          "content": "◐"
+         }
+        ]
        }
       ]
      }

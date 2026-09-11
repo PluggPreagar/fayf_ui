@@ -92,4 +92,6 @@
         { "name": "status-right", "box": "row, mid, gap:2, hug",
           "children": [
             { "name": "status-version", "box": "hug", "content": "v0.1" },
-            { "name": "btn-theme", "extends": "atom/icon-button", "box": "w:16, h:16", "content": "◐" } ] } ] } ] }
+            { "name": "status-buttons", "extends": "cluster/button-group",
+              "children": [
+                { "name": "btn-theme", "extends": "atom/icon-button", "box": "w:16, h:16, bare", "content": "◐" } ] } ] } ] } ] }

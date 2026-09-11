@@ -8,12 +8,14 @@ const tr = new TestRunner({ stopOnError: false });
 const NAMES = [
   'ws-head', 'brand', 'crumbs', 'crumb-home', 'crumb-page', 'head-actions', 'btn-primary', 'user',
   'body', 'side-panel',
-  'nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues', 'nav-settings',
+  'nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues',
+  'nav-browse', 'nav-query', 'nav-annotate', 'nav-profile',
   'content', 'content-title', 'content-body',
   'detail', 'detail-title', 'detail-body',
-  'status-bar', 'status-text', 'status-right', 'status-version', 'btn-theme',
+  'status-bar', 'status-text', 'status-right', 'status-version', 'status-buttons', 'btn-theme',
 ];
-const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues', 'nav-settings'];
+const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues',
+  'nav-browse', 'nav-query', 'nav-annotate', 'nav-profile'];
 
 const root = () => document.querySelector('body > .bx');
 const q = (name) => root().querySelector(`[data-name="${name}"]`);
@@ -68,10 +70,10 @@ tr.addBlock('shell: fit (C10) -- root does not scroll, every region inside root'
   });
 });
 
-tr.addBlock('shell: nav -- 6 items, dashboard active (bx-brand), others plain', (r) => {
+tr.addBlock('shell: nav -- 9 items, dashboard active (bx-brand), others plain', (r) => {
   r.run(() => {
     const items = root().querySelectorAll('[data-name^="nav-"]');
-    r.check(items.length === 6, '6 nav items', items.length);
+    r.check(items.length === 9, '9 nav items', items.length);
     r.check(q('nav-dashboard').classList.contains('bx-brand'), 'nav-dashboard active variant (bx-brand)');
     NAV.filter(n => n !== 'nav-dashboard')
        .forEach(n => r.check(!q(n).classList.contains('bx-brand'), `${n} not active`));

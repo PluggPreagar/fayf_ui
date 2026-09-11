@@ -250,13 +250,36 @@
   border-color:transparent; box-shadow:none;
 }
 
-/* style toggle -- fixed corner control, mounted by ui/style-mode.js */
+/* button-group (cluster/button-group.json) -- one shared border/pill
+   instead of every button getting its own: reduces "border noise" once
+   several small controls sit side by side (status-right's theme toggle +
+   style toggle + issue-report button). Every child renders bare (own
+   stroke/radius stripped here, not per-child) with a hairline divider
+   between ADJACENT children only -- one bordered strip reads as a single
+   grouped control. Generic child-position selector, not box-model-specific,
+   so it also covers externally-mounted buttons appended into the same DOM
+   node at runtime (style-toggle/issue-report -- C11's escape hatch, same
+   precedent as the embed slot) alongside real box-model children like
+   btn-theme. */
+[data-name="status-buttons"] > *{border:none; border-radius:0}
+[data-name="status-buttons"] > *:not(:first-child){border-left:1px solid var(--rule)}
+
+/* style toggle -- fixed corner control, mounted by ui/style-mode.js. The
+   `-grouped` variant drops the fixed/absolute positioning entirely (a
+   plain static flex child instead), sized to match the other status-bar
+   icon controls, for mounting INTO a button-group (e.g. status-buttons)
+   instead of floating over the page corner. */
 .style-toggle{
   position:fixed; top:10px; right:10px; z-index:9999;
   font:11px var(--mono); padding:4px 10px; border:1px solid var(--rule);
   border-radius:4px; background:var(--paper); color:var(--muted); cursor:pointer;
 }
 .style-toggle:hover{color:var(--text); border-color:var(--dash)}
+.style-toggle.style-toggle-grouped{
+  position:static; height:16px; padding:0 8px;
+  font-size:10px; border:none; border-radius:0; background:none;
+}
+.style-toggle.style-toggle-grouped:hover{background:var(--tint1); border-color:transparent}
 /* inline variant -- a non-modeled overlay (appended to the screen root, a
    sibling of the resolved tree, same trick as the fixed-corner default)
    positioned to sit over the status bar instead of a page corner; shrunk

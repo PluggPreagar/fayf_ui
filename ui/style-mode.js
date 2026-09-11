@@ -43,9 +43,13 @@ export function setStyleMode(mode) {
   history.replaceState(null, '', url);
 }
 
-export function mountStyleToggle(target = document.body, { inline = false } = {}) {
+// grouped: a plain static flex child (no fixed/absolute positioning) sized
+// to sit inside a `cluster/button-group` (e.g. status-right's status-buttons),
+// rather than floating over a page corner (default) or the status bar's own
+// area (inline). Mutually exclusive with `inline` -- pick one destination.
+export function mountStyleToggle(target = document.body, { inline = false, grouped = false } = {}) {
   const btn = target.ownerDocument.createElement('button');
-  btn.className = inline ? 'style-toggle style-toggle-inline' : 'style-toggle';
+  btn.className = grouped ? 'style-toggle style-toggle-grouped' : inline ? 'style-toggle style-toggle-inline' : 'style-toggle';
   const sync = () => { btn.textContent = nextMode(currentMode()); };
   sync();
   btn.addEventListener('click', () => {
