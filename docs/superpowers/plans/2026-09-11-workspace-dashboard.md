@@ -22,7 +22,7 @@ Commands `refresh · theme` · data = GET `/api/runs` `/api/pipelines` `/api/iss
 | S3 ✓ | **table controller** `ui/table.js` — rows JSON → `stack` of `row`s, cells `fixed w`; windowed (`scroll` box, visible slice), sort, select → trigger `<name>.select`. Columns = part `component/table` | fayf_ui | JS + JSON | node: window math (2000 rows → ≤ 40 boxes); browser: sort/select/scroll |
 | S4 ✓ | **dashboard screen** `screens/dashboard.json` = `extends screens/shell` + content: `at-a-glance` (4 `atom/chip` counts), `recent-runs` (table slot), `issues` (table slot); `machines/dashboard.json` (states `loading · ready · error`; effects 3× fetch); fixture `content/dashboard/*.json` | fayf_ui | JSON | gallery, node machine test, browser table tests |
 | S5 | **processor stub** `frontend/fayf/dashboard.html` (~60 lines): screen refs · machine JSON · handlers (`status-dot` map, `e2e-deploy-` filter, counts) · effect targets `/api/…`. `fayf-skin.css`: luna aliases for repo tokens. Re-vendor pin | processor | HTML + JSON + handlers.js | `?test=1` parity with `dashboard.js` (counts, rows, nav, commands); old page kept as `dashboard-kit.html` until S6 done |
-| S6 | **page by page** issues ✓ → list ✓ → browse ✓ (filetree ctrl) → records ✓ (filetree ctrl, reused) / run ✓ (new `stream` SSE effect) → profile ✓ → query ✓ (dynamic per-query table spec) → annotate ✓ (STORY-17.1 only, drill-down + coverage; full record editing deferred, needs `ui/form.js`) → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
+| S6 | **page by page** issues ✓ → list ✓ → browse ✓ (filetree ctrl) → records ✓ (filetree ctrl, reused) / run ✓ (new `stream` SSE effect) → profile ✓ → query ✓ (dynamic per-query table spec) → annotate ✓ (STORY-17.1 only, drill-down + coverage; full record editing deferred, needs `ui/form.js`) → graph ✓ (Embed shell, closes S6) | both | | each: parity test, old page removed, nav points to new |
 
 ## Controller set (C11: one file each, no more)
 
@@ -121,7 +121,7 @@ Sub-controller pattern = ui/table.js (status slice + spread handlers + self-tran
    "screen JSON + machine JSON + pure handlers; DOM only in fayf_ui".
 
 ### S6 — page by page
-issues ✓ → list ✓ → browse ✓ → records ✓ / run ✓ → profile ✓ → query ✓ → annotate ✓ → graph last via `Embed`. Each:
+issues ✓ → list ✓ → browse ✓ → records ✓ / run ✓ → profile ✓ → query ✓ → annotate ✓ → graph ✓ (Embed, closes S6). Each:
 parity test, old page removed, nav points to new.
 
 **`field:"text"|"textarea"` shipped 2026-09-11** (see the "Known small items" note below for the full contract):
@@ -517,6 +517,43 @@ used by `ui/records.js`); `urls.events(runId)` -> a real `EventSource` on `Api.e
 /api/runs/{id}/(pause|resume|cancel)` (`Api.runAction`) — a genuine mutating write (pauses/resumes/cancels a
 real pipeline), do not exercise for real in an automated test against shared dev data, same judgment call the
 issues page's status-POST test made.
+
+**graph shipped 2026-09-11**: eighth and LAST S6 page — closes out ALL of S6. Deliberately unlike every
+prior page: not a port of behaviour, since this plan's own "Not in this plan" list already settled the
+real graph canvas (drag/zoom/wires, `fayf_processor/frontend/graph.js` + graph-canvas.js/graph-model.js/
+graph-shell.js/etc., ~5700 lines total) as `Embed, decide after S6` — out of scope to port, here or ever.
+Ships only the smallest possible fayf_ui shell wrapping that legacy editor UNCHANGED: a nav rail + one
+full-bleed empty slot (C11's `Embed` escape hatch — foreign DOM in a named slot, opaque to inspector/
+capture). `machines/graph.json`: the simplest machine yet, ONE state (`ready`), no fetch at all (simpler
+even than `machines/query.json`'s single-state-plus-one-fetch) — nav-*.click ×6 + btn-theme.click, no
+`enter` effects. `ui/graph.js`: `initialData()` → `{}` (nothing to track, the embed slot is foreign DOM
+not machine data); plain `handlers` object, NOT a `makeHandlers(urls)` factory like issues/list/profile/
+query — deliberately, nothing dynamic/per-consumer to parametrize; `view(s)` → `{'crumb-page': 'Graph'}`
+only; `mountGraph(root, reg, opts)` same shape as every prior `mount*`. `screens/graph.json`: side-panel
+(`nav-graph` on `cluster/nav-item.active`, issues.json/list.json's copy-and-override pattern) + one
+`embed` slot (`box: "stack, fill, clip, bare"`, `content: ""`) — drops status-bar AND detail panel
+outright (the only S6 page besides query.json to drop a body region entirely), since the embedded editor
+brings its own toolbar/canvas/status bar and needs the room, not fayf_ui chrome competing for it;
+`head-actions` also carries no `btn-refresh`/`btn-theme` control (brand/crumbs + `user` only) — the
+machine still declares `btn-theme.click` for shape-parity with every other page, it just has no live UI
+hook on this particular screen, an accepted consequence of dropping status-bar. `graph.html` (mirrors
+query.html's bootstrap, much simpler — no fetch/loading, no second `__mount`): sets
+`document.querySelector('[data-name="embed"]').textContent = 'graph canvas embeds here'` right after
+`mountGraph()`, this fixture's own placeholder since there is no real legacy content to embed in fayf_ui's
+own demo. `test/node/graph_machine_test.js` (5 tests) + `test/graph_test.js` (6 blocks) → node 325/325
+(was 320), registry 89 ids incl. `screens/graph`. Browser-verified live (screenshot + full
+`?test=graph.html` console sweep, all green, zero FAIL): shell renders, nav-graph marked active, no
+status-bar/detail panel, embed slot present/empty/full-bleed with no overflow (C10), nav/theme emit
+(theme.toggle has no live control on this screen, confirmed absent), luna skin, C2. **For the
+fayf_processor sibling wiring the real `<iframe>` embed**: registry id `screens/graph`; grab
+`document.querySelector('[data-name="embed"]')` (full-bleed `stack, fill, clip, bare`, zero
+fayf_ui-rendered children) and insert the `<iframe>` directly as plain DOM, entirely outside this repo's
+render/resolve/capture pipeline (C11's `Embed` contract); `ui/graph.js` exports needed: `graphMachine`,
+`initialData()` (`{}`), `handlers` (plain object — nav-*.click emits `nav.go {to}`, btn-theme.click emits
+`theme.toggle`, neither touches `status.data`), `view(s)` (`{'crumb-page': 'Graph'}`), `mountGraph(root,
+reg, opts)`. **Known simplification**: no `btn-theme`/status-bar on this screen (deliberate) — a real
+consumer wanting a theme toggle here would add one to `screens/graph.json`'s `head-actions`; the machine
+already supports it.
 
 ### Known small items
 - js_runner prints "Checks: 0" before async blocks (another session is fixing it — do not touch test/js_runner.js).

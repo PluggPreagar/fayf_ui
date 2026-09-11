@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fayf_ui — graph</title>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui/tokens.css">
+<style>html,body{height:100%;margin:0}
+body{background:var(--canvas);display:flex}
+.bx .ic{stroke:currentColor}</style>
+</head>
+<body>
+<!-- S6 (docs/superpowers/plans/2026-09-11-workspace-dashboard.md): the LAST S6
+     page -- a deliberately bare shell (nav rail + one full-bleed embed slot),
+     no fetch, no loading state. The real graph canvas (drag/zoom/wires) is
+     Embed, decide after S6 -- out of scope here; the fayf_processor sibling
+     inserts its own <iframe> into [data-name="embed"] directly. This fixture
+     has no real legacy content to embed, so it just drops a placeholder box
+     into the slot after mounting. -->
+<script type="module">
+import { resolve } from './ui/model.js';
+import { render } from './ui/render.js';
+import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
+import { mountInspectorToggle } from './ui/inspector.js';
+import { mountGraph } from './ui/graph.js';
+initStyleMode();
+const reg = await (await fetch('/registry.json')).json();
+const provenance = new Map();
+const el = render(resolve(reg['screens/graph'], reg, [], new Set(), [], provenance));
+document.body.appendChild(el);
+mountStyleToggle(el, { inline: true });
+mountInspectorToggle(el, { sourceId: 'screens/graph', provenance, target: el, inline: true });
+window.__emitted = [];
+const onEmit = (t, p) => window.__emitted.push([t, p]);
+window.__ctl = mountGraph(el, reg, { onEmit });
+el.querySelector('[data-name="embed"]').textContent = 'graph canvas embeds here';
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{ "initial": "ready",
+  "states": {
+    "ready": {
+      "btn-theme.click": "ready",
+      "nav-dashboard.click": "ready", "nav-pipelines.click": "ready", "nav-graph.click": "ready",
+      "nav-records.click": "ready", "nav-issues.click": "ready", "nav-settings.click": "ready" } } }
