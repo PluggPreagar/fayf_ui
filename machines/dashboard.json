@@ -1,0 +1,13 @@
+{ "initial": "loading",
+  "states": {
+    "loading": { "enter": [ { "fetch": "/content/dashboard/runs.json", "ok": "runs.loaded", "err": "runs.failed" },
+                            { "fetch": "/content/dashboard/pipelines.json", "ok": "pipelines.loaded", "err": "pipelines.failed" },
+                            { "fetch": "/content/dashboard/issues.json", "ok": "issues.loaded", "err": "issues.failed" } ],
+                 "runs.loaded": "loading", "pipelines.loaded": "loading", "issues.loaded": "loading",
+                 "runs.failed": "error", "pipelines.failed": "error", "issues.failed": "error",
+                 "flow.ready": "ready" },
+    "ready":   { "recent-runs.click": "ready", "recent-runs.scroll": "ready", "issues.click": "ready", "issues.scroll": "ready",
+                 "btn-refresh.click": "loading", "btn-theme.click": "ready",
+                 "nav-dashboard.click": "ready", "nav-pipelines.click": "ready", "nav-graph.click": "ready",
+                 "nav-records.click": "ready", "nav-issues.click": "ready", "nav-settings.click": "ready" },
+    "error":   { "btn-retry.click": "loading" } } }

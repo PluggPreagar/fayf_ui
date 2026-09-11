@@ -1,0 +1,4 @@
+{ "box": "stack, fill, pad:2, gap:1, solid, tint1, rounded",
+  "children": [
+    { "box": "hug", "content": "Label" },
+    { "extends": "atom/text.title", "content": "–" } ] }

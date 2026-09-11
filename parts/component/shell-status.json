@@ -1,0 +1,7 @@
+{ "box": "row, mid, between, fixed, h:20, pad:1, tint1",
+  "children": [
+    { "name": "status-text", "box": "hug", "content": "ready" },
+    { "name": "status-right", "box": "row, mid, gap:2, hug",
+      "children": [
+        { "name": "status-version", "box": "hug", "content": "v0.1" },
+        { "name": "btn-theme", "extends": "atom/icon-button", "box": "w:16, h:16", "content": "◐" } ] } ] }

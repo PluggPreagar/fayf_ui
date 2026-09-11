@@ -112,6 +112,21 @@ test('step: failed fetch -> error -> retry re-enters loading and re-issues the f
   assert.deepEqual(r.effects, [{ fetch: '/api/runs', ok: 'runs.loaded', err: 'runs.failed' }]);
 });
 
+test('step: self-transition into a state with enter -> stay, no enter effects (parallel fetches collect)', () => {
+  const P = { initial: 'loading', states: {
+    loading: { enter: [{ fetch: '/a', ok: 'a.loaded', err: 'a.failed' }, { fetch: '/b', ok: 'b.loaded', err: 'b.failed' }],
+               'a.loaded': 'loading', 'b.loaded': 'loading', 'a.failed': 'error', 'b.failed': 'error', 'flow.ready': 'ready' },
+    ready: { 'refresh.click': 'loading' }, error: { 'retry.click': 'loading' } } };
+  const { status, effects } = init(P);
+  assert.equal(effects.length, 2, 'start = entry');
+  const r = step(P, status, 'a.loaded', [1]);
+  assert.deepEqual(r, { status: { state: 'loading', data: {} }, effects: [] }, 'a stay is not an entry');
+  const back = step(P, step(P, r.status, 'flow.ready').status, 'refresh.click');
+  assert.equal(back.effects.length, 2, 'ready -> loading is an entry: enter fires again');
+  const retry = step(P, step(P, status, 'b.failed', { error: 'x' }).status, 'retry.click');
+  assert.equal(retry.effects.length, 2, 'error -> loading is an entry too');
+});
+
 test('machine JSON round-trips through JSON.stringify unchanged (nothing is a function)', () => {
   assert.deepEqual(JSON.parse(JSON.stringify(M)), M);
 });

@@ -1,6 +1,6 @@
 { "box": "stack, fill, clip, tint0",
   "children": [
-    { "name": "ws-head", "box": "row, mid, between, fixed, h:44, pad:2, solid, tint1",
+    { "name": "ws-head", "extends": "component/ws-head",
       "children": [
         { "name": "brand", "extends": "atom/text.title", "content": "fayf_ui" },
         { "name": "crumbs", "extends": "component/breadcrumb-trail",
@@ -17,33 +17,7 @@
                 "Peter" ] } ] } ] },
     { "name": "body", "box": "row, fill",
       "children": [
-        { "name": "side-panel", "box": "stack, fixed, w:200, pad:2, gap:1, solid, tint1",
-          "children": [
-            { "name": "nav-dashboard", "extends": "cluster/nav-item.active",
-              "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
-                "Dashboard" ] },
-            { "name": "nav-pipelines", "extends": "cluster/nav-item",
-              "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
-                "Pipelines" ] },
-            { "name": "nav-graph", "extends": "cluster/nav-item",
-              "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
-                "Graph" ] },
-            { "name": "nav-records", "extends": "cluster/nav-item",
-              "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
-                "Records" ] },
-            { "name": "nav-issues", "extends": "cluster/nav-item",
-              "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
-                "Issues" ] },
-            { "box": "fill" },
-            { "name": "nav-settings", "extends": "cluster/nav-item",
-              "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
-                "Settings" ] } ] },
+        { "name": "side-panel", "extends": "component/side-panel" },
         { "name": "content", "box": "stack, fill, pad:3, gap:2, scroll, solid, rounded",
           "children": [
             { "name": "content-title", "extends": "atom/text.title", "content": "Content" },
@@ -52,10 +26,4 @@
           "children": [
             { "name": "detail-title", "extends": "atom/text.title", "content": "Detail" },
             { "name": "detail-body", "box": "stack, gap:1, fill", "content": "" } ] } ] },
-    { "name": "status-bar", "box": "row, mid, between, fixed, h:20, pad:1, tint1",
-      "children": [
-        { "name": "status-text", "box": "hug", "content": "ready" },
-        { "name": "status-right", "box": "row, mid, gap:2, hug",
-          "children": [
-            { "name": "status-version", "box": "hug", "content": "v0.1" },
-            { "name": "btn-theme", "extends": "atom/icon-button", "box": "w:16, h:16", "content": "◐" } ] } ] } ] }
+    { "name": "status-bar", "extends": "component/shell-status" } ] }

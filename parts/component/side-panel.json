@@ -1,0 +1,27 @@
+{ "box": "stack, fixed, w:200, pad:2, gap:1, solid, tint1",
+  "children": [
+    { "name": "nav-dashboard", "extends": "cluster/nav-item.active",
+      "children": [
+        { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+        "Dashboard" ] },
+    { "name": "nav-pipelines", "extends": "cluster/nav-item",
+      "children": [
+        { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+        "Pipelines" ] },
+    { "name": "nav-graph", "extends": "cluster/nav-item",
+      "children": [
+        { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+        "Graph" ] },
+    { "name": "nav-records", "extends": "cluster/nav-item",
+      "children": [
+        { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+        "Records" ] },
+    { "name": "nav-issues", "extends": "cluster/nav-item",
+      "children": [
+        { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+        "Issues" ] },
+    { "box": "fill" },
+    { "name": "nav-settings", "extends": "cluster/nav-item",
+      "children": [
+        { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+        "Settings" ] } ] }

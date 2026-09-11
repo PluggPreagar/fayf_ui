@@ -1,0 +1,15 @@
+{ "box": "row, mid, between, fixed, h:44, pad:2, solid, tint1",
+  "children": [
+    { "name": "brand", "extends": "atom/text.title", "content": "fayf_ui" },
+    { "name": "crumbs", "extends": "component/breadcrumb-trail",
+      "children": [
+        { "name": "crumb-home", "box": "hug", "content": "Workspace" },
+        ">",
+        { "name": "crumb-page", "box": "hug", "content": "Page" } ] },
+    { "name": "head-actions", "box": "row, mid, gap:2, hug",
+      "children": [
+        { "name": "btn-primary", "extends": "atom/button.primary", "content": "New" },
+        { "name": "user", "box": "row, mid, gap:1, hug",
+          "children": [
+            { "extends": "atom/avatar", "content": "P" },
+            "Peter" ] } ] } ] }

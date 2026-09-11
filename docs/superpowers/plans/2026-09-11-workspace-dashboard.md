@@ -20,7 +20,7 @@ Commands `refresh · theme` · data = GET `/api/runs` `/api/pipelines` `/api/iss
 | S1 ✓ | **machine controller** `ui/machine.js` — `step(machine, status, trigger, handlers) → {status, effects}` (pure) + `mountMachine(root, screen, machine, handlers, reg)` (binds `<data-name>.<event>`, runs effects `fetch/emit/timer`, re-renders slots from `status`) | fayf_ui | JS + `machines/*.json` schema in `vocabulary.json` | node: step + effects; browser: quiz re-based on a machine JSON, same tests green |
 | S2 ✓ | **shell screen** `screens/shell.json` — regions as named slots: `ws-head` · `side-panel` (nav rail, `atom/nav-item` + `.bx-selected`) · `content` · `detail` · `status-bar`. THW's missing ws-head/side-panel land here, luna skin | fayf_ui | JSON | gallery invariant, C10 checklist, luna/wireframe shots |
 | S3 ✓ | **table controller** `ui/table.js` — rows JSON → `stack` of `row`s, cells `fixed w`; windowed (`scroll` box, visible slice), sort, select → trigger `<name>.select`. Columns = part `component/table` | fayf_ui | JS + JSON | node: window math (2000 rows → ≤ 40 boxes); browser: sort/select/scroll |
-| S4 | **dashboard screen** `screens/dashboard.json` = `extends screens/shell` + content: `at-a-glance` (4 `atom/chip` counts), `recent-runs` (table slot), `issues` (table slot); `machines/dashboard.json` (states `loading · ready · error`; effects 3× fetch); fixture `content/dashboard/*.json` | fayf_ui | JSON | gallery, node machine test, browser table tests |
+| S4 ✓ | **dashboard screen** `screens/dashboard.json` = `extends screens/shell` + content: `at-a-glance` (4 `atom/chip` counts), `recent-runs` (table slot), `issues` (table slot); `machines/dashboard.json` (states `loading · ready · error`; effects 3× fetch); fixture `content/dashboard/*.json` | fayf_ui | JSON | gallery, node machine test, browser table tests |
 | S5 | **processor stub** `frontend/fayf/dashboard.html` (~60 lines): screen refs · machine JSON · handlers (`status-dot` map, `e2e-deploy-` filter, counts) · effect targets `/api/…`. `fayf-skin.css`: luna aliases for repo tokens. Re-vendor pin | processor | HTML + JSON + handlers.js | `?test=1` parity with `dashboard.js` (counts, rows, nav, commands); old page kept as `dashboard-kit.html` until S6 done |
 | S6 | **page by page** issues → list → browse (tree ctrl) → records/run (form ctrl) → profile/query/annotate → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
 
@@ -71,7 +71,9 @@ Commands `refresh · theme` · data = GET `/api/runs` `/api/pipelines` `/api/iss
 - states = keys of `states`. No separate list (redundant). Transition target not a key → error (C2).
 - `initial` explicit — C8 order-independent; key order never carries meaning.
 - `states[s][trigger]` = next state. Handler `handlers[trigger](status, payload)` runs first, may add effects.
-- `states[s].enter` = effects on every entry (start and re-entry). Triggers carry a dot → no collision.
+- `states[s].enter` = effects on every entry (start and re-entry from another state). Triggers carry a dot → no collision.
+  A self-transition (`x.loaded: "loading"`) is a stay, not an entry: handler runs, `enter` does not
+  (S4: three parallel fetches collect in `loading` without re-firing; same rule as the epoch below).
 - effect kinds: `fetch {url, ok, err}` · `emit {trigger, payload}` (to parent) · `timer {ms, trigger}`
   · `send {trigger, payload}` (self, synchronous: a handler picks the transition, the table stays static).
 - async effects belong to the state entry that started them; a result after leaving that state is dropped.
@@ -89,6 +91,46 @@ Commands `refresh · theme` · data = GET `/api/runs` `/api/pipelines` `/api/iss
 - naming: DOM trigger = element name; effect trigger = source name (`flow.loaded`, `timer.paused`), never an element.
 - test = `step(machine, status, trigger, payload, handlers)` → `{status, effects}`; compare JSON.
 
+## Handover — state on 2026-09-11, next session starts here
+
+Done and committed in fayf_ui: S0–S4 (C11, machine.js, quiz re-base, shell, table, dashboard).
+Node suite 143/143. Browser suites: machine 28 · quiz 112 · table 37 · shell 70 · dashboard 77 · gallery.
+Pages: machine.html · table.html · shell.html · dashboard.html (`?style=luna|mockup|wireframe`, `?inspect=1`).
+
+Controller contract (ui/machine.js header is the authority): machine JSON `initial` + `states{ enter?, <trigger>: <state> }`;
+self-transition = stay (no enter); effects `fetch · emit · timer · send`, async ones scoped to the state entry;
+view patches `string | node | [node] | {content, env, state}`; state tokens absolute per paint; `root` reserved;
+guard disables controls only; `<name>.scroll` triggers get metrics on every clientHeight change; morph keeps identity.
+Sub-controller pattern = ui/table.js (status slice + spread handlers + self-transitions + spread view).
+
+### S5 — processor stub (next)
+1. fayf_ui: commit, `just build`, push (user pushes; SSH key is passphrase-protected). Note the new HEAD sha.
+2. fayf_processor `scripts/fetch_vendor_assets.py`: bump `FAYF_UI_SHA`, add to `FAYF_UI_FILES`: `ui/machine.js`, `ui/table.js`,
+   `ui/dashboard.js`, `machines/dashboard.json` (+ `ui/icons.js`, `ui/actions.js` if not yet listed), re-vendor
+   (`FAYF_UI_SRC=<local fayf_ui path>` works offline), regenerate `frontend/vendor/RECEIPT.json`.
+3. `frontend/fayf/dashboard.html` (~60 lines): render vendored `screens/dashboard`; copy `machines/dashboard.json`
+   → `frontend/fayf/machines/dashboard.json` with URLs `/api/runs` `/api/pipelines` `/api/issues`; handlers = vendored
+   `ui/dashboard.js` handlers + processor glue: `nav.go` → `location.href = <page>.html`, `theme.toggle` → data-theme
+   swap (the existing theme snippet), status-dot colour map (`failed→error`, `canceled→cancelled`, `paused→blocked`)
+   as view state or a `fayf-skin.css` rule keyed by `[data-name^="recent-runs-row-"]`? — decide C9: prefer a view
+   patch (`state`) over CSS. `fayf-skin.css`: luna aliases for repo tokens (decision open, see below).
+4. Parity test `test/fayf_dashboard_test.js` (`?test=1` loader like `mockups/fayf.html`): counts equal `dashboard.js`'s
+   (running/failed/pipelines w/o e2e-deploy/open issues), nav 6 + hrefs, refresh, tables rows, status line.
+5. Keep `frontend/dashboard.html` (ui-kit) as `dashboard-kit.html` until S6 is through; index/nav points to the new page.
+6. Processor todo: TODO-190 notes + new TODO row for the migration; docs/design-patterns.md entry
+   "screen JSON + machine JSON + pure handlers; DOM only in fayf_ui".
+
+### S6 — page by page
+issues → list → browse (needs `ui/tree.js`, same sub-controller pattern as table) → records/run (needs `ui/form.js`)
+→ profile/query/annotate → graph last via `Embed`. Each: parity test, old page removed, nav points to new.
+
+### Known small items
+- js_runner prints "Checks: 0" before async blocks (another session is fixing it — do not touch test/js_runner.js).
+- shell ws-head `between` with 3 children centres the crumbs; luna nav icon dots faint (checklist #14 class).
+- Browser pane tabs are shared between sessions/agents; verify in a fresh tab, count `OK :`/`FAIL:` after the last
+  `─── TestRunner` marker.
+
 ## Open (next C9, one at a time)
 
 1. S5 skin: processor pages in luna, or keep repo tokens via alias (recommended: alias first, luna switchable).
+2. S5 status colours per row: view `state` tokens (needs a `status:<x>` token family?) vs `fayf-skin.css` name-keyed rules.

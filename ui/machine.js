@@ -8,7 +8,9 @@
 //     "states": { "loading": { "enter": [ { "fetch": "/x", "ok": "x.loaded", "err": "x.failed" } ],
 //                              "x.loaded": "ready", "x.failed": "error" },
 //                 "ready":   { "refresh.click": "loading" } } }
-//   trigger = "<name>.<event>" (always a dot); `enter` = effects on every entry.
+//   trigger = "<name>.<event>" (always a dot); `enter` = effects on every entry
+//   (start, and every transition that changes the state). A self-transition
+//   stays: handler runs, no `enter` -- same rule the epoch below applies.
 //   DOM trigger: <name> = the element's data-name, <event> = DOM event type
 //     ("refresh.click"). `root` is reserved: the mounted element itself.
 //     Bound as one capture-phase listener per event type on the mounted
@@ -102,7 +104,10 @@ function enterEffects(machine, state) {
 //   unknown trigger (no state has it)      -> throws (C2)
 //   known trigger, inert in current state  -> no-op: same status, no effects, no handler
 //   handler present                        -> runs first, its status/effects are kept
-//   transition (incl. self-transition)     -> state set, target's enter effects appended
+//   transition to another state           -> state set, target's enter effects appended
+//   self-transition (target = current)     -> state kept, no enter effects (a stay is
+//                                             not an entry: N parallel fetches collect
+//                                             via `x.loaded: "loading"` without re-firing)
 export function step(machine, status, trigger, payload, handlers = {}) {
   const def = machine.states[status.state];
   if (!def) throw new Error(`machine: status.state '${status.state}' not a state`);
@@ -116,8 +121,9 @@ export function step(machine, status, trigger, payload, handlers = {}) {
     next = r.status;
     effects = effects.concat(r.effects || []);
   }
-  next = { ...next, state: def[trigger] };
-  return { status: next, effects: effects.concat(enterEffects(machine, def[trigger])) };
+  const to = def[trigger];
+  next = { ...next, state: to };
+  return { status: next, effects: to === status.state ? effects : effects.concat(enterEffects(machine, to)) };
 }
 
 // Keep element identity across paints: an existing child with the same name,
@@ -196,18 +202,21 @@ export function mountMachine(root, screen, machine, handlers = {}, opts = {}) {
   // A `<name>.scroll` trigger also means "this element's viewport matters":
   // after a paint, deliver its metrics once whenever clientHeight changed
   // (first paint, a resize, content arriving) -- windowing needs a measure
-  // before the user ever scrolls. Unchanged height -> nothing, no loop.
+  // before the user ever scrolls. Unchanged height -> nothing, no loop. A
+  // height is recorded only once delivered: while the trigger is inert (a
+  // `loading` state) nothing is remembered, so the first paint in a state
+  // where it fires still gets its measure.
   const measured = new Map();
   function measureScroll() {
     for (const name of names) {
       const trigger = `${name}.scroll`;
-      if (!known.has(trigger)) continue;
+      if (!known.has(trigger) || !active().has(trigger)) continue;
       const t = byName(name);
       if (!t) continue;
       const m = { scrollTop: t.scrollTop, clientHeight: t.clientHeight };
       if (measured.get(name) === m.clientHeight) continue;
       measured.set(name, m.clientHeight);
-      if (active().has(trigger)) ctl.dispatch(trigger, { name, event: 'scroll', target: name, path: [name], ...m });
+      ctl.dispatch(trigger, { name, event: 'scroll', target: name, path: [name], ...m });
     }
   }
 
