@@ -43,6 +43,22 @@ export function setStyleMode(mode) {
   history.replaceState(null, '', url);
 }
 
+// Carries the current skin forward across a real page navigation (each
+// frontend/fayf/*.html page is a separate document load, no SPA router --
+// without this, following any nav-rail link or row click silently resets
+// the skin to wireframe on the next page unless that page's OWN url
+// happens to already carry ?style=). An explicit style already present in
+// `href` wins and is never overridden; the default mode is left off the
+// URL, same as readMode()'s own treatment of an absent param.
+export function styleHref(href) {
+  const url = new URL(href, location.href);
+  if (!url.searchParams.has(PARAM)) {
+    const mode = currentMode();
+    if (mode !== DEFAULT) url.searchParams.set(PARAM, mode);
+  }
+  return url.pathname.split('/').pop() + url.search + url.hash;
+}
+
 // grouped: a plain static flex child (no fixed/absolute positioning) sized
 // to sit inside a `cluster/button-group` (e.g. status-right's status-buttons),
 // rather than floating over a page corner (default) or the status bar's own

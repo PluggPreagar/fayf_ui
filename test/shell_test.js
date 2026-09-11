@@ -1,6 +1,7 @@
 // test/shell_test.js -- workspace shell screen (S2, docs/superpowers/plans/2026-09-11-workspace-dashboard.md)
 import { resolve, diff } from '../ui/model.js';
 import { render, capture } from '../ui/render.js';
+import { styleHref } from '../ui/style-mode.js';
 
 const tr = new TestRunner({ stopOnError: false });
 
@@ -103,6 +104,26 @@ tr.addBlock('shell: skins -- luna brand resolves, active nav tinted; style toggl
     const bg = getComputedStyle(q('nav-dashboard')).backgroundColor;
     r.check(bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent', 'luna: active nav has a background', bg);
     r.check(!!document.querySelector('.style-toggle'), 'style toggle present');
+  })
+  .run(() => {
+    if (before === undefined) delete document.documentElement.dataset.style;
+    else document.documentElement.dataset.style = before;
+  });
+});
+
+tr.addBlock('shell: styleHref carries the current skin across a real page navigation', (r) => {
+  const before = document.documentElement.dataset.style;
+  r.run(() => {
+    document.documentElement.dataset.style = 'luna-flat';
+    r.check(styleHref('dashboard.html') === 'dashboard.html?style=luna-flat',
+      'non-default skin appended to a bare href', styleHref('dashboard.html'));
+    r.check(styleHref('records.html?run_id=abc') === 'records.html?run_id=abc&style=luna-flat',
+      'appended after an existing query string', styleHref('records.html?run_id=abc'));
+    r.check(styleHref('graph.html?run=x&style=mockup') === 'graph.html?run=x&style=mockup',
+      'an explicit style already in the target href is never overridden');
+    document.documentElement.dataset.style = 'wireframe';
+    r.check(styleHref('dashboard.html') === 'dashboard.html',
+      'the default mode (wireframe) is left off the URL, same as readMode()');
   })
   .run(() => {
     if (before === undefined) delete document.documentElement.dataset.style;
