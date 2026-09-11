@@ -52,6 +52,22 @@ const ready = (s) => allLoaded(s.data.loaded) ? [{ send: 'flow.ready' }] : [];
 const reset = (s) => ({ status: withData(s, { loaded: { ...NO_LOADED }, error: null }) });
 const asList = (p) => Array.isArray(p) ? p : [];
 
+// Pure. Rebuilds a table.js slice from freshly-loaded rows, carrying the
+// PREVIOUS `clientHeight` forward (only `scrollTop`/sort/sel reset) --
+// `tableInit()` alone always starts a slice at `window.clientHeight: 0`, and
+// `ui/machine.js`'s `measureScroll()` only re-delivers a `<name>.scroll`
+// trigger when the container's REAL DOM height changes. A refresh (or any
+// re-load) repaints the same fixed-height box, so a hard reset to 0 would
+// never get re-measured -- windowing falls back to its "not yet measured"
+// ~1-viewport-row case until an unrelated resize happens to fire. Same fix
+// `ui/list.js`'s `buildRunsTable` already applies to its own runs table
+// (flagged as a likely dashboard.js gap when that fix landed, confirmed and
+// closed here).
+const carryClientHeight = (spec, rows, prevWindow, extra = {}) => ({
+  ...tableInit(spec, rows), ...extra,
+  window: { scrollTop: 0, clientHeight: (prevWindow && prevWindow.clientHeight) || 0 },
+});
+
 // Table handlers, wrapped: the table handler keeps its own slice + `emit`
 // <name>.select; the wrapper ALSO sets data.sel from that emit's payload
 // (the row). The emit stays -- a parent (onEmit) still hears the selection.
@@ -73,7 +89,7 @@ export const handlers = {
   'runs.loaded': (s, p) => {
     const runs = asList(p);
     const loaded = flag(s, 'runs');
-    const t = { ...tableInit(RUNS, runs), sort: { key: 'started_at', dir: 'desc' } };
+    const t = carryClientHeight(RUNS, runs, s.data[RUNS.name] && s.data[RUNS.name].window, { sort: { key: 'started_at', dir: 'desc' } });
     const next = withData(s, { runs, loaded, [RUNS.name]: t });
     return { status: next, effects: ready(next) };
   },
@@ -82,7 +98,8 @@ export const handlers = {
     return { status: next, effects: ready(next) };
   },
   'issues.loaded': (s, p) => {
-    const next = withData(s, { loaded: flag(s, 'issues'), [ISSUES.name]: tableInit(ISSUES, asList(p)) });
+    const t = carryClientHeight(ISSUES, asList(p), s.data[ISSUES.name] && s.data[ISSUES.name].window);
+    const next = withData(s, { loaded: flag(s, 'issues'), [ISSUES.name]: t });
     return { status: next, effects: ready(next) };
   },
   'runs.failed':      (s, p) => ({ status: withData(s, { error: p && p.error }) }),

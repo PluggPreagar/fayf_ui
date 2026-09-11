@@ -216,6 +216,24 @@ test('refresh from ready -> loading with 3 fetches, flags reset, sel kept', () =
   assert.equal(back.status.state, 'ready');
 });
 
+test('refresh carries clientHeight forward on both tables (only scrollTop/sort/sel reset) -- windowing stays measured', () => {
+  let s = loadAll().status;
+  s = go(s, 'recent-runs.scroll', scroll('recent-runs', 240)).status;
+  s = go(s, 'issues.scroll', scroll('issues', 240)).status;
+  assert.equal(s.data[RUNS.name].window.clientHeight, 240);
+  assert.equal(s.data[ISSUES.name].window.clientHeight, 240);
+
+  const r = go(s, 'btn-refresh.click');
+  assert.equal(r.status.state, 'loading');
+  const back = drive(go(go(r.status, 'runs.loaded', RUNS_FX).status, 'pipelines.loaded', PIPES_FX).status, 'issues.loaded', ISSUES_FX);
+  assert.equal(back.status.state, 'ready');
+  assert.equal(back.status.data[RUNS.name].window.clientHeight, 240, 'recent-runs stays measured across the reload -- no reset to 0');
+  assert.equal(back.status.data[RUNS.name].window.scrollTop, 0, 'scrollTop still resets');
+  assert.equal(back.status.data[ISSUES.name].window.clientHeight, 240, 'issues stays measured across the reload too');
+  const runRows = rowsOf(view(back.status), RUNS.name);
+  assert.ok(runRows.length > 9, `full ~20-row window immediately after refresh, not the "unmeasured" ~9-row fallback (got ${runRows.length})`);
+});
+
 test('nav click emits nav.go with the target; theme click emits theme.toggle; both stay ready', () => {
   const s = loadAll().status;
   for (const to of ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings']) {
