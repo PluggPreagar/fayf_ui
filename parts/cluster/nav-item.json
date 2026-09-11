@@ -1,0 +1,4 @@
+{ "box": "row, mid, gap:2, clamp, pad:2, rounded, bare",
+  "children": [
+    { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+    "Nav item" ] }

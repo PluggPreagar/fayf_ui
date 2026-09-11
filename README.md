@@ -10,7 +10,7 @@ Governed by [CONSTITUTION.md](CONSTITUTION.md). Spec: [docs/superpowers/specs/20
 
 Pages: `index.html` gallery · `anatomy.html` screen · `handles.html` proximity demo
 · `quiz.html` · `math-trainer.html` · `thw.html` (THW-Lernkarten ladder; try `?style=luna`)
-· `machine.html` (L9 controller fixture).
+· `machine.html` (L9 controller fixture) · `shell.html` (workspace shell: head · side-panel · content · detail · status).
 
 Controllers (L9, C11): `ui/machine.js` — machine JSON (`initial` + `states{ enter?, <trigger>: <state> }`),
 pure handlers `(status, payload) → { status, effects? }`, pure `view(status) → { slot: content }`,
