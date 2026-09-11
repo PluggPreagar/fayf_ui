@@ -72,7 +72,7 @@ export const FIXTURE_URLS = {
   annotate: (runId, recordId) => `/content/annotate/coverage-${runId}-${recordId}.json`,
 };
 
-const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings'];
+const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
 const SESSION_PREFIX = `${SESSION_PICKER}-`;
 const REDE_PREFIX = `${REDE_PICKER}-`;
 const TREE_PREFIX = `${TREE}-P`;

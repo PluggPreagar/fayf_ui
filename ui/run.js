@@ -91,7 +91,7 @@ export const FIXTURE_RUN_ID = 'run-2026-09-11';   // matches content/run/snapsho
 // Non-terminal event types that carry no explicit `status` field -- mirrors
 // the ground truth's own EVENT_STATUS_BY_TYPE map exactly (run.js:39-42).
 const EVENT_STATUS_BY_TYPE = { run_started: 'running', run_paused: 'paused', run_pausing: 'pausing', run_resumed: 'running', run_canceling: 'canceling' };
-const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings'];
+const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
 const LOG_CAP = 200;
 
 // Pure. status.data at mount: nothing loaded, steps table empty, no log.

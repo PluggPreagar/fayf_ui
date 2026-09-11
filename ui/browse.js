@@ -41,7 +41,7 @@ export { browseMachine };
 export const TREE = { name: 'tree' };
 export const FIXTURE_URLS = { level: (path) => `/content/browse/level/${path}.json`, file: (path) => `/content/browse/file/${path}.json` };
 
-const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings'];
+const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
 const NODE_PREFIX = `${TREE.name}-node-`;
 
 // Pure. status.data at mount: nothing loaded, tree empty (no mounts yet).

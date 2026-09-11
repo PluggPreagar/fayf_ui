@@ -186,7 +186,7 @@ test('refresh from ready -> loading with 1 fetch; error cleared', () => {
 
 test('nav click emits nav.go with the target; theme click emits theme.toggle', () => {
   const s = loaded();
-  for (const to of ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings']) {
+  for (const to of ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile']) {
     const r = go(s, `nav-${to}.click`, click(`nav-${to}`));
     assert.equal(r.status.state, 'ready');
     assert.deepEqual(r.effects, [{ emit: 'nav.go', payload: { to } }]);

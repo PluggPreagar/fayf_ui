@@ -76,7 +76,7 @@ export const FIXTURE_URLS = {
   },
 };
 
-const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings'];
+const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
 const RUN_PREFIX = `${RUN_PICKER}-`;
 // screens/query.json's container slot MUST be named exactly 'example' (not
 // 'examples') -- ui/machine.js's click routing matches a trigger by an exact

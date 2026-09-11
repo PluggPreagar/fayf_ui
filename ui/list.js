@@ -44,7 +44,7 @@ export const RUNS = { name: 'runs', rowKey: 'run_id', columns: [
   { key: 'run_id', label: 'Run', w: 90 }, { key: 'pipeline', label: 'Pipeline', w: 180 },
   { key: 'status', label: 'Status', w: 90 }, { key: 'started_at', label: 'Started' } ] };
 
-const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings'];
+const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
 const NO_LOADED = { pipelines: false, runs: false };
 
 // Pure. status.data at mount: nothing loaded, both table slices empty.

@@ -1017,17 +1017,50 @@
     ]
    },
    {
-    "box": "fill"
-   },
-   {
-    "name": "nav-settings",
+    "name": "nav-browse",
     "extends": "cluster/nav-item",
     "children": [
      {
       "extends": "cluster/dot",
       "box": "w:14, h:14, hairline, tint2"
      },
-     "Settings"
+     "Browse"
+    ]
+   },
+   {
+    "name": "nav-query",
+    "extends": "cluster/nav-item",
+    "children": [
+     {
+      "extends": "cluster/dot",
+      "box": "w:14, h:14, hairline, tint2"
+     },
+     "Query"
+    ]
+   },
+   {
+    "name": "nav-annotate",
+    "extends": "cluster/nav-item",
+    "children": [
+     {
+      "extends": "cluster/dot",
+      "box": "w:14, h:14, hairline, tint2"
+     },
+     "Annotate"
+    ]
+   },
+   {
+    "box": "fill"
+   },
+   {
+    "name": "nav-profile",
+    "extends": "cluster/nav-item",
+    "children": [
+     {
+      "extends": "cluster/dot",
+      "box": "w:14, h:14, hairline, tint2"
+     },
+     "Profile"
     ]
    }
   ]
@@ -1475,7 +1508,111 @@
     "children": [
      {
       "name": "side-panel",
-      "extends": "component/side-panel"
+      "extends": "component/side-panel",
+      "children": [
+       {
+        "name": "nav-dashboard",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Dashboard"
+        ]
+       },
+       {
+        "name": "nav-pipelines",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Pipelines"
+        ]
+       },
+       {
+        "name": "nav-graph",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Graph"
+        ]
+       },
+       {
+        "name": "nav-records",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Records"
+        ]
+       },
+       {
+        "name": "nav-issues",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Issues"
+        ]
+       },
+       {
+        "name": "nav-browse",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Browse"
+        ]
+       },
+       {
+        "name": "nav-query",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Query"
+        ]
+       },
+       {
+        "name": "nav-annotate",
+        "extends": "cluster/nav-item.active",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Annotate"
+        ]
+       },
+       {
+        "box": "fill"
+       },
+       {
+        "name": "nav-profile",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Profile"
+        ]
+       }
+      ]
      },
      {
       "name": "content",
@@ -1619,7 +1756,111 @@
     "children": [
      {
       "name": "side-panel",
-      "extends": "component/side-panel"
+      "extends": "component/side-panel",
+      "children": [
+       {
+        "name": "nav-dashboard",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Dashboard"
+        ]
+       },
+       {
+        "name": "nav-pipelines",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Pipelines"
+        ]
+       },
+       {
+        "name": "nav-graph",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Graph"
+        ]
+       },
+       {
+        "name": "nav-records",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Records"
+        ]
+       },
+       {
+        "name": "nav-issues",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Issues"
+        ]
+       },
+       {
+        "name": "nav-browse",
+        "extends": "cluster/nav-item.active",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Browse"
+        ]
+       },
+       {
+        "name": "nav-query",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Query"
+        ]
+       },
+       {
+        "name": "nav-annotate",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Annotate"
+        ]
+       },
+       {
+        "box": "fill"
+       },
+       {
+        "name": "nav-profile",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Profile"
+        ]
+       }
+      ]
      },
      {
       "name": "content",
@@ -1749,7 +1990,111 @@
     "children": [
      {
       "name": "side-panel",
-      "extends": "component/side-panel"
+      "extends": "component/side-panel",
+      "children": [
+       {
+        "name": "nav-dashboard",
+        "extends": "cluster/nav-item.active",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Dashboard"
+        ]
+       },
+       {
+        "name": "nav-pipelines",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Pipelines"
+        ]
+       },
+       {
+        "name": "nav-graph",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Graph"
+        ]
+       },
+       {
+        "name": "nav-records",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Records"
+        ]
+       },
+       {
+        "name": "nav-issues",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Issues"
+        ]
+       },
+       {
+        "name": "nav-browse",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Browse"
+        ]
+       },
+       {
+        "name": "nav-query",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Query"
+        ]
+       },
+       {
+        "name": "nav-annotate",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Annotate"
+        ]
+       },
+       {
+        "box": "fill"
+       },
+       {
+        "name": "nav-profile",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Profile"
+        ]
+       }
+      ]
      },
      {
       "name": "content",
@@ -2008,17 +2353,50 @@
         ]
        },
        {
-        "box": "fill"
-       },
-       {
-        "name": "nav-settings",
+        "name": "nav-browse",
         "extends": "cluster/nav-item",
         "children": [
          {
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
-         "Settings"
+         "Browse"
+        ]
+       },
+       {
+        "name": "nav-query",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Query"
+        ]
+       },
+       {
+        "name": "nav-annotate",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Annotate"
+        ]
+       },
+       {
+        "box": "fill"
+       },
+       {
+        "name": "nav-profile",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Profile"
         ]
        }
       ]
@@ -2149,17 +2527,50 @@
         ]
        },
        {
-        "box": "fill"
-       },
-       {
-        "name": "nav-settings",
+        "name": "nav-browse",
         "extends": "cluster/nav-item",
         "children": [
          {
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
-         "Settings"
+         "Browse"
+        ]
+       },
+       {
+        "name": "nav-query",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Query"
+        ]
+       },
+       {
+        "name": "nav-annotate",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Annotate"
+        ]
+       },
+       {
+        "box": "fill"
+       },
+       {
+        "name": "nav-profile",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Profile"
         ]
        }
       ]
@@ -2345,17 +2756,50 @@
         ]
        },
        {
-        "box": "fill"
-       },
-       {
-        "name": "nav-settings",
+        "name": "nav-browse",
         "extends": "cluster/nav-item",
         "children": [
          {
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
-         "Settings"
+         "Browse"
+        ]
+       },
+       {
+        "name": "nav-query",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Query"
+        ]
+       },
+       {
+        "name": "nav-annotate",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Annotate"
+        ]
+       },
+       {
+        "box": "fill"
+       },
+       {
+        "name": "nav-profile",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Profile"
         ]
        }
       ]
@@ -2637,7 +3081,111 @@
     "children": [
      {
       "name": "side-panel",
-      "extends": "component/side-panel"
+      "extends": "component/side-panel",
+      "children": [
+       {
+        "name": "nav-dashboard",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Dashboard"
+        ]
+       },
+       {
+        "name": "nav-pipelines",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Pipelines"
+        ]
+       },
+       {
+        "name": "nav-graph",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Graph"
+        ]
+       },
+       {
+        "name": "nav-records",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Records"
+        ]
+       },
+       {
+        "name": "nav-issues",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Issues"
+        ]
+       },
+       {
+        "name": "nav-browse",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Browse"
+        ]
+       },
+       {
+        "name": "nav-query",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Query"
+        ]
+       },
+       {
+        "name": "nav-annotate",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Annotate"
+        ]
+       },
+       {
+        "box": "fill"
+       },
+       {
+        "name": "nav-profile",
+        "extends": "cluster/nav-item.active",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Profile"
+        ]
+       }
+      ]
      },
      {
       "name": "content",
@@ -2792,7 +3340,111 @@
     "children": [
      {
       "name": "side-panel",
-      "extends": "component/side-panel"
+      "extends": "component/side-panel",
+      "children": [
+       {
+        "name": "nav-dashboard",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Dashboard"
+        ]
+       },
+       {
+        "name": "nav-pipelines",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Pipelines"
+        ]
+       },
+       {
+        "name": "nav-graph",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Graph"
+        ]
+       },
+       {
+        "name": "nav-records",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Records"
+        ]
+       },
+       {
+        "name": "nav-issues",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Issues"
+        ]
+       },
+       {
+        "name": "nav-browse",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Browse"
+        ]
+       },
+       {
+        "name": "nav-query",
+        "extends": "cluster/nav-item.active",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Query"
+        ]
+       },
+       {
+        "name": "nav-annotate",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Annotate"
+        ]
+       },
+       {
+        "box": "fill"
+       },
+       {
+        "name": "nav-profile",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Profile"
+        ]
+       }
+      ]
      },
      {
       "name": "content",
@@ -3051,17 +3703,50 @@
         ]
        },
        {
-        "box": "fill"
-       },
-       {
-        "name": "nav-settings",
+        "name": "nav-browse",
         "extends": "cluster/nav-item",
         "children": [
          {
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
-         "Settings"
+         "Browse"
+        ]
+       },
+       {
+        "name": "nav-query",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Query"
+        ]
+       },
+       {
+        "name": "nav-annotate",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Annotate"
+        ]
+       },
+       {
+        "box": "fill"
+       },
+       {
+        "name": "nav-profile",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Profile"
         ]
        }
       ]
@@ -3220,7 +3905,111 @@
     "children": [
      {
       "name": "side-panel",
-      "extends": "component/side-panel"
+      "extends": "component/side-panel",
+      "children": [
+       {
+        "name": "nav-dashboard",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Dashboard"
+        ]
+       },
+       {
+        "name": "nav-pipelines",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Pipelines"
+        ]
+       },
+       {
+        "name": "nav-graph",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Graph"
+        ]
+       },
+       {
+        "name": "nav-records",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Records"
+        ]
+       },
+       {
+        "name": "nav-issues",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Issues"
+        ]
+       },
+       {
+        "name": "nav-browse",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Browse"
+        ]
+       },
+       {
+        "name": "nav-query",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Query"
+        ]
+       },
+       {
+        "name": "nav-annotate",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Annotate"
+        ]
+       },
+       {
+        "box": "fill"
+       },
+       {
+        "name": "nav-profile",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Profile"
+        ]
+       }
+      ]
      },
      {
       "name": "content",
@@ -3350,7 +4139,111 @@
     "children": [
      {
       "name": "side-panel",
-      "extends": "component/side-panel"
+      "extends": "component/side-panel",
+      "children": [
+       {
+        "name": "nav-dashboard",
+        "extends": "cluster/nav-item.active",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Dashboard"
+        ]
+       },
+       {
+        "name": "nav-pipelines",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Pipelines"
+        ]
+       },
+       {
+        "name": "nav-graph",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Graph"
+        ]
+       },
+       {
+        "name": "nav-records",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Records"
+        ]
+       },
+       {
+        "name": "nav-issues",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Issues"
+        ]
+       },
+       {
+        "name": "nav-browse",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Browse"
+        ]
+       },
+       {
+        "name": "nav-query",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Query"
+        ]
+       },
+       {
+        "name": "nav-annotate",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Annotate"
+        ]
+       },
+       {
+        "box": "fill"
+       },
+       {
+        "name": "nav-profile",
+        "extends": "cluster/nav-item",
+        "children": [
+         {
+          "extends": "cluster/dot",
+          "box": "w:14, h:14, hairline, tint2"
+         },
+         "Profile"
+        ]
+       }
+      ]
      },
      {
       "name": "content",

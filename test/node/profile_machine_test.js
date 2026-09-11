@@ -207,7 +207,7 @@ test('failed -> error: status-text, Retry in run-picker; retry re-issues the fet
 
 test('nav click emits nav.go with the target; theme click emits theme.toggle; both stay ready', () => {
   const s = loaded();
-  for (const to of ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings']) {
+  for (const to of ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile']) {
     const r = go(s, `nav-${to}.click`, click(`nav-${to}`));
     assert.equal(r.status.state, 'ready');
     assert.deepEqual(r.effects, [{ emit: 'nav.go', payload: { to } }]);

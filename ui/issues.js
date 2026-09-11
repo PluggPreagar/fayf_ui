@@ -19,7 +19,7 @@ export const STATUSES = ['in-progress', 'open', 'ready', 'blocked', 'done', 'arc
 export const MASTER = { name: 'master', groupKey: 'status', groupOrder: STATUSES, labelKey: 'title', rowKey: 'id' };
 export const FIXTURE_URLS = { detail: (id) => `/content/issues/${id}.json`, status: null };   // status:null = demo has no backend write
 
-const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings'];
+const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
 const OPEN_STATUSES = ['open', 'in-progress'];
 
 // Pure. status.data at mount: nothing loaded, master tree empty.

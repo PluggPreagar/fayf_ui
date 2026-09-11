@@ -52,7 +52,7 @@ export const SPEAKERS = { name: 'speakers', rowKey: 'id', columns: [
 export const WINDOWS = ['wahlperiode', 'jahr', 'monat', 'woche', 'tag', 'jahrzehnt'];
 export const FIXTURE_URLS = { profile: (ids) => `/content/profile/result-${ids.join('_')}.json` };
 
-const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings'];
+const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
 const RUN_PICKER = 'run-picker';
 const RUN_PREFIX = `${RUN_PICKER}-`;
 

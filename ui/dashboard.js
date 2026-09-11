@@ -25,7 +25,7 @@ export const ISSUES = { name: 'issues', rowKey: 'id', columns: [
   { key: 'number', label: '#', w: 50 }, { key: 'title', label: 'Title', w: 260 },
   { key: 'status', label: 'Status', w: 100 }, { key: 'page', label: 'Page' } ] };
 
-const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings'];
+const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
 const ISSUE_OPEN = ['open', 'in-progress'];
 const TEST_DEPLOY = /^e2e-deploy-/;
 const NO_LOADED = { runs: false, pipelines: false, issues: false };

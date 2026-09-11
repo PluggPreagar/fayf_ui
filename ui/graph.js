@@ -24,7 +24,7 @@ import { mountMachine } from './machine.js';
 
 export { graphMachine };
 
-const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings'];
+const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
 
 // Pure. Nothing to track -- the embed slot is foreign DOM, not machine data.
 export function initialData() {

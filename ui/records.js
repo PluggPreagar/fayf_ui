@@ -58,7 +58,7 @@ export const TREE = { name: 'tree' };
 export const FIXTURE_URLS = { artifact: (path) => `/content/records/artifact/${path}.json` };
 export const FIXTURE_RUN_ID = 'run-2026-09-11';   // matches content/records/run.json's own run.run_id
 
-const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings'];
+const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
 
 // Pure. steps = { <stepId>: {...}, ... } (only the keys matter here), recordIds
 // = the run's own record_ids (the SAME list under every step in this v1 --

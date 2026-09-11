@@ -11,7 +11,7 @@ import { graphMachine, handlers, view, initialData } from '../../ui/graph.js';
 // anything for this machine to do.
 const M = graphMachine;
 const click = (name, ...path) => ({ name, event: 'click', target: path[0] ?? name, path: [...path, name, 'content', 'body', 'root'] });
-const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'settings'];
+const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
 
 test('machines/graph.json validates; JSON round-trip identical; one state, no enter effects', () => {
   assert.equal(validateMachine(M), M);
