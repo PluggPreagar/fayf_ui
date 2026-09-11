@@ -1,0 +1,64 @@
+{ "box": "stack, fill, clip, tint0",
+  "children": [
+    { "name": "ws-head", "extends": "component/ws-head",
+      "children": [
+        { "name": "brand", "extends": "atom/text.title", "content": "fayf_ui" },
+        { "name": "crumbs", "extends": "component/breadcrumb-trail",
+          "children": [
+            { "name": "crumb-home", "box": "hug", "content": "Workspace" },
+            ">",
+            { "name": "crumb-page", "box": "hug", "content": "Pipelines" } ] },
+        { "name": "head-actions", "box": "row, mid, gap:2, hug",
+          "children": [
+            { "name": "btn-refresh", "extends": "atom/button", "content": "Refresh" },
+            { "name": "user", "box": "row, mid, gap:1, hug",
+              "children": [
+                { "extends": "atom/avatar", "content": "P" },
+                "Peter" ] } ] } ] },
+    { "name": "body", "box": "row, fill",
+      "children": [
+        { "name": "side-panel", "extends": "component/side-panel",
+          "children": [
+            { "name": "nav-dashboard", "extends": "cluster/nav-item",
+              "children": [
+                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                "Dashboard" ] },
+            { "name": "nav-pipelines", "extends": "cluster/nav-item.active",
+              "children": [
+                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                "Pipelines" ] },
+            { "name": "nav-graph", "extends": "cluster/nav-item",
+              "children": [
+                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                "Graph" ] },
+            { "name": "nav-records", "extends": "cluster/nav-item",
+              "children": [
+                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                "Records" ] },
+            { "name": "nav-issues", "extends": "cluster/nav-item",
+              "children": [
+                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                "Issues" ] },
+            { "box": "fill" },
+            { "name": "nav-settings", "extends": "cluster/nav-item",
+              "children": [
+                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                "Settings" ] } ] },
+        { "name": "content", "box": "stack, fill, pad:3, gap:3, scroll, solid, rounded",
+          "children": [
+            { "name": "content-title", "extends": "atom/text.title", "content": "Pipelines" },
+            { "name": "pipelines-title", "box": "hug", "content": "Pipelines" },
+            { "name": "pipelines", "box": "stack, scroll, fixed, h:140, solid, rounded", "content": "" },
+            { "name": "runs-title", "box": "hug", "content": "Runs" },
+            { "name": "runs", "box": "stack, scroll, fixed, h:320, solid, rounded", "content": "" } ] },
+        { "name": "detail", "box": "stack, fixed, w:280, pad:3, gap:2, scroll, solid, rounded",
+          "children": [
+            { "name": "detail-title", "extends": "atom/text.title", "content": "Pipelines" },
+            { "name": "detail-body", "box": "stack, gap:1, fill", "content": "" } ] } ] },
+    { "name": "status-bar", "extends": "component/shell-status",
+      "children": [
+        { "name": "status-text", "box": "hug", "content": "loading…" },
+        { "name": "status-right", "box": "row, mid, gap:2, hug",
+          "children": [
+            { "name": "status-version", "box": "hug", "content": "v0.1" },
+            { "name": "btn-theme", "extends": "atom/icon-button", "box": "w:16, h:16", "content": "◐" } ] } ] } ] }

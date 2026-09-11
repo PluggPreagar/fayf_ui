@@ -121,7 +121,7 @@ Sub-controller pattern = ui/table.js (status slice + spread handlers + self-tran
    "screen JSON + machine JSON + pure handlers; DOM only in fayf_ui".
 
 ### S6 — page by page
-issues ✓ → list → browse (needs `ui/tree.js`, same sub-controller pattern as table) → records/run (needs `ui/form.js`)
+issues ✓ → list ✓ → browse (needs `ui/tree.js`, same sub-controller pattern as table) → records/run (needs `ui/form.js`)
 → profile/query/annotate → graph last via `Embed`. Each: parity test, old page removed, nav points to new.
 
 **issues shipped 2026-09-11**: `ui/tree.js` (new sub-controller, mirrors `ui/table.js` exactly — `treeInit`/
@@ -136,19 +136,64 @@ with `nav-issues` on `cluster/nav-item.active`); fixtures `content/issues.json` 
 (16) → node 172/172, registry 81 ids. Browser-verified live (screenshots + console sweep), all green. Full detail:
 `.ai/todo.md` TODO-9 row.
 
+**list shipped 2026-09-11** (the Pipelines page): browse-only v1, no new sub-controller — built entirely from two
+`ui/table.js` instances (`PIPELINES` one-column picker, `RUNS` same columns as dashboard's but ALL runs not just
+recent). `machines/list.json` (loading: 2 parallel fetches, reusing dashboard's own `content/dashboard/{pipelines,runs}.json`
+fixtures — no new fixture files); `ui/list.js` (`PIPELINES`/`RUNS` specs, `initialData`, `handlers`, `view`, `mountList`).
+Clicking a pipeline row toggles `data.pipelineFilter` and re-derives the runs table; clicking a run row adds a NEW
+`run.open` emit (payload `{run_id}`) alongside the table's own `select` emit — no local selection, a run click is a
+real page nav in the ground truth. Detail panel shows stats on the CURRENT (possibly filtered) view: total runs +
+per-status counts, sorted by count desc. `screens/list.json` (dashboard.json's structure, issues.json's side-panel
+override pattern for `nav-pipelines`); `list.html`; `test/node/list_machine_test.js` (12 tests) + `test/list_test.js`
+(9 blocks) → node 184/184, registry 82 ids. Browser-verified live (console OK/FAIL sweep, all green).
+**Real bug found + fixed while building this, not a pre-existing issue**: `PIPELINES.name === 'pipelines'` and
+`RUNS.name === 'runs'` collide with the natural "raw fetched list" key names the spec's own pseudocode used —
+`{ pipelines: [], ..., [PIPELINES.name]: tableInit(...) }` is a real object-literal key collision (last write wins),
+so a literal implementation silently loses the raw runs array the instant the table slice is written, breaking
+(a) re-filtering to a *second*, different pipeline (nothing left to filter from) and (b) status-text's always-a-total
+run count once a filter is active. Fixed by keeping the raw fetched runs list under a distinctly-named `data.allRuns`
+(pipelines needed no such fix — that table is never filtered, so its rows always equal the full list, same "no
+second key for the same array" reasoning `ui/dashboard.js` already applies to ISSUES). **Second real bug, found via
+the browser suite only** (the node suite can't see it — it's about `ui/machine.js`'s DOM-height re-measurement, not
+pure state): rebuilding the runs table slice via `tableInit()` on every pipeline-filter click resets `window` to
+`{scrollTop:0, clientHeight:0}`; `ui/machine.js`'s `measureScroll()` only re-delivers a `<name>.scroll` trigger when
+the container's REAL DOM height changes, and a filter toggle repaints the same fixed-height box — so the reset
+`clientHeight:0` was never getting re-measured, and the runs table stayed stuck at ~9 rows (windowOf's "not yet
+measured" fallback) instead of a full ~20-row window after clearing a filter. This same latent bug likely also
+affects `ui/dashboard.js`'s own refresh path (its `runs.loaded` handler does the identical `tableInit()`-on-every-load
+reset) — untested there (its refresh block only checks stats/status-text, not row count), not fixed there per this
+task's explicit "do not touch dashboard.js" scope; flagged as a follow-up. Fixed in `ui/list.js` only: `buildRunsTable`
+now takes an optional `prevWindow` and carries its `clientHeight` forward (still resets `scrollTop` to 0) on both the
+filter-toggle and the `runs.loaded` re-derive paths.
+
 ### Known small items
 - js_runner prints "Checks: 0" before async blocks (another session is fixing it — do not touch test/js_runner.js).
 - shell ws-head `between` with 3 children centres the crumbs; luna nav icon dots faint (checklist #14 class).
 - Browser pane tabs are shared between sessions/agents; verify in a fresh tab, count `OK :`/`FAIL:` after the last
   `─── TestRunner` marker. A hidden/backgrounded pane can report a mounted root's `clientWidth`/`clientHeight`/
   `scrollWidth`/`scrollHeight` as 0 while `getBoundingClientRect()` on the same element stays correct (confirmed
-  live during the issues.html fit (C10) check) — front the tab before trusting a `clientWidth`-based fit assertion.
+  live during the issues.html fit (C10) check, and again on list.html's fit block) — front the tab before trusting a
+  `clientWidth`-based fit assertion.
 - `ui/vocabulary.json` has no flex-wrap dial (`wrap` is not a real box token) — a design note asking for a
   wrapping row of chips needs `scroll` (existing overflow token) instead; found while building issues.html's
   status-chip row (`ui/issues.js`).
 - S6 issues.json fixed the side-panel "always shows Dashboard active" gap for itself only (children copied +
   `nav-issues` on `cluster/nav-item.active`) — `shell.json`/`dashboard.json` still highlight Dashboard on every
-  screen; carry the same fix into them (and any future S6 screen) as a follow-up, not done here.
+  screen; list.json applied the same fix for `nav-pipelines`, so the gap now remains only in `shell.json`/`dashboard.json`.
+- list.html v1 is browse-only: no "start a run" form (dynamic per-pipeline record-id/value rows + a JSON textarea for
+  object-typed entry params) and no "quick: run Bundestag session" form (one text field + JSON-object composition +
+  record-id sanitization) — both fundamentally need real text input, which fayf_ui's box/path model doesn't have.
+  Earmarked `ui/form.js` (plan doc's controller table) for when records/run (next S6 page) needs it anyway.
+- list.html's runs table shows ALL runs (unfiltered by pipeline, or filtered to one pipeline via a row click) with no
+  free-text/status filter and no export — ground truth's `DataTable` had `filterable`/`export`/paging; out of scope
+  for the same reason as issues.html's dropped filter (no real text-input primitive yet).
+- A pipeline-filter change resets the runs table's sort/scroll POSITION to defaults (newest-first, scrolled to top) —
+  `clientHeight` is deliberately carried forward (see the bug note above), only `scrollTop`/`sort`/`sel` reset; an
+  accepted v1 simplification, not a follow-up.
+- `ui/dashboard.js`'s own refresh path likely shares the same "table rows reset via `tableInit()` -> stuck at ~9-row
+  windowOf fallback until an unrelated resize" bug list.js hit and fixed locally (see the bug note above) — not
+  fixed there (out of this task's scope, `dashboard_test.js`'s refresh block doesn't check row count so it's
+  unnoticed today); flagged as a follow-up for whoever next touches `ui/dashboard.js`.
 
 ## Open (next C9, one at a time)
 
