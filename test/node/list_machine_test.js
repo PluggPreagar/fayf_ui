@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { init, step, validateMachine } from '../../ui/machine.js';
 import { windowOf } from '../../ui/table.js';
-import { listMachine, handlers, view, initialData, PIPELINES, RUNS } from '../../ui/list.js';
+import { listMachine, handlers, makeHandlers, view, initialData, PIPELINES, RUNS } from '../../ui/list.js';
 
 // The list (pipelines) flow as JSON in, JSON out (C11): machines/list.json +
 // pure handlers + pure view, on the shipped fixtures (reused from dashboard,
@@ -136,6 +136,51 @@ test('pipeline select toggles filter; runs table re-derived to only that pipelin
   const r3 = go(r1.status, 'pipelines.click', click('pipelines', `pipelines-row-${other}`));
   assert.equal(r3.status.data.pipelineFilter, other);
   assert.deepEqual(r3.status.data[RUNS.name].rows, RUNS_FX.filter(r => r.pipeline === other));
+});
+
+test('start a run: needs a pipeline selected AND a record id, else no-op', () => {
+  const s0 = loadAll().status;
+  assert.deepEqual(go(s0, 'btn-start-run.click'), { status: s0, effects: [] }, 'no pipeline selected');
+  const selected = go(s0, 'pipelines.click', click('pipelines', `pipelines-row-${PIPES_FX[0]}`)).status;
+  assert.deepEqual(go(selected, 'btn-start-run.click'), { status: selected, effects: [] }, 'no record id typed yet');
+  const typed = go(selected, 'start-record-id.input', { value: '  ' }).status;   // blank after trim
+  assert.deepEqual(go(typed, 'btn-start-run.click'), { status: typed, effects: [] }, 'blank record id');
+});
+
+test('start a run, local-optimistic (urls.startRun null): emits run.open, resets the field', () => {
+  const s0 = loadAll().status;
+  let s = go(s0, 'pipelines.click', click('pipelines', `pipelines-row-${PIPES_FX[0]}`)).status;
+  s = go(s, 'start-record-id.input', { value: '21_67' }).status;
+  assert.equal(s.data.recordId, '21_67');
+  const r = go(s, 'btn-start-run.click');
+  assert.deepEqual(r.effects, [{ emit: 'run.open', payload: { run_id: `${PIPES_FX[0]}-21_67` } }]);
+  assert.equal(r.status.data.recordId, '', 'field cleared');
+  assert.equal(r.status.data.starting, false);
+});
+
+test('start a run, real backend (urls.startRun configured): POST fetch, then start.saved emits run.open', () => {
+  const urls = { startRun: (pipeline) => `/api/pipelines/${pipeline}/runs` };
+  const h = makeHandlers(urls);
+  const goH = (s, trigger, payload) => step(M, s, trigger, payload, h);
+  const s0 = loadAll().status;
+  let s = goH(s0, 'pipelines.click', click('pipelines', `pipelines-row-${PIPES_FX[0]}`)).status;
+  s = goH(s, 'start-record-id.input', { value: '21_67' }).status;
+  const r1 = goH(s, 'btn-start-run.click');
+  assert.equal(r1.status.data.starting, true);
+  assert.deepEqual(r1.effects, [{
+    fetch: `/api/pipelines/${PIPES_FX[0]}/runs`,
+    init: { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ record_ids: ['21_67'], initial_inputs: {} }) },
+    ok: 'start.saved', err: 'start.failed',
+  }]);
+  assert.deepEqual(goH(r1.status, 'btn-start-run.click'), { status: r1.status, effects: [] }, 'already starting -- no double POST');
+  const r2 = goH(r1.status, 'start.saved', { run_id: 'r-999' });
+  assert.deepEqual(r2.effects, [{ emit: 'run.open', payload: { run_id: 'r-999' } }]);
+  assert.equal(r2.status.data.starting, false);
+  assert.equal(r2.status.data.recordId, '');
+  const r3 = goH(r1.status, 'start.failed', { error: 'HTTP 500' });
+  assert.equal(r3.status.data.starting, false);
+  assert.equal(r3.status.data.startError, 'HTTP 500');
 });
 
 test('runs table row click: effects include emit runs.select AND emit run.open with the run_id, no local sel/detail state added', () => {

@@ -121,8 +121,14 @@ Sub-controller pattern = ui/table.js (status slice + spread handlers + self-tran
    "screen JSON + machine JSON + pure handlers; DOM only in fayf_ui".
 
 ### S6 — page by page
-issues ✓ → list ✓ → browse ✓ → records/run (needs `ui/form.js`)
-→ profile/query/annotate → graph last via `Embed`. Each: parity test, old page removed, nav points to new.
+issues ✓ → list ✓ → browse ✓ → records/run → profile/query/annotate → graph last via `Embed`. Each: parity test,
+old page removed, nav points to new.
+
+**`field:"text"|"textarea"` shipped 2026-09-11** (see the "Known small items" note below for the full contract):
+list.html's own deferred "start a run" is done with it. The real primitive gap for records/run is no longer "no
+text input at all" — it's records.js's own much larger scope (step navigation, JSON diff/edit, 555 lines) and
+run.js's SSE live event streaming (a different engine gap, not a `field` problem). Re-scope records/run properly
+before starting it; it is not a same-size step as issues/list/browse were.
 
 **issues shipped 2026-09-11**: `ui/tree.js` (new sub-controller, mirrors `ui/table.js` exactly — `treeInit`/
 `treeHandlers`/`treeView` on `status.data[spec.name] = {rows, open, sel}`, group header click toggles
@@ -227,10 +233,19 @@ than issues/list's `gap:1`, since raw text lines read better tight, not field-ro
 - S6 issues.json fixed the side-panel "always shows Dashboard active" gap for itself only (children copied +
   `nav-issues` on `cluster/nav-item.active`) — `shell.json`/`dashboard.json` still highlight Dashboard on every
   screen; list.json applied the same fix for `nav-pipelines`, so the gap now remains only in `shell.json`/`dashboard.json`.
-- list.html v1 is browse-only: no "start a run" form (dynamic per-pipeline record-id/value rows + a JSON textarea for
-  object-typed entry params) and no "quick: run Bundestag session" form (one text field + JSON-object composition +
-  record-id sanitization) — both fundamentally need real text input, which fayf_ui's box/path model doesn't have.
-  Earmarked `ui/form.js` (plan doc's controller table) for when records/run (next S6 page) needs it anyway.
+- **`field:"text"|"textarea"` shipped 2026-09-11** (KISS, no C9 amendment — a plain node property, not a 13th dial):
+  `ui/render.js` renders a real `<input>`/`<textarea>` instead of a div, `content`/a string view-patch become `.value`.
+  `ui/machine.js` gained `payload.value` on input/change events. Real bug caught live and fixed same day: `morph()`
+  (the array-content repaint path) never synced `.value` — only the direct string-patch path did — so a field
+  nested inside other view-returned nodes (list.html's start-a-run form, built inline like issues.html's status
+  chips) silently never picked up typed-then-repainted content; `morph()` now special-cases INPUT/TEXTAREA the same
+  way `paintContent`'s string branch does. `ui/list.js` used the primitive to finish "start a run" v1: one
+  record-id field + Start button, shown when a pipeline is selected (reuses `pipelineFilter`, no second selection
+  concept); gained a `makeHandlers(urls)` factory (`urls.startRun` null = local-optimistic here, real POST for a
+  consumer) — same pattern `ui/issues.js` established for `urls.status`/`urls.detail`.
+- list.html's "start a run" v1 still has no per-pipeline entry-schema (a pipeline's own fillable param + JSON
+  textarea for object-typed values) and no "quick: run Bundestag session" form — both real, larger features (dynamic
+  multi-row entry, JSON authoring) deferred past this KISS-scoped slice, not blocked on a missing primitive anymore.
 - list.html's runs table shows ALL runs (unfiltered by pipeline, or filtered to one pipeline via a row click) with no
   free-text/status filter and no export — ground truth's `DataTable` had `filterable`/`export`/paging; out of scope
   for the same reason as issues.html's dropped filter (no real text-input primitive yet).

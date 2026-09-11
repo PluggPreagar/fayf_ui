@@ -134,7 +134,11 @@ export function step(machine, status, trigger, payload, handlers = {}) {
 // dials and passthru as the freshly rendered one is updated in place (dial
 // classes + dial styles from the fresh render, state classes/visibility/tab
 // order kept -- paintState makes those absolute right after). Anything else
-// is replaced. Focus, hover and outside references survive a repaint.
+// is replaced. Focus, hover and outside references survive a repaint. A
+// field element's (input/textarea) live `.value` is synced from the fresh
+// render's, same as paintContent's own string-patch case -- morph() is the
+// path an array-content patch (e.g. a field nested inside other nodes,
+// paintContent below doesn't see it as a bare string) takes instead.
 const KEEP_CLASS = (c) => c === 'bx-actionable' || c.startsWith('ins-') || STATE_TOKENS.includes(c.slice(3));
 export function morphChildren(parent, fresh) {
   for (const n of [...parent.childNodes]) if (n.nodeType !== 1) n.remove();   // a previous string paint
@@ -153,6 +157,7 @@ function morph(a, b) {
   if (vis) a.style.visibility = vis;
   if (cur) a.style.cursor = cur;
   if (b.dataset.hasContent) a.dataset.hasContent = '1'; else delete a.dataset.hasContent;
+  if (b.tagName === 'INPUT' || b.tagName === 'TEXTAREA') { if (a.value !== b.value) a.value = b.value; return; }
   if (b.dataset.hasContent && !b.children.length) { if (a.textContent !== b.textContent) a.textContent = b.textContent; return; }
   morphChildren(a, [...b.children]);
 }

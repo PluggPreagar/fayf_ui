@@ -2,7 +2,9 @@
 // The node suite proves handlers/view pure; this proves the browser half: 2
 // fetches -> ready, both tables render with real fixture row counts, pipeline
 // row click filters the runs table (+ detail stats update), same row again
-// clears it, run row click emits run.open (no page nav in this fixture demo),
+// clears it, a selected pipeline's "start a run" field (field:"text", the new
+// real-<input> escape hatch) accepts typed input and emits run.open on
+// submit, run row click emits run.open (no page nav in this fixture demo),
 // nav/theme, error/retry, fit (C10), skins, C2.
 const tr = new TestRunner({ stopOnError: false });
 const rawCheck = tr.check.bind(tr);
@@ -67,6 +69,32 @@ tr.addBlock('list: pipeline filter -- click filters runs table + detail stats, c
      r.check(!text('status-text').includes('filtered:'), 'status-text filtered marker gone', text('status-text'));
      r.check(rowsOf('runs').length === Math.min(runs.length, 20), 'runs table back to the full list', rowsOf('runs').length);
    });
+});
+
+tr.addBlock('list: start a run -- field types, no-op guards, local-optimistic emits run.open', (r) => {
+  r.run(async () => {
+     const pipelines = await fixture('pipelines');
+     const target = pipelines[1];   // a different pipeline than the filter test used
+     q(`pipelines-row-${target}`).click(); await settled();
+     const field = q('start-record-id'), btn = q('btn-start-run');
+     r.check(field && field.tagName === 'INPUT', 'start-record-id is a real <input>', field && field.tagName);
+     r.check(!!btn, 'btn-start-run present');
+     const before = window.__emitted.length;
+     btn.click(); await settled();
+     r.check(window.__emitted.length === before, 'no-op: Start run with an empty field emits nothing');
+
+     field.value = '21_67';
+     field.dispatchEvent(new Event('input', { bubbles: true }));
+     await settled();
+     r.check(field.value === '21_67', 'typed value stays in the field (view patch does not clobber it)');
+
+     btn.click(); await settled();
+     const opened = window.__emitted.find(e => e[0] === 'run.open' && e[1].run_id === `${target}-21_67`);
+     r.check(!!opened, 'run.open emitted with pipeline-record_id', JSON.stringify(window.__emitted.at(-1)));
+     r.check(field.value === '', 'field cleared after starting');
+
+     q(`pipelines-row-${target}`).click(); await settled();   // deselect, leave state clean for later blocks
+  });
 });
 
 tr.addBlock('list: run row click -- emits run.open with the run_id, no page nav in this fixture demo', (r) => {
