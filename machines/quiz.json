@@ -1,0 +1,11 @@
+{ "initial": "idle",
+  "states": {
+    "idle":       { "flow.load": "loading", "flow.loaded": "answering" },
+    "loading":    { "flow.loaded": "answering", "flow.failed": "error" },
+    "error":      { "btn-retry.click": "loading" },
+    "answering":  { "root.click": "answering", "btn-hint.click": "answering", "btn-action.click": "answering",
+                    "flow.lock": "revealed" },
+    "revealed":   { "enter": [ { "timer": 900, "trigger": "timer.paused" } ],
+                    "timer.paused": "next-ready", "root.click": "next-ready" },
+    "next-ready": { "btn-action.click": "next-ready", "flow.next": "answering", "flow.finish": "finished" },
+    "finished":   {} } }

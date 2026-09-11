@@ -14,6 +14,7 @@ Pages: `index.html` gallery · `anatomy.html` screen · `handles.html` proximity
 
 Controllers (L9, C11): `ui/machine.js` — machine JSON (`initial` + `states{ enter?, <trigger>: <state> }`),
 pure handlers `(status, payload) → { status, effects? }`, pure `view(status) → { slot: content }`,
-effects `fetch · emit · timer` run by the controller. `step()`/`init()` tested under node.
+effects `fetch · emit · timer · send` run by the controller. `step()`/`init()` tested under node.
+`ui/quiz.js` + `machines/quiz.json` is the first real controller on it.
 
 Skins: `?style=wireframe` (default) · `mockup` · `luna` — `ui/style-mode.js`, `ui/tokens.css`.

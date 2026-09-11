@@ -31,10 +31,12 @@ test('validateMachine: trigger needs <name>.<event>', () => {
 });
 
 test('validateEffect: exactly one kind, kind key carries the argument', () => {
-  assert.deepEqual(EFFECTS, ['fetch', 'emit', 'timer']);
+  assert.deepEqual(EFFECTS, ['fetch', 'emit', 'timer', 'send']);
   assert.ok(validateEffect({ fetch: '/x', ok: 'a.b', err: 'a.c' }));
   assert.ok(validateEffect({ timer: 900, trigger: 'pause.done' }));
   assert.ok(validateEffect({ emit: 'row.select', payload: { id: 1 } }));
+  assert.ok(validateEffect({ send: 'flow.lock' }));
+  assert.throws(() => validateEffect({ send: 1 }), /send needs a trigger string/);
   assert.throws(() => validateEffect({ fetch: '/x' }), /ok \+ err/);
   assert.throws(() => validateEffect({ timer: '900', trigger: 'x.y' }), /ms number/);
   assert.throws(() => validateEffect({ fetch: '/x', timer: 1 }), /exactly one/);
@@ -84,10 +86,13 @@ test('step: known trigger, inert in the current state -> unchanged, no effects',
   assert.deepEqual(r, { status: s0, effects: [] });
 });
 
-test('step: inert trigger still runs a handler (data may change, state may not)', () => {
-  const handlers = { 'row.click': (status) => ({ status: { ...status, data: { hit: true } } }) };
-  const r = step(M, { state: 'error', data: {} }, 'row.click', {}, handlers);
-  assert.deepEqual(r, { status: { state: 'error', data: { hit: true } }, effects: [] });
+test('step: inert trigger does not run its handler either -- a full no-op', () => {
+  let called = 0;
+  const handlers = { 'row.click': (status) => { called += 1; return { status: { ...status, data: { hit: true } } }; } };
+  const s0 = { state: 'error', data: {} };
+  const r = step(M, s0, 'row.click', {}, handlers);
+  assert.deepEqual(r, { status: s0, effects: [] });
+  assert.equal(called, 0);
 });
 
 test('step: unknown trigger (no state has it) throws (C2)', () => {

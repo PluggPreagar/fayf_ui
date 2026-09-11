@@ -17,7 +17,7 @@ Commands `refresh · theme` · data = GET `/api/runs` `/api/pipelines` `/api/iss
 | S | what | where | form | proof |
 |---|---|---|---|---|
 | S0 | C11 amendment + ladder L9 | CONSTITUTION.md · CLAUDE.md | text | user review, commit |
-| S1 | **machine controller** `ui/machine.js` — `step(machine, status, trigger, handlers) → {status, effects}` (pure) + `mountMachine(root, screen, machine, handlers, reg)` (binds `<data-name>.<event>`, runs effects `fetch/emit/timer`, re-renders slots from `status`) | fayf_ui | JS + `machines/*.json` schema in `vocabulary.json` | node: step + effects; browser: quiz re-based on a machine JSON, same tests green |
+| S1 ✓ | **machine controller** `ui/machine.js` — `step(machine, status, trigger, handlers) → {status, effects}` (pure) + `mountMachine(root, screen, machine, handlers, reg)` (binds `<data-name>.<event>`, runs effects `fetch/emit/timer`, re-renders slots from `status`) | fayf_ui | JS + `machines/*.json` schema in `vocabulary.json` | node: step + effects; browser: quiz re-based on a machine JSON, same tests green |
 | S2 | **shell screen** `screens/shell.json` — regions as named slots: `ws-head` · `side-panel` (nav rail, `atom/nav-item` + `.bx-selected`) · `content` · `detail` · `status-bar`. THW's missing ws-head/side-panel land here, luna skin | fayf_ui | JSON | gallery invariant, C10 checklist, luna/wireframe shots |
 | S3 | **table controller** `ui/table.js` — rows JSON → `stack` of `row`s, cells `fixed w`; windowed (`scroll` box, visible slice), sort, select → trigger `<name>.select`. Columns = part `component/table` | fayf_ui | JS + JSON | node: window math (2000 rows → ≤ 40 boxes); browser: sort/select/scroll |
 | S4 | **dashboard screen** `screens/dashboard.json` = `extends screens/shell` + content: `at-a-glance` (4 `atom/chip` counts), `recent-runs` (table slot), `issues` (table slot); `machines/dashboard.json` (states `loading · ready · error`; effects 3× fetch); fixture `content/dashboard/*.json` | fayf_ui | JSON | gallery, node machine test, browser table tests |
@@ -72,7 +72,16 @@ Commands `refresh · theme` · data = GET `/api/runs` `/api/pipelines` `/api/iss
 - `initial` explicit — C8 order-independent; key order never carries meaning.
 - `states[s][trigger]` = next state. Handler `handlers[trigger](status, payload)` runs first, may add effects.
 - `states[s].enter` = effects on every entry (start and re-entry). Triggers carry a dot → no collision.
-- effect kinds: `fetch {url, ok, err}` · `emit {trigger, payload}` (to parent) · `timer {ms, trigger}`.
+- effect kinds: `fetch {url, ok, err}` · `emit {trigger, payload}` (to parent) · `timer {ms, trigger}`
+  · `send {trigger, payload}` (self, synchronous: a handler picks the transition, the table stays static).
+- async effects belong to the state entry that started them; a result after leaving that state is dropped.
+- inert trigger (known, not in the current state) = full no-op, handler not run.
+- `root` = reserved trigger name for the mounted element. Guard disables controls only (trigger
+  elements without trigger elements inside); surfaces never.
+- view patch: `string | node | [node] | { content?, env?, state? }`; state tokens absolute per paint:
+  `actionable selected correct wrong readonly loading error disabled hidden`.
+- repaint morphs: same name + dials → element updated in place (identity, focus, refs survive).
+- naming: DOM trigger = element name; effect trigger = source name (`flow.loaded`, `timer.paused`), never an element.
 - test = `step(machine, status, trigger, payload, handlers)` → `{status, effects}`; compare JSON.
 
 ## Open (next C9, one at a time)
