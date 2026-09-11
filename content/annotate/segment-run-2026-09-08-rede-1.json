@@ -1,0 +1,11 @@
+{ "content": { "paragraphs": [
+  { "sentences": [
+    { "id": "sent1", "text": "Meine sehr geehrten Damen und Herren, ich rufe Tagesordnungspunkt 4 auf." },
+    { "id": "sent2", "text": "Wir kommen zur Aussprache." } ] },
+  { "sentences": [
+    { "id": "sent3", "text": "Die Vorlage der Bundesregierung wirft zahlreiche Fragen auf." },
+    { "id": "sent4", "text": "Zuruf von der SPD: Das stimmt doch gar nicht!" },
+    { "id": "sent5", "text": "Ich bitte um etwas mehr Ruhe im Plenum." } ] },
+  { "sentences": [
+    { "id": "sent6", "text": "Ich schließe die Aussprache und komme zur Abstimmung." } ] }
+] } }

@@ -22,7 +22,7 @@ Commands `refresh · theme` · data = GET `/api/runs` `/api/pipelines` `/api/iss
 | S3 ✓ | **table controller** `ui/table.js` — rows JSON → `stack` of `row`s, cells `fixed w`; windowed (`scroll` box, visible slice), sort, select → trigger `<name>.select`. Columns = part `component/table` | fayf_ui | JS + JSON | node: window math (2000 rows → ≤ 40 boxes); browser: sort/select/scroll |
 | S4 ✓ | **dashboard screen** `screens/dashboard.json` = `extends screens/shell` + content: `at-a-glance` (4 `atom/chip` counts), `recent-runs` (table slot), `issues` (table slot); `machines/dashboard.json` (states `loading · ready · error`; effects 3× fetch); fixture `content/dashboard/*.json` | fayf_ui | JSON | gallery, node machine test, browser table tests |
 | S5 | **processor stub** `frontend/fayf/dashboard.html` (~60 lines): screen refs · machine JSON · handlers (`status-dot` map, `e2e-deploy-` filter, counts) · effect targets `/api/…`. `fayf-skin.css`: luna aliases for repo tokens. Re-vendor pin | processor | HTML + JSON + handlers.js | `?test=1` parity with `dashboard.js` (counts, rows, nav, commands); old page kept as `dashboard-kit.html` until S6 done |
-| S6 | **page by page** issues ✓ → list ✓ → browse ✓ (filetree ctrl) → records ✓ (filetree ctrl, reused) / run (deferred, SSE) → profile ✓ → query ✓ (dynamic per-query table spec) → annotate → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
+| S6 | **page by page** issues ✓ → list ✓ → browse ✓ (filetree ctrl) → records ✓ (filetree ctrl, reused) / run (deferred, SSE) → profile ✓ → query ✓ (dynamic per-query table spec) → annotate ✓ (STORY-17.1 only, drill-down + coverage; full record editing deferred, needs `ui/form.js`) → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
 
 ## Controller set (C11: one file each, no more)
 
@@ -121,7 +121,7 @@ Sub-controller pattern = ui/table.js (status slice + spread handlers + self-tran
    "screen JSON + machine JSON + pure handlers; DOM only in fayf_ui".
 
 ### S6 — page by page
-issues ✓ → list ✓ → browse ✓ → records ✓ / run (deferred) → profile ✓ → query ✓ → annotate → graph last via `Embed`. Each:
+issues ✓ → list ✓ → browse ✓ → records ✓ / run (deferred) → profile ✓ → query ✓ → annotate ✓ → graph last via `Embed`. Each:
 parity test, old page removed, nav points to new.
 
 **`field:"text"|"textarea"` shipped 2026-09-11** (see the "Known small items" note below for the full contract):
@@ -393,6 +393,72 @@ in place of the ground truth's `WIDE_RE` heuristic); no client-side result filte
 ground truth's own guided query-builder (dynamic From/Join/Where/Show/Group rows driven by `Api.querySchema()`) is
 NOT ported — already deferred in the ground truth itself, not a cut made here.
 
+**annotate shipped 2026-09-11**: seventh S6 page, Session -> Rede -> paragraph/sentence drill-down with a
+per-sentence coverage badge (ground truth reference: `fayf_processor/frontend/annotate.js`, 986 lines, EPIC-17 --
+behaviour only, not copied). **Scope is STORY-17.1 ONLY** — the ground truth's own header comment says
+"Read-only in this story: coverage badge per sentence ... this is a progress hint only", describing the file's
+ORIGINAL scope before 5 more stories (17.2-17.6) bolted record editing on top. Everything past that — the
+record/suggestion panel + "Übernehmen" take-over (STORY-17.2), the slot-form editor with closed-vocabulary
+Select fields (STORY-17.3, needs a real form controller `ui/form.js` this repo does not have — a separate,
+later C9 design decision, not improvised here), D4 anchor-mode, record delete (STORY-17.4), "Neuer Satz"
+fresh-suggestion LLM re-run (STORY-17.5), gold export + validation findings (STORY-17.6) — all stay on the old
+ui-kit page, explicitly NOT attempted even partially. Two pure utility functions (`coverageSets`/`badgeFor`)
+are ported LOGIC-only (the ground truth is ui-kit/DOM, ineligible for direct reuse) with the exact same
+`"P<i>/S<j>"` id scheme (meaningful notation, kept identical). No new sub-controller: the paragraph jump-list
+(`TREE = 'tree'`) is a flat array of rows built inline in `view()`, like `ui/query.js`'s chip rows — explicitly
+NOT a `ui/tree.js`/`ui/filetree.js` instance (no group/open/select shape needed). `machines/annotate.json`:
+single `ready` state (mirrors `machines/query.json`'s own no-loading/no-error-split reasoning — a failed
+runs/rede fetch is tolerated silently, ground truth parity). `ui/annotate.js`: `SESSION_PICKER`/`REDE_PICKER`
+single-select exclusive chip pickers (same toggle-clear idiom as `ui/query.js`'s `RUN_PICKER`) — picking a
+session fetches its Reden (`urls.run`, a NEW factory entry); picking a Rede fires TWO PARALLEL, INDEPENDENT
+fetches (`urls.segment`/`urls.annotate`, no shared "flow.ready" gate the way dashboard.js's 3-fetch loading
+state has) — the tree + sentence text render as soon as segment lands, badges upgrade separately (a neutral
+`…` placeholder glyph meanwhile) once annotate also lands, exactly mirroring the ground truth's own
+"text shows immediately, badges catch up" behaviour. `status.data = { runs, runId, recordIds, recordId,
+segment, annotate, loading: {segment, annotate}, error }`. `screens/annotate.json` (query.json's structure —
+no `detail` side panel, no `nav-annotate` side-panel item since this repo's shared NAV set is still the 6-item
+S4/S5 simplification): title + session-picker + rede-picker + a two-column body (`tree`, narrow paragraph
+jump-list + `sentences`, wide text/badge panel) + a static plain-text `legend` line (this repo's box model has
+no hover-tooltip mechanism for arbitrary text, unlike the ground truth's `tip`/data-tip — dropped, the legend
+covers it, v1 simplification). Fixtures `content/annotate/` — `runs.json` (4 sessions, one a child run with
+`parent_run_id`, labeled `${parent_run_id} → ${pipeline} (Kind-Lauf)` exactly like the ground truth's own
+`load()`) + `run-run-2026-09-08.json` (2 Reden) + `segment-run-2026-09-08-rede-1.json` (3 paragraphs/6
+sentences, real-looking German fragments) + `coverage-run-2026-09-08-rede-1.json` (exercises all 4 badge kinds
+across the 6 sentences: ✓ record, s skip, ⚠ L3-only, · offen ×3). `annotate.html`;
+`test/node/annotate_machine_test.js` (20 tests) + `test/annotate_test.js` (9 blocks) → node 295/295 (was 275),
+registry 87 ids. Browser-verified live: automated `?test=annotate.html` console sweep all green, PLUS a manual
+pass driving real `.click()` calls on the actual rendered chips/tree-row/skin-toggle (session pick -> rede
+chips appear -> rede pick -> tree + all 6 sentence badges render correctly -> tree row click emits
+`paragraph.jump` with the right index -> same-chip click clears cleanly), in both wireframe and luna skins.
+**One real bug found + fixed by that manual pass, not by the automated suite alone** (same class of miss the
+task's own brief warned about, from the query.html round): a sentence badge cell's box string was
+`'fixed, w:16, hug'` — TWO tokens (`fixed` and `hug`) for the same `size` dial in one string, which C8 forbids
+(one token per dial, "uniqueness enforced per primitive at load"). This threw inside `render()` the first time
+a rede was picked; `ui/machine.js`'s `paint()` has no try/catch around its patch loop, so the exception fired
+mid-paint, right after the `tree` patch had already applied but before the `sentences` patch could — the tree
+counts rendered correctly while the whole text/badge panel silently stayed frozen on its "Pick a Rede..."
+placeholder, with only a console `Uncaught (in promise)` to show for it. The automated test caught this
+immediately as a "0 sentence rows" FAIL, but manual DOM inspection (console error read via
+`read_console_messages`) is what pinned the exact root cause fast. Fixed by dropping the redundant `hug`
+(`'fixed, w:16'`). **v1 simplifications** (all explicitly bounded by the task, same KISS discipline as every
+prior S6 page): no hover tooltip on coverage badges (plain-text legend instead, no primitive change); no
+record/suggestion panel, no slot-form editor, no D4 anchor mode, no record delete, no fresh-suggestion re-run,
+no gold export (all STORY-17.2 through 17.6, genuinely larger/separate features, not improvised); `runs.failed`/
+`rede.failed` fail silently into an empty list/prompt rather than surfacing a toast (this repo's L9 controllers
+have no toast mechanism, same known gap every prior page's failed-fetch path already carries); no `?run=&rede=`
+deep-link URL sync (same class of drop as browse.html's own `?mount=&path=&at=`); no `nav-annotate` side-panel
+item (this repo's shared NAV set is still the 6-item S4/S5 simplification). **For the fayf_processor sibling
+wiring the real API**: `urls.run(id)` -> `GET /api/runs/{id}` (`Api.run`, already used by `ui/records.js`);
+`urls.segment(runId, recordId)` -> `GET /api/step/{run}/segment/{recordId}` (`Api.artifact(runId,
+'segment/'+recordId)`); `urls.annotate(runId, recordId)` -> `POST /api/annotate/{run}/{record}/seed` (no body —
+idempotent lazy-seeding, treat as the read path for coverage data, not a mutating write to avoid); the machine's
+own `enter` effect hardcodes `/content/annotate/runs.json` (swap for `/api/runs?include_children=1` the same way
+every prior page's machine JSON gets its real URL substituted) — `include_children=1` is required specifically
+for this page (a per-speech child run's OWN `record_ids` only exist at that granularity, ground truth's own
+"annotate child session" issue note). `ui/annotate.js`'s exports a sibling controller needs: `SESSION_PICKER`,
+`REDE_PICKER`, `TREE`, `FIXTURE_URLS` (shape reference only), `coverageSets`/`badgeFor` (pure, portable as-is),
+`makeHandlers(urls)`, `initialData()`, `view`, `mountAnnotate(root, reg, opts)`.
+
 ### Known small items
 - js_runner prints "Checks: 0" before async blocks (another session is fixing it — do not touch test/js_runner.js).
 - shell ws-head `between` with 3 children centres the crumbs; luna nav icon dots faint (checklist #14 class).
@@ -469,6 +535,17 @@ NOT ported — already deferred in the ground truth itself, not a cut made here.
 - query.html has no `detail` side panel — the only S6 page to drop it outright rather than leave it at a default —
   since there is no "select a row, see detail elsewhere" concept here (the query result IS the detail); everything
   lives in `content`.
+- annotate.html is STORY-17.1 ONLY (read-only paragraph/sentence drill-down + coverage badge) — record editing,
+  the slot-form editor, D4 anchor mode, record delete, "Neuer Satz" re-run, and gold export (STORY-17.2 through
+  17.6) all stay on the old ui-kit page; none were even partially attempted (STORY-17.3 in particular needs a
+  real form controller, `ui/form.js`, which does not exist in this repo yet — a separate, later C9 decision).
+- annotate.html has no hover tooltip on a coverage badge (this repo's box model has no arbitrary-text-on-hover
+  mechanism) — a plain-text legend line covers it instead, no new primitive.
+- annotate.html's `runs.failed`/`rede.failed` fail silently (empty session list / "Pick a session first." prompt)
+  rather than surfacing a toast — this repo's L9 controllers have no toast mechanism, the same known gap every
+  prior page's failed-fetch path already carries (ground truth itself toasts-and-continues).
+- annotate.html has no `?run=&rede=` deep-link URL sync (same class of drop as browse.html's `?mount=&path=&at=`)
+  and no `nav-annotate` side-panel item (this repo's shared NAV set is still the 6-item S4/S5 simplification).
 
 ## Open (next C9, one at a time)
 

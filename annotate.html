@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fayf_ui — annotate</title>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui/tokens.css">
+<style>html,body{height:100%;margin:0}
+body{background:var(--canvas);display:flex}
+.bx .ic{stroke:currentColor}</style>
+</head>
+<body>
+<!-- S6 (docs/superpowers/plans/2026-09-11-workspace-dashboard.md): the shell screen
+     filled by the annotate controller (ui/annotate.js, C11 L9). STORY-17.1 scope
+     only (read-only drill-down + coverage badges) -- see ui/annotate.js's header
+     for the full list of deferred stories (record editing, slot form, etc). -->
+<script type="module">
+import { resolve } from './ui/model.js';
+import { render } from './ui/render.js';
+import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
+import { mountInspectorToggle } from './ui/inspector.js';
+import { mountAnnotate } from './ui/annotate.js';
+initStyleMode();
+const reg = await (await fetch('/registry.json')).json();
+const provenance = new Map();
+const el = render(resolve(reg['screens/annotate'], reg, [], new Set(), [], provenance));
+document.body.appendChild(el);
+mountStyleToggle(el, { inline: true });
+mountInspectorToggle(el, { sourceId: 'screens/annotate', provenance, target: el, inline: true });
+window.__emitted = [];
+const onEmit = (t, p) => {
+  window.__emitted.push([t, p]);
+  if (t === 'paragraph.jump') {
+    const row = el.querySelector(`[data-name="tree-P${p.index}"]`);
+    // scrollIntoView is a DOM side-effect the pure machine can't do itself
+    // (C11) -- the page (this onEmit hook) does it, mirrors ui/browse.js's
+    // own "consumer-level nav" reasoning for emits the controller can't act on.
+  }
+};
+window.__ctl = mountAnnotate(el, reg, { onEmit });
+// Second, independent mount for io-injection tests (same pattern query.html
+// established): its own off-flow container so `body > .bx` keeps the viewport.
+window.__mount = (io) => {
+  const container = document.createElement('div');
+  container.className = 'annotate-mount';
+  container.style.cssText = 'position:absolute;left:0;top:0;width:1200px;height:800px;visibility:hidden;display:flex';
+  document.body.appendChild(container);
+  const root = render(resolve(reg['screens/annotate'], reg));
+  container.appendChild(root);
+  return mountAnnotate(root, reg, { io, onEmit });
+};
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{ "initial": "ready",
+  "states": {
+    "ready": {
+      "enter": [ { "fetch": "/content/annotate/runs.json", "ok": "runs.loaded", "err": "runs.failed" } ],
+      "runs.loaded": "ready", "runs.failed": "ready",
+      "session-picker.click": "ready",
+      "rede.loaded": "ready", "rede.failed": "ready",
+      "rede-picker.click": "ready",
+      "segment.loaded": "ready", "segment.failed": "ready",
+      "annotate.loaded": "ready", "annotate.failed": "ready",
+      "tree.click": "ready",
+      "btn-refresh.click": "ready", "btn-theme.click": "ready",
+      "nav-dashboard.click": "ready", "nav-pipelines.click": "ready", "nav-graph.click": "ready",
+      "nav-records.click": "ready", "nav-issues.click": "ready", "nav-settings.click": "ready" } } }

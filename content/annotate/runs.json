@@ -1,0 +1,6 @@
+[
+ {"run_id":"run-2026-09-08","pipeline":"bundestag-unified","status":"done"},
+ {"run_id":"run-2026-09-05","pipeline":"bundestag-unified","status":"done"},
+ {"run_id":"child-8f21c0","pipeline":"speech-annotate","status":"done","parent_run_id":"run-2026-09-05"},
+ {"run_id":"run-2026-09-01","pipeline":"record-ingest","status":"running"}
+]

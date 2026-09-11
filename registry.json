@@ -1416,6 +1416,150 @@
    }
   ]
  },
+ "screens/annotate": {
+  "box": "stack, fill, clip, tint0",
+  "children": [
+   {
+    "name": "ws-head",
+    "extends": "component/ws-head",
+    "children": [
+     {
+      "name": "brand",
+      "extends": "atom/text.title",
+      "content": "fayf_ui"
+     },
+     {
+      "name": "crumbs",
+      "extends": "component/breadcrumb-trail",
+      "children": [
+       {
+        "name": "crumb-home",
+        "box": "hug",
+        "content": "Workspace"
+       },
+       ">",
+       {
+        "name": "crumb-page",
+        "box": "hug",
+        "content": "Annotate"
+       }
+      ]
+     },
+     {
+      "name": "head-actions",
+      "box": "row, mid, gap:2, hug",
+      "children": [
+       {
+        "name": "btn-refresh",
+        "extends": "atom/button",
+        "content": "Refresh"
+       },
+       {
+        "name": "user",
+        "box": "row, mid, gap:1, hug",
+        "children": [
+         {
+          "extends": "atom/avatar",
+          "content": "P"
+         },
+         "Peter"
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "name": "body",
+    "box": "row, fill",
+    "children": [
+     {
+      "name": "side-panel",
+      "extends": "component/side-panel"
+     },
+     {
+      "name": "content",
+      "box": "stack, fill, pad:3, gap:3, scroll, solid, rounded",
+      "children": [
+       {
+        "name": "content-title",
+        "extends": "atom/text.title",
+        "content": "Annotate"
+       },
+       {
+        "name": "session-title",
+        "box": "hug",
+        "content": "Session"
+       },
+       {
+        "name": "session-picker",
+        "box": "row, mid, gap:1, scroll",
+        "content": ""
+       },
+       {
+        "name": "rede-title",
+        "box": "hug",
+        "content": "Rede"
+       },
+       {
+        "name": "rede-picker",
+        "box": "row, mid, gap:1, scroll",
+        "content": "Pick a session first."
+       },
+       {
+        "box": "row, fill, gap:3",
+        "children": [
+         {
+          "name": "tree",
+          "box": "stack, fixed, w:220, gap:1, pad:2, scroll, solid, rounded",
+          "content": "Pick a Rede to see its paragraphs."
+         },
+         {
+          "name": "sentences",
+          "box": "stack, fill, gap:1, pad:2, scroll, solid, rounded",
+          "content": "Pick a Rede to see its text."
+         }
+        ]
+       },
+       {
+        "name": "legend",
+        "box": "hug",
+        "content": "Legend: ✓ Record erfasst · s Übersprungen (Skip) · ⚠ nur Triage (L3) · · offen -- read-only progress hint, v1 has no hover tooltip"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "name": "status-bar",
+    "extends": "component/shell-status",
+    "children": [
+     {
+      "name": "status-text",
+      "box": "hug",
+      "content": "0 sessions"
+     },
+     {
+      "name": "status-right",
+      "box": "row, mid, gap:2, hug",
+      "children": [
+       {
+        "name": "status-version",
+        "box": "hug",
+        "content": "v0.1"
+       },
+       {
+        "name": "btn-theme",
+        "extends": "atom/icon-button",
+        "box": "w:16, h:16",
+        "content": "◐"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
  "screens/browse": {
   "box": "stack, fill, clip, tint0",
   "children": [
