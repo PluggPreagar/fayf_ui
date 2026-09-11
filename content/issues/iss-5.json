@@ -1,0 +1,7 @@
+{
+  "id": "iss-5", "number": 5, "title": "Profile chart clipped", "status": "done",
+  "created": "2026-08-06T19:00:00Z", "page": "profile", "url": "https://fayf.example/profile?id=42",
+  "body": "The flamegraph's rightmost column was cut off at narrow widths; fixed by switching to a scrollable container.",
+  "context": { "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", "viewport": "1280x800" },
+  "console_errors": []
+}

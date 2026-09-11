@@ -1,0 +1,7 @@
+{
+  "id": "iss-6", "number": 6, "title": "Query timeout", "status": "archived",
+  "created": "2026-08-07T21:00:00Z", "page": "query",
+  "body": "Long-running queries used to time out at 10s with no way to extend it; archived once the async query path shipped.",
+  "context": { "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", "viewport": "1600x900", "browser": "Firefox 130", "screen_dpi": "1.5" },
+  "console_errors": []
+}

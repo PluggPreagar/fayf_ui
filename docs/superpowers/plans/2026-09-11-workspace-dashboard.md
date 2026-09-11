@@ -22,7 +22,7 @@ Commands `refresh · theme` · data = GET `/api/runs` `/api/pipelines` `/api/iss
 | S3 ✓ | **table controller** `ui/table.js` — rows JSON → `stack` of `row`s, cells `fixed w`; windowed (`scroll` box, visible slice), sort, select → trigger `<name>.select`. Columns = part `component/table` | fayf_ui | JS + JSON | node: window math (2000 rows → ≤ 40 boxes); browser: sort/select/scroll |
 | S4 ✓ | **dashboard screen** `screens/dashboard.json` = `extends screens/shell` + content: `at-a-glance` (4 `atom/chip` counts), `recent-runs` (table slot), `issues` (table slot); `machines/dashboard.json` (states `loading · ready · error`; effects 3× fetch); fixture `content/dashboard/*.json` | fayf_ui | JSON | gallery, node machine test, browser table tests |
 | S5 | **processor stub** `frontend/fayf/dashboard.html` (~60 lines): screen refs · machine JSON · handlers (`status-dot` map, `e2e-deploy-` filter, counts) · effect targets `/api/…`. `fayf-skin.css`: luna aliases for repo tokens. Re-vendor pin | processor | HTML + JSON + handlers.js | `?test=1` parity with `dashboard.js` (counts, rows, nav, commands); old page kept as `dashboard-kit.html` until S6 done |
-| S6 | **page by page** issues → list → browse (tree ctrl) → records/run (form ctrl) → profile/query/annotate → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
+| S6 | **page by page** issues ✓ → list → browse (tree ctrl) → records/run (form ctrl) → profile/query/annotate → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
 
 ## Controller set (C11: one file each, no more)
 
@@ -121,14 +121,34 @@ Sub-controller pattern = ui/table.js (status slice + spread handlers + self-tran
    "screen JSON + machine JSON + pure handlers; DOM only in fayf_ui".
 
 ### S6 — page by page
-issues → list → browse (needs `ui/tree.js`, same sub-controller pattern as table) → records/run (needs `ui/form.js`)
+issues ✓ → list → browse (needs `ui/tree.js`, same sub-controller pattern as table) → records/run (needs `ui/form.js`)
 → profile/query/annotate → graph last via `Embed`. Each: parity test, old page removed, nav points to new.
+
+**issues shipped 2026-09-11**: `ui/tree.js` (new sub-controller, mirrors `ui/table.js` exactly — `treeInit`/
+`treeHandlers`/`treeView` on `status.data[spec.name] = {rows, open, sel}`, group header click toggles
+`open[group]`, item click selects + emits `<name>.select`, non-empty groups only in `groupOrder` order then
+stray groups alphabetically); `machines/issues.json`; `ui/issues.js` (`STATUSES`, `MASTER` tree spec, `makeHandlers(urls)`
+parametrized like table.js's spec since the status-write URL is per-issue/per-target-status; selecting-on-click
+wraps `treeHandlers` like dashboard.js's `selecting()` wraps `tableHandlers`, adding a detail-fetch effect
+alongside the emit); `screens/issues.json` (dashboard.json's full-duplicate pattern, side-panel children copied
+with `nav-issues` on `cluster/nav-item.active`); fixtures `content/issues.json` + `content/issues/<id>.json`;
+`issues.html`; `test/issues_test.js` (11 blocks) + `test/node/tree_test.js` (16) + `test/node/issues_machine_test.js`
+(16) → node 172/172, registry 81 ids. Browser-verified live (screenshots + console sweep), all green. Full detail:
+`.ai/todo.md` TODO-9 row.
 
 ### Known small items
 - js_runner prints "Checks: 0" before async blocks (another session is fixing it — do not touch test/js_runner.js).
 - shell ws-head `between` with 3 children centres the crumbs; luna nav icon dots faint (checklist #14 class).
 - Browser pane tabs are shared between sessions/agents; verify in a fresh tab, count `OK :`/`FAIL:` after the last
-  `─── TestRunner` marker.
+  `─── TestRunner` marker. A hidden/backgrounded pane can report a mounted root's `clientWidth`/`clientHeight`/
+  `scrollWidth`/`scrollHeight` as 0 while `getBoundingClientRect()` on the same element stays correct (confirmed
+  live during the issues.html fit (C10) check) — front the tab before trusting a `clientWidth`-based fit assertion.
+- `ui/vocabulary.json` has no flex-wrap dial (`wrap` is not a real box token) — a design note asking for a
+  wrapping row of chips needs `scroll` (existing overflow token) instead; found while building issues.html's
+  status-chip row (`ui/issues.js`).
+- S6 issues.json fixed the side-panel "always shows Dashboard active" gap for itself only (children copied +
+  `nav-issues` on `cluster/nav-item.active`) — `shell.json`/`dashboard.json` still highlight Dashboard on every
+  screen; carry the same fix into them (and any future S6 screen) as a follow-up, not done here.
 
 ## Open (next C9, one at a time)
 

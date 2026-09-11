@@ -1,0 +1,15 @@
+{ "initial": "loading",
+  "states": {
+    "loading": { "enter": [ { "fetch": "/content/issues.json", "ok": "list.loaded", "err": "list.failed" } ],
+                 "list.loaded": "ready", "list.failed": "error" },
+    "ready": {
+      "master.click": "ready",
+      "detail.loaded": "ready", "detail.failed": "ready",
+      "detail-status-in-progress.click": "ready", "detail-status-open.click": "ready",
+      "detail-status-ready.click": "ready", "detail-status-blocked.click": "ready",
+      "detail-status-done.click": "ready", "detail-status-archived.click": "ready",
+      "status.saved": "ready", "status.failed": "ready",
+      "btn-refresh.click": "loading", "btn-theme.click": "ready",
+      "nav-dashboard.click": "ready", "nav-pipelines.click": "ready", "nav-graph.click": "ready",
+      "nav-records.click": "ready", "nav-issues.click": "ready", "nav-settings.click": "ready" },
+    "error": { "btn-retry.click": "loading" } } }

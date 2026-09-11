@@ -1,0 +1,9 @@
+{
+  "id": "iss-7", "number": 7, "title": "Browse tree slow", "status": "open",
+  "created": "2026-08-08T23:00:00Z", "page": "browse",
+  "body": "Expanding a folder with 2000+ files freezes the tab for a couple of seconds.",
+  "context": { "user_agent": "Mozilla/5.0 (X11; Linux x86_64)", "viewport": "1920x1080" },
+  "console_errors": [
+    { "ts": "2026-08-08T22:57:03Z", "message": "[Violation] 'click' handler took 2400ms" }
+  ]
+}

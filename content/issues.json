@@ -1,0 +1,11 @@
+[
+ {"id":"iss-1","number":1,"title":"Refresh loses selection","status":"in-progress","page":"list"},
+ {"id":"iss-2","number":2,"title":"Graph zoom jumps","status":"open","page":"graph"},
+ {"id":"iss-3","number":3,"title":"Records filter empty","status":"ready","page":"records"},
+ {"id":"iss-4","number":4,"title":"Annotate save fails","status":"blocked","page":"annotate"},
+ {"id":"iss-5","number":5,"title":"Profile chart clipped","status":"done","page":"profile"},
+ {"id":"iss-6","number":6,"title":"Query timeout","status":"archived","page":"query"},
+ {"id":"iss-7","number":7,"title":"Browse tree slow","status":"open","page":"browse"},
+ {"id":"iss-8","number":8,"title":"Issue count stale","status":"in-progress","page":"issues"},
+ {"id":"iss-9","number":9,"title":"Nav rail overflow","status":"ready","page":"list"}
+]

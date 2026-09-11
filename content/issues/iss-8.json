@@ -1,0 +1,7 @@
+{
+  "id": "iss-8", "number": 8, "title": "Issue count stale", "status": "in-progress",
+  "created": "2026-08-10T01:00:00Z", "page": "issues",
+  "body": "The open-issues count on the dashboard doesn't update until a full page reload.",
+  "context": { "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", "viewport": "1280x800" },
+  "console_errors": []
+}

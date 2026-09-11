@@ -1,0 +1,7 @@
+{
+  "id": "iss-9", "number": 9, "title": "Nav rail overflow", "status": "ready",
+  "created": "2026-08-12T05:00:00Z", "page": "list",
+  "body": "At narrow window widths the nav rail's bottom item (Settings) gets pushed below the fold.",
+  "context": { "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", "viewport": "1024x768" },
+  "console_errors": []
+}

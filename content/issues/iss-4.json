@@ -1,0 +1,7 @@
+{
+  "id": "iss-4", "number": 4, "title": "Annotate save fails", "status": "blocked",
+  "created": "2026-08-05T17:00:00Z", "page": "annotate",
+  "body": "Saving an annotation on a large image times out server-side; needs a chunked-upload fix first.",
+  "context": { "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", "viewport": "1366x768", "browser": "Chrome 128" },
+  "console_errors": []
+}

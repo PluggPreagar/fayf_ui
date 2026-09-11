@@ -1,0 +1,9 @@
+{
+  "id": "iss-2", "number": 2, "title": "Graph zoom jumps", "status": "open",
+  "created": "2026-08-03T13:00:00Z", "page": "graph",
+  "body": "Zooming with the scroll wheel snaps to a far zoom level instead of scaling smoothly.",
+  "context": { "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", "viewport": "1440x900" },
+  "console_errors": [
+    { "ts": "2026-08-03T12:59:40Z", "message": "Warning: zoom delta exceeded max step, clamped" }
+  ]
+}
