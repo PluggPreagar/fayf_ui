@@ -114,30 +114,42 @@
    .bx-solid mockup rule above (higher specificity, both classes) --
    same pattern .bx-error already uses for the same reason. */
 :root[data-style="mockup"] .bx-brand,
-:root[data-style="luna"]   .bx-brand{background:var(--brand-surf);color:var(--brand)}
+:root[data-style="luna"]   .bx-brand,
+:root[data-style="luna-flat"] .bx-brand{background:var(--brand-surf);color:var(--brand)}
 :root[data-style="mockup"] .bx-solid.bx-brand,
-:root[data-style="luna"]   .bx-solid.bx-brand{border-color:var(--brand)}
+:root[data-style="luna"]   .bx-solid.bx-brand,
+:root[data-style="luna-flat"] .bx-solid.bx-brand{border-color:var(--brand)}
 :root[data-style="mockup"] .bx-ok,
-:root[data-style="luna"]   .bx-ok{background:var(--ok-surf);color:var(--ok)}
+:root[data-style="luna"]   .bx-ok,
+:root[data-style="luna-flat"] .bx-ok{background:var(--ok-surf);color:var(--ok)}
 :root[data-style="mockup"] .bx-solid.bx-ok,
-:root[data-style="luna"]   .bx-solid.bx-ok{border-color:var(--ok)}
+:root[data-style="luna"]   .bx-solid.bx-ok,
+:root[data-style="luna-flat"] .bx-solid.bx-ok{border-color:var(--ok)}
 :root[data-style="mockup"] .bx-warn,
-:root[data-style="luna"]   .bx-warn{background:var(--warn-surf);color:var(--warn)}
+:root[data-style="luna"]   .bx-warn,
+:root[data-style="luna-flat"] .bx-warn{background:var(--warn-surf);color:var(--warn)}
 :root[data-style="mockup"] .bx-solid.bx-warn,
-:root[data-style="luna"]   .bx-solid.bx-warn{border-color:var(--warn)}
+:root[data-style="luna"]   .bx-solid.bx-warn,
+:root[data-style="luna-flat"] .bx-solid.bx-warn{border-color:var(--warn)}
 /* border follows stroke, same rule in every mode: bare = none (below),
    hairline/solid/dashed = a border, here just recolored for realism.
    Border-*width* stays identical to wireframe's (only color/shadow change)
    so hug-sized bordered boxes don't reflow either. Resizable/dragable
    (handles.js, t11) doesn't change any of this -- a stroked handled box
    keeps its fixed border; the handles reveal separately, on top of it,
-   from being hidden on approach. */
+   from being hidden on approach. luna-flat gets these too (same recolor),
+   then flattens them back to transparent further below -- keeps this
+   block the single source of "how mockup/luna/luna-flat recolor stroke",
+   the flatten pass is a pure post-hoc override, not a fork of this rule. */
 :root[data-style="mockup"] .bx-hairline,
-:root[data-style="luna"]   .bx-hairline{border-color:var(--rule)}
+:root[data-style="luna"]   .bx-hairline,
+:root[data-style="luna-flat"] .bx-hairline{border-color:var(--rule)}
 :root[data-style="mockup"] .bx-solid,
-:root[data-style="luna"]   .bx-solid{border-color:var(--ink);box-shadow:var(--shadow)}
+:root[data-style="luna"]   .bx-solid,
+:root[data-style="luna-flat"] .bx-solid{border-color:var(--ink);box-shadow:var(--shadow)}
 :root[data-style="mockup"] .bx-dashed,
-:root[data-style="luna"]   .bx-dashed{border-color:var(--dash)}
+:root[data-style="luna"]   .bx-dashed,
+:root[data-style="luna-flat"] .bx-dashed{border-color:var(--dash)}
 
 /* luna skin -- THW-Lernkarten look, docs/superpowers/specs/2026-09-09-luna-skin-design.md
    (token map there). Same role split as mockup: --ink = stroke, --text =
@@ -145,8 +157,12 @@
    `mockup, luna` -- explicit on purpose, NOT :not([data-style="wireframe"]):
    fixture pages that never call initStyleMode have no data-style at all
    and must keep rendering as wireframe (the dotted-outline rule below
-   relies on exactly that). */
-:root[data-style="luna"] {
+   relies on exactly that). luna-flat shares this exact token block (same
+   selector list below) -- it's luna's own palette, just with borders/
+   shadows flattened further down; a separate token set would drift from
+   luna's the moment either one is retouched. */
+:root[data-style="luna"],
+:root[data-style="luna-flat"] {
   --canvas:#e8edf1; --paper:#fff; --ink:#c3cfd8; --text:#0f1c26; --muted:#516272;
   --tint0:#f4f7f9; --tint1:#e8edf1; --tint2:#dbe4ea; --tint3:#c3cfd8;
   --dash:#8fa2b1; --rule:#c3cfd8;
@@ -175,9 +191,35 @@
    channel (and border-left-color selected's) -- channel rule wins. */
 :root[data-style="luna"] .bx-brand,
 :root[data-style="luna"] .bx-ok,
-:root[data-style="luna"] .bx-warn{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.02em}
-:root[data-style="luna"] [data-name="prompt"]{font-family:var(--display);font-weight:600}
-:root[data-style="luna"] .bx-actionable:focus-visible{outline-style:solid}
+:root[data-style="luna"] .bx-warn,
+:root[data-style="luna-flat"] .bx-brand,
+:root[data-style="luna-flat"] .bx-ok,
+:root[data-style="luna-flat"] .bx-warn{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+:root[data-style="luna"] [data-name="prompt"],
+:root[data-style="luna-flat"] [data-name="prompt"]{font-family:var(--display);font-weight:600}
+:root[data-style="luna"] .bx-actionable:focus-visible,
+:root[data-style="luna-flat"] .bx-actionable:focus-visible{outline-style:solid}
+
+/* luna-flat -- same tokens/palette as luna (shared block above), regions
+   read via background tint + spacing/position only, per explicit request
+   ("flatten the borders and leave it to colors and position to separate
+   the regions"). Every stroke role still EXISTS (hairline/solid/dashed
+   keep their meaning in the model/JSON -- C8: a skin recolors a dial, it
+   never deletes one), it's just rendered invisible here: border-color:
+   transparent + shadow:none, not border:none -- border:none would change
+   border-*width*'s reserved layout space, reflowing hug-sized boxes the
+   same way the mockup/luna comments above already guard against. State
+   channels stay untouched on purpose (higher specificity already wins,
+   nothing to override): .bx-solid.bx-error/.bx-solid.bx-selected/
+   .bx-solid.bx-brand etc keep their own colored border -- those are
+   MEANING (error, selection, emphasis), not the plain structural stroke
+   this flattens. Focus/hover/pressed channels (outline/filter/inset-shadow)
+   are untouched too -- interaction feedback, not region separation. */
+:root[data-style="luna-flat"] .bx-hairline,
+:root[data-style="luna-flat"] .bx-solid,
+:root[data-style="luna-flat"] .bx-dashed{
+  border-color:transparent; box-shadow:none;
+}
 
 /* wireframe (default, not mockup): force a faint structure guide on every
    box that has no stroke of its own (bare, or no stroke dial at all), so
@@ -186,7 +228,7 @@
    content area, inflates hug's fit-content size) present only in
    wireframe, which shifted content on every toggle. outline never
    participates in layout in either mode, so this can't happen. */
-:root:not([data-style="mockup"]):not([data-style="luna"]) .bx:not(.bx-hairline):not(.bx-solid):not(.bx-dashed){
+:root:not([data-style="mockup"]):not([data-style="luna"]):not([data-style="luna-flat"]) .bx:not(.bx-hairline):not(.bx-solid):not(.bx-dashed){
   outline:1px dotted var(--rule);
   outline-offset:-1px;
 }
@@ -295,7 +337,8 @@
    (no fixture exercises that combination yet). */
 .bx-error{border-color:var(--accent)}
 :root[data-style="mockup"] .bx-solid.bx-error,
-:root[data-style="luna"]   .bx-solid.bx-error{border-color:var(--accent)}
+:root[data-style="luna"]   .bx-solid.bx-error,
+:root[data-style="luna-flat"] .bx-solid.bx-error{border-color:var(--accent)}
 .bx-readonly{opacity:.55;pointer-events:none}
 
 /* quiz answer states -- page-mount concern (ui/quiz.js), not a box
@@ -322,7 +365,8 @@
    overrides the green back to ink. */
 .bx-selected{border-left:4px solid var(--ok)}
 :root[data-style="mockup"] .bx-solid.bx-selected,
-:root[data-style="luna"]   .bx-solid.bx-selected{border-left-color:var(--ok)}
+:root[data-style="luna"]   .bx-solid.bx-selected,
+:root[data-style="luna-flat"] .bx-solid.bx-selected{border-left-color:var(--ok)}
 /* tints via vars so a skin can re-hue "wrong" (luna: amber) -- base
    values are the exact rgba these rules hardcoded before. */
 .bx-correct{background:var(--ok-surf)}

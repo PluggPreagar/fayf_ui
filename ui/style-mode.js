@@ -1,10 +1,12 @@
 // ui/style-mode.js -- skin switch. State lives in the URL
-// (?style=wireframe|mockup|luna), never in memory-only JS state, so a link
-// is always reproducible/shareable/debuggable.
+// (?style=wireframe|mockup|luna|luna-flat), never in memory-only JS state,
+// so a link is always reproducible/shareable/debuggable.
 // wireframe = structure only (default) · mockup = Claude Design brand ·
-// luna = THW-Lernkarten product look (docs/superpowers/specs/2026-09-09-luna-skin-design.md).
+// luna = THW-Lernkarten product look (docs/superpowers/specs/2026-09-09-luna-skin-design.md) ·
+// luna-flat = luna, borders/shadows flattened -- regions read via tint +
+// spacing/position only (same token palette, ui/tokens.css's own luna-flat block).
 const PARAM = 'style';
-const MODES = ['wireframe', 'mockup', 'luna'];
+const MODES = ['wireframe', 'mockup', 'luna', 'luna-flat'];
 const DEFAULT = MODES[0];
 
 function readMode() {

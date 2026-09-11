@@ -281,17 +281,55 @@ tr.addBlock('skins: every skin-driven var resolves in wireframe, mockup and luna
   });
 });
 
-tr.addBlock('skins: realistic-rendering rules are explicit mockup+luna selector lists (fixture pages with no data-style stay wireframe)', (r) => {
+tr.addBlock('skins: realistic-rendering rules are explicit mockup+luna+luna-flat selector lists (fixture pages with no data-style stay wireframe)', (r) => {
   r.run(() => {
-    const solid = declaredProps(':root[data-style="mockup"] .bx-solid, :root[data-style="luna"] .bx-solid');
-    r.check(!!solid && solid.includes('box-shadow'), 'mockup+luna .bx-solid rule found with its shadow', solid);
-    const brand = declaredProps(':root[data-style="mockup"] .bx-brand, :root[data-style="luna"] .bx-brand');
-    r.check(!!brand && brand.includes('background-color'), 'mockup+luna .bx-brand rule found', brand);
-    const ok = declaredProps(':root[data-style="mockup"] .bx-ok, :root[data-style="luna"] .bx-ok');
-    r.check(!!ok && ok.includes('color'), 'mockup+luna .bx-ok rule found (new fill token)', ok);
+    const solid = declaredProps(':root[data-style="mockup"] .bx-solid, :root[data-style="luna"] .bx-solid, :root[data-style="luna-flat"] .bx-solid');
+    r.check(!!solid && solid.includes('box-shadow'), 'mockup+luna+luna-flat .bx-solid rule found with its shadow', solid);
+    const brand = declaredProps(':root[data-style="mockup"] .bx-brand, :root[data-style="luna"] .bx-brand, :root[data-style="luna-flat"] .bx-brand');
+    r.check(!!brand && brand.includes('background-color'), 'mockup+luna+luna-flat .bx-brand rule found', brand);
+    const ok = declaredProps(':root[data-style="mockup"] .bx-ok, :root[data-style="luna"] .bx-ok, :root[data-style="luna-flat"] .bx-ok');
+    r.check(!!ok && ok.includes('color'), 'mockup+luna+luna-flat .bx-ok rule found (new fill token)', ok);
     const wireframeOutline = [...document.styleSheets].flatMap(s => { try { return [...s.cssRules]; } catch { return []; } })
-      .find(rl => rl.selectorText && rl.selectorText.startsWith(':root:not([data-style="mockup"]):not([data-style="luna"])'));
-    r.check(!!wireframeOutline, 'wireframe dotted-outline rule excludes both realistic skins');
+      .find(rl => rl.selectorText && rl.selectorText.startsWith(':root:not([data-style="mockup"]):not([data-style="luna"]):not([data-style="luna-flat"])'));
+    r.check(!!wireframeOutline, 'wireframe dotted-outline rule excludes all three realistic/flat skins');
+  });
+});
+
+// luna-flat (user request: "flatten the borders and leave it to colors and
+// position to separate the regions"). Same palette as luna (shared token
+// block) -- only stroke/shadow on the plain structural roles flattens;
+// meaning-carrying combos (error/selected/brand/ok/warn borders) and the
+// focus/hover/pressed interaction channels stay exactly as luna's.
+tr.addBlock('luna-flat: same luna palette, but hairline/solid/dashed borders + solid shadow flatten to transparent/none', (r) => {
+  const before = document.documentElement.dataset.style;
+  const solid = document.createElement('div');
+  solid.className = 'bx bx-solid bx-rounded bx-tint1';
+  const hairline = document.createElement('div');
+  hairline.className = 'bx bx-hairline';
+  const brand = document.createElement('div');
+  brand.className = 'bx bx-solid bx-brand';
+  const error = document.createElement('div');
+  error.className = 'bx bx-solid bx-actionable bx-error';
+  r.run(() => {
+    document.body.append(solid, hairline, brand, error);
+    document.documentElement.dataset.style = 'luna-flat';
+
+    r.check(cssVar('--canvas') === (() => { document.documentElement.dataset.style = 'luna'; const v = cssVar('--canvas'); document.documentElement.dataset.style = 'luna-flat'; return v; })(),
+      'luna-flat: --canvas matches luna\'s own value (shared token block, not a fork)');
+
+    r.check(getComputedStyle(solid).borderColor === 'rgba(0, 0, 0, 0)', 'luna-flat: plain .bx-solid border is transparent', getComputedStyle(solid).borderColor);
+    r.check(getComputedStyle(solid).boxShadow === 'none', 'luna-flat: plain .bx-solid has no shadow', getComputedStyle(solid).boxShadow);
+    r.check(getComputedStyle(solid).backgroundColor !== 'rgba(0, 0, 0, 0)', 'luna-flat: tint background stays intact (regions still read via color)', getComputedStyle(solid).backgroundColor);
+    r.check(getComputedStyle(hairline).borderColor === 'rgba(0, 0, 0, 0)', 'luna-flat: .bx-hairline border is transparent too', getComputedStyle(hairline).borderColor);
+
+    // Meaning-carrying combos keep their color (higher specificity than the
+    // plain-role flatten rule) -- flattening structure never erases state.
+    r.check(getComputedStyle(brand).backgroundColor === 'rgb(219, 233, 244)', 'luna-flat: .bx-brand keeps its tint fill', getComputedStyle(brand).backgroundColor);
+    r.check(getComputedStyle(error).borderColor === 'rgb(192, 57, 43)', 'luna-flat: .bx-solid.bx-error keeps its real border (error is meaning, not structure)', getComputedStyle(error).borderColor);
+  })
+  .run(() => {
+    solid.remove(); hairline.remove(); brand.remove(); error.remove();
+    document.documentElement.dataset.style = before;
   });
 });
 
