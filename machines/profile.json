@@ -1,0 +1,14 @@
+{ "initial": "loading",
+  "states": {
+    "loading": { "enter": [ { "fetch": "/content/profile/runs.json", "ok": "runs.loaded", "err": "runs.failed" } ],
+                 "runs.loaded": "ready", "runs.failed": "error" },
+    "ready": {
+      "run-picker.click": "ready",
+      "fenster-wahlperiode.click": "ready", "fenster-jahr.click": "ready", "fenster-monat.click": "ready",
+      "fenster-woche.click": "ready", "fenster-tag.click": "ready", "fenster-jahrzehnt.click": "ready",
+      "btn-compute.click": "ready", "profile.loaded": "ready", "profile.failed": "ready",
+      "speakers.click": "ready", "speakers.scroll": "ready",
+      "btn-refresh.click": "loading", "btn-theme.click": "ready",
+      "nav-dashboard.click": "ready", "nav-pipelines.click": "ready", "nav-graph.click": "ready",
+      "nav-records.click": "ready", "nav-issues.click": "ready", "nav-settings.click": "ready" },
+    "error": { "btn-retry.click": "loading" } } }

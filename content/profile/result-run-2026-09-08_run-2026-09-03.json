@@ -1,0 +1,81 @@
+{
+  "sessions": [
+    { "run_id": "run-2026-09-08", "date": "2026-09-08" },
+    { "run_id": "run-2026-09-03", "date": "2026-09-03" }
+  ],
+  "profiles": [
+    {
+      "speaker_id": "sp-merz", "name": "F. Merz", "party": "CDU",
+      "sessions": 2, "paare_klassifiziert": 5,
+      "axes": {
+        "widerspruch": { "absolut": 2, "unerklaert": 1 },
+        "konstanz": { "konsistent": 3, "position_geaendert": 2 },
+        "faktenlage": { "stufen": ["gesichert", "umstritten", "offen"], "hinweis": "Faktenlage teils umstritten" }
+      },
+      "min_date": "2026-09-03", "claims_total": 14,
+      "fenster": {
+        "wahlperiode": { "WP20": { "paare": 5, "WIDERSPRICHT": 2, "rate_widerspruch": 0.4 } },
+        "jahr": { "2026": { "paare": 5, "WIDERSPRICHT": 2, "rate_widerspruch": 0.4 } },
+        "monat": {}, "woche": {}, "tag": {}, "jahrzehnt": {}
+      },
+      "befunde": [
+        { "relation": "WIDERSPRICHT", "date_a": "2026-09-03", "date_b": "2026-09-08", "erklaerung_status": "unerklaert",
+          "belege": { "a": { "claim": "Die Wirtschaft wächst stabil.", "run": "run-2026-09-03" },
+                      "b": { "claim": "Die Wirtschaft schrumpft seit Monaten.", "run": "run-2026-09-08" } } },
+        { "relation": "KONSISTENT", "date_a": "2026-09-03", "date_b": "2026-09-08", "erklaerung_status": "n/a",
+          "belege": { "a": { "claim": "Steuersenkungen helfen dem Mittelstand.", "run": "run-2026-09-03" },
+                      "b": { "claim": "Steuersenkungen helfen dem Mittelstand.", "run": "run-2026-09-08" } } }
+      ]
+    },
+    {
+      "speaker_id": "sp-baerbock", "name": "A. Baerbock", "party": "Grüne",
+      "sessions": 2, "paare_klassifiziert": 3,
+      "axes": {
+        "widerspruch": { "absolut": 0, "unerklaert": 0 },
+        "konstanz": { "konsistent": 3, "position_geaendert": 0 },
+        "faktenlage": { "stufen": ["gesichert", "umstritten", "offen"], "hinweis": "Faktenlage weitgehend gesichert" }
+      },
+      "min_date": "2026-09-03", "claims_total": 9,
+      "fenster": {
+        "wahlperiode": { "WP20": { "paare": 3, "WIDERSPRICHT": 0, "rate_widerspruch": 0.0 } },
+        "jahr": {}, "monat": {}, "woche": {}, "tag": {}, "jahrzehnt": {}
+      },
+      "befunde": [
+        { "relation": "KONSISTENT", "date_a": "2026-09-03", "date_b": "2026-09-08", "erklaerung_status": "n/a",
+          "belege": { "a": { "claim": "Klimaschutz ist eine zentrale Aufgabe.", "run": "run-2026-09-03" },
+                      "b": { "claim": "Klimaschutz ist eine zentrale Aufgabe.", "run": "run-2026-09-08" } } }
+      ]
+    },
+    {
+      "speaker_id": "sp-lindner", "name": "C. Lindner", "party": "FDP",
+      "sessions": 1, "paare_klassifiziert": 0,
+      "axes": {
+        "widerspruch": { "absolut": 0, "unerklaert": 0 },
+        "konstanz": { "konsistent": 0, "position_geaendert": 0 },
+        "faktenlage": { "stufen": ["gesichert", "umstritten", "offen"], "hinweis": "Keine Datenbasis" }
+      },
+      "min_date": "2026-09-08", "claims_total": 2,
+      "fenster": { "wahlperiode": {}, "jahr": {}, "monat": {}, "woche": {}, "tag": {}, "jahrzehnt": {} },
+      "befunde": []
+    },
+    {
+      "speaker_id": "sp-weidel", "name": "A. Weidel", "party": "AfD",
+      "sessions": 2, "paare_klassifiziert": 4,
+      "axes": {
+        "widerspruch": { "absolut": 3, "unerklaert": 2 },
+        "konstanz": { "konsistent": 1, "position_geaendert": 3 },
+        "faktenlage": { "stufen": ["gesichert", "umstritten", "offen"], "hinweis": "Faktenlage stark umstritten" }
+      },
+      "min_date": "2026-09-03", "claims_total": 11,
+      "fenster": {
+        "wahlperiode": { "WP20": { "paare": 4, "WIDERSPRICHT": 3, "rate_widerspruch": 0.75 } },
+        "jahr": {}, "monat": {}, "woche": {}, "tag": {}, "jahrzehnt": {}
+      },
+      "befunde": [
+        { "relation": "WIDERSPRICHT", "date_a": "2026-09-03", "date_b": "2026-09-08", "erklaerung_status": "unerklaert",
+          "belege": { "a": { "claim": "Migration ist unter Kontrolle.", "run": "run-2026-09-03" },
+                      "b": { "claim": "Migration ist außer Kontrolle.", "run": "run-2026-09-08" } } }
+      ]
+    }
+  ]
+}

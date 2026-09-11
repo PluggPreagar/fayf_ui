@@ -121,7 +121,7 @@ Sub-controller pattern = ui/table.js (status slice + spread handlers + self-tran
    "screen JSON + machine JSON + pure handlers; DOM only in fayf_ui".
 
 ### S6 — page by page
-issues ✓ → list ✓ → browse ✓ → records ✓ / run (deferred) → profile/query/annotate → graph last via `Embed`. Each:
+issues ✓ → list ✓ → browse ✓ → records ✓ / run (deferred) → profile ✓ → query/annotate → graph last via `Embed`. Each:
 parity test, old page removed, nav points to new.
 
 **`field:"text"|"textarea"` shipped 2026-09-11** (see the "Known small items" note below for the full contract):
@@ -264,6 +264,63 @@ the view-layer adapter's `detail.value ?? detail` already falls back to treating
 either shape works without a records.js change; `FIXTURE_URLS.artifact(path)` → `` `/content/records/artifact/${path}.json` ``,
 recovered against the real two-part call the same way browse.html's convention works (`path` = `step/record`, i.e.
 first path segment is the step id).
+
+**profile shipped 2026-09-11**: fifth S6 page, per-speaker credibility profiles across runs (ground truth reference:
+`fayf_processor/frontend/profile.js`, 242 lines — behaviour only, not copied). No new sub-controller: one
+`ui/table.js` instance (`SPEAKERS`) for the results table; the two ground-truth form controls that don't map onto an
+existing controller (a run multi-select checkbox list, a fenster `<select>`) are ported as pure view/handler logic
+inline in `ui/profile.js`, same scale as `ui/issues.js`'s 6 status chips — no new primitive, no C9 amendment needed.
+`machines/profile.json` (loading: 1 fetch `/content/profile/runs.json` → ready/error; `run-picker.click` self-
+transition handles every run row via ONE trigger + `p.path` prefix matching (`run-picker-<runId>`, same idiom
+`ui/table.js`'s row click / `ui/tree.js`'s item click use) since run ids are dynamic-length and not known until
+fetch; `fenster-<window>.click` × 6 are real per-value triggers since `WINDOWS` is a small, static, compile-time-known
+vocabulary, same reasoning `ui/issues.js`'s `STATUSES`-driven chips use; `btn-compute.click`/`profile.loaded`/
+`profile.failed`; `speakers.click`/`speakers.scroll` for the table sub-controller). `ui/profile.js`: `SPEAKERS` table
+spec, `WINDOWS`, `FIXTURE_URLS.profile(ids) = /content/profile/result-${ids.join('_')}.json`, `makeHandlers(urls)`
+factory (same pattern as `ui/issues.js`/`ui/list.js` — the compute-fetch URL depends on runtime-picked ids, a dynamic-
+URL need). `status.data = { runs, picked, fenster, result, speakerId, computing, error, speakers: tableStatus }` —
+`picked` is a plain `{ [run_id]: true|false }` map (Compute reads `Object.keys(picked).filter(Boolean)`, in click
+order, same object-insertion-order reasoning the ground truth's own `Object.keys(state.picked)` relies on); `result`
+is the raw `{ sessions, profiles }` response kept whole, the speakers table's rows are a DERIVED mapped view over
+`result.profiles` (no second copy — same "no second key for the same array" reasoning `ui/dashboard.js` applies to
+ISSUES / `ui/list.js` applies to `allRuns`); a selected speaker's full record (axes/fenster/befunde) is looked back up
+out of `result.profiles` by `speakerId` when rendering detail, not duplicated. Compute's own guard (`ids.length < 2`
+or already computing → no-op, no fetch) is belt-and-suspenders with the view's explicit `state:'disabled'` patch on
+`btn-compute` (the machine's trigger-presence guard can't express a DATA condition — same technique `ui/list.js`'s
+`starting` flag uses). Content (wide) hosts the run-picker + fenster chips + Compute + the 6-column speakers table;
+detail (fixed `w:280`, same width as every other S6 page) hosts the SELECTED speaker's findings (fenster bucket rows
+for the CURRENT window + befunde rows) — chosen over the reverse (results in detail) because a 6-column table
+(160+70+70+60+100+90 px) doesn't fit a 280px panel, and this page has no separate "small side detail" need the way
+issues/browse do since there's exactly one selection concept (a speaker row). Ground truth's "0 gefunden must not
+look identical to nichts vergleichbar" honesty rule (stability.py, CW8) carried over literally: a 0-`paare_klassifiziert`
+speaker still gets a full row in the speakers table and a "Keine klassifizierten Paare für diese Person." line in its
+detail, not a silently-empty panel. `screens/profile.json` (dashboard.json's structure). **Side-panel left at its
+untouched default (Dashboard marked active), NOT `nav-profile`**: checked `parts/component/side-panel.json` and every
+existing page's own `NAV` constant first, per the task's explicit instruction — this repo's shared NAV set is still
+the 6-item S4/S5 simplification (`dashboard/pipelines/graph/records/issues/settings`), no `nav-profile` item exists to
+mark active, same pre-existing gap already logged for `shell.json`/`dashboard.json`/`browse.json` (issues.json/
+list.json each fixed it locally for their OWN nav item, browse.json/profile.json can't). Fixtures: `content/profile/
+runs.json` (8 runs — 4 done with distinct `run_id`/`pipeline`/`started_at`, 2 running, 2 failed) + `content/profile/
+result-run-2026-09-08_run-2026-09-03.json` (the two newest done runs, matching `FIXTURE_URLS.profile`'s id-join —
+4 speakers, varied party/pairs/befunde, incl. `sp-lindner` at `paare_klassifiziert:0` with empty `befunde`).
+`profile.html`; `test/node/profile_machine_test.js` (19 tests) + `test/profile_test.js` (10 blocks) → node 255/255,
+registry 85 ids. Browser-verified live (`?test=profile.html` console sweep, all green; also driven manually via
+`javascript_tool` in both wireframe and luna skins — run-picker/fenster/compute/speakers-table/detail all render and
+update correctly). **One real C10 fit bug found + fixed while building this**: the ground truth's own literal chip-
+list box strings (`run-picker` as `stack, gap:1, fill`, `fenster` as a bare `hug` row) both overflowed `content`'s
+actual measured width in this environment (`run-picker`'s 3-cell rows have unbounded text width; `fenster`'s 6 pill
+chips as a `hug` row don't wrap) — `content`'s `scrollWidth` came out wider than its `clientWidth` (checklist #10).
+Fixed by giving `run-picker` a bounded, scrollable container (`stack, gap:1, fixed, h:160, scroll, solid, rounded`,
+the same fixed-height-plus-scroll idiom every other page's table container already uses) and `fenster` the `scroll`
+overflow token (identical fix to `ui/issues.js`'s own `detail-status` chip row, which hit the exact same class of
+overflow for the same reason — a `hug` row of several pill chips not fitting a bounded panel). Both are deviations
+from this task's illustrative box strings, not from its behavior spec; noted here per C10's own append-then-log rule
+(no new checklist row needed — matches existing rows #10/no.-`wrap`-token precedent from issues.html, not a new
+failure class). **Also found while writing the browser test**: an early draft named the static label above the
+run-picker `run-picker-title` — a real substring-prefix collision with the dynamic `run-picker-<runId>` row names
+(harmless functionally, since `ui/machine.js` routes clicks by DOM ancestry not name-prefix search, but it broke a
+`qa('[data-name^="run-picker-"]')`-style assertion, the SAME idiom `test/list_test.js`'s `rowsOf()` helper and this
+page's own click handler rely on) — renamed to `picker-title` before shipping.
 
 ### Known small items
 - js_runner prints "Checks: 0" before async blocks (another session is fixing it — do not touch test/js_runner.js).
