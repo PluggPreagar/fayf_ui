@@ -1,0 +1,11 @@
+{ "initial": "loading",
+  "states": {
+    "loading": { "enter": [ { "fetch": "/content/browse/mounts.json", "ok": "mounts.loaded", "err": "mounts.failed" } ],
+                 "mounts.loaded": "ready", "mounts.failed": "error" },
+    "ready": {
+      "tree.click": "ready", "level.loaded": "ready", "level.failed": "ready",
+      "file.loaded": "ready", "file.failed": "ready",
+      "btn-refresh.click": "loading", "btn-theme.click": "ready",
+      "nav-dashboard.click": "ready", "nav-pipelines.click": "ready", "nav-graph.click": "ready",
+      "nav-records.click": "ready", "nav-issues.click": "ready", "nav-settings.click": "ready" },
+    "error": { "btn-retry.click": "loading" } } }

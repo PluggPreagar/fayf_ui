@@ -1,0 +1,1 @@
+{ "format": "markdown", "content": "# runs\n\nOne directory per pipeline run, named by its run id.\nEach run holds a `result.json` summary and a `logs/` folder.\n", "hash": "fx-readme-1", "writable": false }

@@ -1,0 +1,4 @@
+[
+  { "name": "runs", "label": "Runs", "write": false },
+  { "name": "backend", "label": "Backend", "write": true }
+]

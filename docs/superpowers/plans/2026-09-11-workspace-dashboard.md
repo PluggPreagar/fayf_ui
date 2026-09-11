@@ -22,7 +22,7 @@ Commands `refresh · theme` · data = GET `/api/runs` `/api/pipelines` `/api/iss
 | S3 ✓ | **table controller** `ui/table.js` — rows JSON → `stack` of `row`s, cells `fixed w`; windowed (`scroll` box, visible slice), sort, select → trigger `<name>.select`. Columns = part `component/table` | fayf_ui | JS + JSON | node: window math (2000 rows → ≤ 40 boxes); browser: sort/select/scroll |
 | S4 ✓ | **dashboard screen** `screens/dashboard.json` = `extends screens/shell` + content: `at-a-glance` (4 `atom/chip` counts), `recent-runs` (table slot), `issues` (table slot); `machines/dashboard.json` (states `loading · ready · error`; effects 3× fetch); fixture `content/dashboard/*.json` | fayf_ui | JSON | gallery, node machine test, browser table tests |
 | S5 | **processor stub** `frontend/fayf/dashboard.html` (~60 lines): screen refs · machine JSON · handlers (`status-dot` map, `e2e-deploy-` filter, counts) · effect targets `/api/…`. `fayf-skin.css`: luna aliases for repo tokens. Re-vendor pin | processor | HTML + JSON + handlers.js | `?test=1` parity with `dashboard.js` (counts, rows, nav, commands); old page kept as `dashboard-kit.html` until S6 done |
-| S6 | **page by page** issues ✓ → list → browse (tree ctrl) → records/run (form ctrl) → profile/query/annotate → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
+| S6 | **page by page** issues ✓ → list ✓ → browse ✓ (filetree ctrl) → records/run (form ctrl) → profile/query/annotate → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
 
 ## Controller set (C11: one file each, no more)
 
@@ -121,7 +121,7 @@ Sub-controller pattern = ui/table.js (status slice + spread handlers + self-tran
    "screen JSON + machine JSON + pure handlers; DOM only in fayf_ui".
 
 ### S6 — page by page
-issues ✓ → list ✓ → browse (needs `ui/tree.js`, same sub-controller pattern as table) → records/run (needs `ui/form.js`)
+issues ✓ → list ✓ → browse ✓ → records/run (needs `ui/form.js`)
 → profile/query/annotate → graph last via `Embed`. Each: parity test, old page removed, nav points to new.
 
 **issues shipped 2026-09-11**: `ui/tree.js` (new sub-controller, mirrors `ui/table.js` exactly — `treeInit`/
@@ -165,6 +165,53 @@ reset) — untested there (its refresh block only checks stats/status-text, not 
 task's explicit "do not touch dashboard.js" scope; flagged as a follow-up. Fixed in `ui/list.js` only: `buildRunsTable`
 now takes an optional `prevWindow` and carries its `clientHeight` forward (still resets `scrollTop` to 0) on both the
 filter-toggle and the `runs.loaded` re-derive paths.
+
+**browse shipped 2026-09-11**: third S6 page, the files explorer. New sub-controller `ui/filetree.js` — genuinely
+different shape from `ui/tree.js` (that one is a flat GROUPED list built for issues.js; this is a recursive, N-level,
+lazily-loaded directory tree, a new file rather than a modification). `t = status.data[spec.name] = { nodes, sel,
+pendingPath }`, `node = { name, path, kind, open, loading, error, children }` (`children === null` = not yet fetched,
+`[]` = fetched-and-empty). `filetreeHandlers` is pure and NEVER decides to fetch — a dir click only ever toggles
+`open`; the fetch decision (and the single-in-flight-fetch guard via `pendingPath`) is entirely the consumer's job,
+same "sub-controller stays pure, consumer wraps the click handler" pattern `ui/issues.js`'s `selectingMaster` and
+`ui/list.js`'s `selectingPipeline`/`selectingRun` already established. `setChildren`/`setLoading`/`setError` splice a
+NEW status at any depth via a small recursive `mapNode` helper, input untouched. `machines/browse.json` (loading: 1
+fetch `/content/browse/mounts.json` → ready/error; `tree.click`/`level.loaded`/`level.failed`/`file.loaded`/
+`file.failed` self-transitions in ready; nav/theme/refresh same shape as issues/list). `ui/browse.js`: `TREE` spec,
+`FIXTURE_URLS` (`level`/`file`, see path convention below), `selectingTree(urls)` wraps `filetreeHandlers` — a file
+click adds a `file.loaded`-bound fetch effect (+ `detail`/`detailLoading` reset); a dir click that just opened a
+still-unfetched node (children `null`, `pendingPath` `null`) additionally sets `pendingPath` and adds a
+`level.loaded`-bound fetch effect; any other dir click (already loaded, or a second dir while one is pending) is just
+the base toggle, no effect. `level.loaded`'s handler maps the raw fixture/API `entries` (`{type,name,path,
+has_children?}`) into filetree's own node shape, reconstructing each child's `path` as `pendingPath + '/' + entry.name`
+(the entry's own `path` field is ignored — this repo's internal path convention, not the real API's). `detailBody`
+(exported, pure): JSON pretty-printed (`JSON.stringify(JSON.parse(content), null, 2)`, raw string on a parse failure),
+everything else passed through as-is; split on `'\n'`; each line's leading run of spaces replaced by the same count
+of U+00A0 (NBSP) — regular spaces collapse under default `white-space:normal`, NBSP does not, so indentation survives
+with zero CSS/dial changes (no `white-space:pre`, no new vocabulary dial, per the task's explicit constraint); capped
+at 500 lines + a trailing `'… truncated'` row; rendered as one `{box:'hug', content:line}` row inside `detail-body`'s
+own `stack, gap:0, fill` box (screens/browse.json uses `gap:0` here, not `gap:1` like issues/list's field-row detail
+panels, since these are raw text lines not field rows). `detail-title` shows the SELECTED node's path (`tree.sel`,
+set synchronously by the file click) rather than anything from the file response payload (which has no `path` field
+of its own, `{format, content, hash, writable}`) — verified live this shows immediately on click, before the fetch
+resolves. `screens/browse.json` (dashboard.json's structure; side-panel deliberately left as the untouched default —
+see Known small items below); `content/browse/` fixtures: `mounts.json` (2 mounts) + a genuinely 3-level-deep tree
+under `runs/` (`run-2026-09-01/{logs/{stdout.log,stderr.log}, result.json}`, `run-2026-09-05/result.json`,
+`README.md`) + 2-level under `backend/` (`config/{settings.yaml,secrets.json}`, `app.py`) — exercises real recursion,
+not a flat one-level demo. `browse.html`; `test/node/filetree_test.js` (15 tests) + `test/node/browse_machine_test.js`
+(19 tests) → node 218/218, registry 83 ids. Browser-verified live (screenshots + full `?test=browse.html` console
+sweep, 60/60 checks green): mount expand, 2-level-deep subdirectory expand (proves real recursion), file select with
+visible NBSP-indented pretty JSON, collapse/re-expand without re-fetching, error/retry, nav/theme, C10 fit, luna skin,
+C2. **Fixture path convention** (for the fayf_processor sibling wiring the real API): a filetree node's `path` is
+`<mount>` for a mount root, `<mount>/<sub/path...>` nested (the real API's `mount` + `path` params concatenated with
+one `'/'`); `FIXTURE_URLS.level(path)` → `` `/content/browse/level/${path}.json` ``, `FIXTURE_URLS.file(path)` →
+`` `/content/browse/file/${path}.json` `` — e.g. `runs/run-2026-09-01` → `content/browse/level/runs/run-2026-09-01.json`,
+`backend/app.py` → `content/browse/file/backend/app.py.json` (the doubled `.json.json` on a file that's already
+`.json` is intentional and matches this repo's existing convention, `content/issues/<id>.json`). The real two-part
+call is recovered by splitting on the FIRST `'/'`: `mount = path.split('/')[0]`, `rest = path.slice(mount.length + 1)`
+(`rest === ''` for a mount root) — that's `GET /api/browse/{mount}/tree?path=<rest>` / `GET /api/browse/{mount}/file?path=<rest>`.
+**Deviations from the spec, flagged**: none structural — the one judgment call was `detail-body`'s box using `gap:0`
+(spec didn't pin this exactly, said "inside a `stack, gap:0, fill` container" which matches what was shipped) rather
+than issues/list's `gap:1`, since raw text lines read better tight, not field-row-spaced.
 
 ### Known small items
 - js_runner prints "Checks: 0" before async blocks (another session is fixing it — do not touch test/js_runner.js).

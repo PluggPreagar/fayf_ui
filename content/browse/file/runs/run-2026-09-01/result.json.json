@@ -1,0 +1,1 @@
+{ "format": "json", "content": "{\n  \"run_id\": \"run-2026-09-01\",\n  \"pipeline\": \"e2e-deploy\",\n  \"status\": \"done\",\n  \"steps\": [\n    \"ingest\",\n    \"nlp-parse\",\n    \"index\"\n  ],\n  \"records\": 169\n}", "hash": "fx-result-1", "writable": false }

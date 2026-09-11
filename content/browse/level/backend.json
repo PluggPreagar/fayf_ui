@@ -1,0 +1,4 @@
+{ "entries": [
+  { "type": "dir", "name": "config", "path": "config", "has_children": true },
+  { "type": "file", "name": "app.py", "path": "app.py" }
+] }

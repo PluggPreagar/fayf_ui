@@ -1,0 +1,5 @@
+{ "entries": [
+  { "type": "dir", "name": "run-2026-09-01", "path": "run-2026-09-01", "has_children": true },
+  { "type": "dir", "name": "run-2026-09-05", "path": "run-2026-09-05", "has_children": true },
+  { "type": "file", "name": "README.md", "path": "README.md" }
+] }

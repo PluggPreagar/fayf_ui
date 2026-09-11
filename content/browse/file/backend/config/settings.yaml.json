@@ -1,0 +1,1 @@
+{ "format": "yaml", "content": "server:\n  port: 8080\n  debug: false\nlogging:\n  level: info\n", "hash": "fx-settings-1", "writable": true }

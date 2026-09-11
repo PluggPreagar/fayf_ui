@@ -1,0 +1,4 @@
+{ "entries": [
+  { "type": "file", "name": "settings.yaml", "path": "config/settings.yaml" },
+  { "type": "file", "name": "secrets.json", "path": "config/secrets.json" }
+] }

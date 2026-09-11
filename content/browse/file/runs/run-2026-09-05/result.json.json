@@ -1,0 +1,1 @@
+{ "format": "json", "content": "{\n  \"run_id\": \"run-2026-09-05\",\n  \"pipeline\": \"bundestag-session\",\n  \"status\": \"failed\",\n  \"steps\": [\n    \"ingest\"\n  ],\n  \"error\": \"HTTP 503 from source\"\n}", "hash": "fx-result-2", "writable": false }
