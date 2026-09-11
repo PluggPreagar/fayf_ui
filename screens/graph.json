@@ -20,39 +20,39 @@
           "children": [
             { "name": "nav-dashboard", "extends": "cluster/nav-item",
               "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                { "name": "icon-dashboard", "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
                 "Dashboard" ] },
             { "name": "nav-pipelines", "extends": "cluster/nav-item",
               "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                { "name": "icon-pipelines", "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
                 "Pipelines" ] },
             { "name": "nav-graph", "extends": "cluster/nav-item.active",
               "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                { "name": "icon-graph", "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
                 "Graph" ] },
             { "name": "nav-records", "extends": "cluster/nav-item",
               "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                { "name": "icon-records", "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
                 "Records" ] },
             { "name": "nav-issues", "extends": "cluster/nav-item",
               "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                { "name": "icon-issues", "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
                 "Issues" ] },
             { "name": "nav-browse", "extends": "cluster/nav-item",
               "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                { "name": "icon-browse", "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
                 "Browse" ] },
             { "name": "nav-query", "extends": "cluster/nav-item",
               "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                { "name": "icon-query", "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
                 "Query" ] },
             { "name": "nav-annotate", "extends": "cluster/nav-item",
               "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                { "name": "icon-annotate", "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
                 "Annotate" ] },
             { "box": "fill" },
             { "name": "nav-profile", "extends": "cluster/nav-item",
               "children": [
-                { "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
+                { "name": "icon-profile", "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
                 "Profile" ] } ] },
         { "name": "embed", "box": "stack, fill, clip, bare", "content": "" } ] } ] }

@@ -341,3 +341,15 @@
    own class so it never collides with quiz's .bx-selected above (different
    concept: this is "currently inspected", not "chosen answer"). */
 .ins-selected{outline:2px solid var(--accent);outline-offset:-2px}
+
+/* Low-footprint scrollbars for every `scroll` box (table.js/tree.js/filetree.js
+   viewports, detail panels, the run/pipeline pickers) -- thin, and the track
+   is transparent so it blends into whatever surface sits behind it instead of
+   drawing the browser's own opaque gray track. --rule already carries the
+   right subtlety per skin/theme (redefined in each :root[data-style]/dark
+   block above), so this needs no new token. */
+*{scrollbar-width:thin;scrollbar-color:var(--rule) transparent}
+*::-webkit-scrollbar{width:8px;height:8px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--rule);border-radius:4px}
+*::-webkit-scrollbar-thumb:hover{background:var(--dash)}

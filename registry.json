@@ -966,6 +966,7 @@
     "extends": "cluster/nav-item.active",
     "children": [
      {
+      "name": "icon-dashboard",
       "extends": "cluster/dot",
       "box": "w:14, h:14, hairline, tint2"
      },
@@ -977,6 +978,7 @@
     "extends": "cluster/nav-item",
     "children": [
      {
+      "name": "icon-pipelines",
       "extends": "cluster/dot",
       "box": "w:14, h:14, hairline, tint2"
      },
@@ -988,6 +990,7 @@
     "extends": "cluster/nav-item",
     "children": [
      {
+      "name": "icon-graph",
       "extends": "cluster/dot",
       "box": "w:14, h:14, hairline, tint2"
      },
@@ -999,6 +1002,7 @@
     "extends": "cluster/nav-item",
     "children": [
      {
+      "name": "icon-records",
       "extends": "cluster/dot",
       "box": "w:14, h:14, hairline, tint2"
      },
@@ -1010,6 +1014,7 @@
     "extends": "cluster/nav-item",
     "children": [
      {
+      "name": "icon-issues",
       "extends": "cluster/dot",
       "box": "w:14, h:14, hairline, tint2"
      },
@@ -1021,6 +1026,7 @@
     "extends": "cluster/nav-item",
     "children": [
      {
+      "name": "icon-browse",
       "extends": "cluster/dot",
       "box": "w:14, h:14, hairline, tint2"
      },
@@ -1032,6 +1038,7 @@
     "extends": "cluster/nav-item",
     "children": [
      {
+      "name": "icon-query",
       "extends": "cluster/dot",
       "box": "w:14, h:14, hairline, tint2"
      },
@@ -1043,6 +1050,7 @@
     "extends": "cluster/nav-item",
     "children": [
      {
+      "name": "icon-annotate",
       "extends": "cluster/dot",
       "box": "w:14, h:14, hairline, tint2"
      },
@@ -1057,6 +1065,7 @@
     "extends": "cluster/nav-item",
     "children": [
      {
+      "name": "icon-profile",
       "extends": "cluster/dot",
       "box": "w:14, h:14, hairline, tint2"
      },
@@ -1515,6 +1524,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-dashboard",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1526,6 +1536,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-pipelines",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1537,6 +1548,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-graph",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1548,6 +1560,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-records",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1559,6 +1572,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-issues",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1570,6 +1584,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-browse",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1581,6 +1596,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-query",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1592,6 +1608,7 @@
         "extends": "cluster/nav-item.active",
         "children": [
          {
+          "name": "icon-annotate",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1606,6 +1623,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-profile",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1763,6 +1781,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-dashboard",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1774,6 +1793,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-pipelines",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1785,6 +1805,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-graph",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1796,6 +1817,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-records",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1807,6 +1829,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-issues",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1818,6 +1841,7 @@
         "extends": "cluster/nav-item.active",
         "children": [
          {
+          "name": "icon-browse",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1829,6 +1853,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-query",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1840,6 +1865,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-annotate",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1854,6 +1880,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-profile",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -1997,6 +2024,7 @@
         "extends": "cluster/nav-item.active",
         "children": [
          {
+          "name": "icon-dashboard",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2008,6 +2036,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-pipelines",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2019,6 +2048,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-graph",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2030,6 +2060,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-records",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2041,6 +2072,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-issues",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2052,6 +2084,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-browse",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2063,6 +2096,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-query",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2074,6 +2108,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-annotate",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2088,6 +2123,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-profile",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2302,6 +2338,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-dashboard",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2313,6 +2350,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-pipelines",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2324,6 +2362,7 @@
         "extends": "cluster/nav-item.active",
         "children": [
          {
+          "name": "icon-graph",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2335,6 +2374,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-records",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2346,6 +2386,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-issues",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2357,6 +2398,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-browse",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2368,6 +2410,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-query",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2379,6 +2422,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-annotate",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2393,6 +2437,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-profile",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2476,6 +2521,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-dashboard",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2487,6 +2533,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-pipelines",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2498,6 +2545,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-graph",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2509,6 +2557,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-records",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2520,6 +2569,7 @@
         "extends": "cluster/nav-item.active",
         "children": [
          {
+          "name": "icon-issues",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2531,6 +2581,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-browse",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2542,6 +2593,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-query",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2553,6 +2605,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-annotate",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2567,6 +2620,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-profile",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2705,6 +2759,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-dashboard",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2716,6 +2771,7 @@
         "extends": "cluster/nav-item.active",
         "children": [
          {
+          "name": "icon-pipelines",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2727,6 +2783,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-graph",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2738,6 +2795,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-records",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2749,6 +2807,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-issues",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2760,6 +2819,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-browse",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2771,6 +2831,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-query",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2782,6 +2843,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-annotate",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -2796,6 +2858,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-profile",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3088,6 +3151,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-dashboard",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3099,6 +3163,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-pipelines",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3110,6 +3175,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-graph",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3121,6 +3187,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-records",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3132,6 +3199,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-issues",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3143,6 +3211,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-browse",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3154,6 +3223,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-query",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3165,6 +3235,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-annotate",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3179,6 +3250,7 @@
         "extends": "cluster/nav-item.active",
         "children": [
          {
+          "name": "icon-profile",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3347,6 +3419,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-dashboard",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3358,6 +3431,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-pipelines",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3369,6 +3443,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-graph",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3380,6 +3455,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-records",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3391,6 +3467,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-issues",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3402,6 +3479,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-browse",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3413,6 +3491,7 @@
         "extends": "cluster/nav-item.active",
         "children": [
          {
+          "name": "icon-query",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3424,6 +3503,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-annotate",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3438,6 +3518,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-profile",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3652,6 +3733,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-dashboard",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3663,6 +3745,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-pipelines",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3674,6 +3757,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-graph",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3685,6 +3769,7 @@
         "extends": "cluster/nav-item.active",
         "children": [
          {
+          "name": "icon-records",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3696,6 +3781,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-issues",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3707,6 +3793,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-browse",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3718,6 +3805,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-query",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3729,6 +3817,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-annotate",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3743,6 +3832,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-profile",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3912,6 +4002,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-dashboard",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3923,6 +4014,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-pipelines",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3934,6 +4026,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-graph",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3945,6 +4038,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-records",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3956,6 +4050,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-issues",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3967,6 +4062,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-browse",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3978,6 +4074,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-query",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -3989,6 +4086,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-annotate",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -4003,6 +4101,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-profile",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -4146,6 +4245,7 @@
         "extends": "cluster/nav-item.active",
         "children": [
          {
+          "name": "icon-dashboard",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -4157,6 +4257,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-pipelines",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -4168,6 +4269,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-graph",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -4179,6 +4281,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-records",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -4190,6 +4293,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-issues",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -4201,6 +4305,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-browse",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -4212,6 +4317,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-query",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -4223,6 +4329,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-annotate",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
@@ -4237,6 +4344,7 @@
         "extends": "cluster/nav-item",
         "children": [
          {
+          "name": "icon-profile",
           "extends": "cluster/dot",
           "box": "w:14, h:14, hairline, tint2"
          },
