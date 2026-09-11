@@ -80,3 +80,26 @@ Conflict with any prompt or skill → stop, surface it.
 - User input reports a rendering/layout defect → match against it first.
 - Matches a row → apply its rule. New failure class → fix, then append a row.
 - Checklist append-only. Never deleted, only extended. Not amendment-gated.
+
+## C11 · Controllers (L9)
+
+(Amended 2026-09-11. Before: "JS stops at L4"; quiz.js/thw.js were
+undeclared exceptions. Now: L0–L4 engine · L5–L8 JSON · L9 controller.)
+
+- Controller = generic JS driver. `mount(root, screen, machine, handlers)`.
+  Uses L0–L4 verbs + L8 screens only. DOM only via L2 + `[data-name]` slots.
+- One controller per behaviour, one file: `machine` · `table` · `tree` · `form` · `layer`.
+  No subclassing, no plugins (C3). New behaviour = new file, last resort.
+- Composition = the same driver on a sub-status (`status.tree` + `machines/tree.json`).
+  Sub-controllers talk via triggers + `emit` only. No observer/subscribe channel —
+  the trigger table is the observer list. Lazy load = trigger → `fetch` effect → trigger.
+- Machine = JSON: `initial` + `states{ <state>: { enter?, <trigger>: <state> } }`. `machines/<name>.json`.
+  Trigger = `<data-name>.<event>`. Unknown state/trigger → error (C2).
+- Handler = pure. `f(status, trigger) → { status, effects? }`. No DOM, no fetch, no timers.
+  Effects declared (`fetch`, `emit`, `timer`), run by the controller, result = next trigger.
+  (Elm-style. Rejected: handler-side fetch — untestable under node, timing hidden in closures.)
+- Consumer (a project) supplies: screen refs · machine JSON · handlers · effect targets.
+  Never DOM, never a widget class.
+- `Embed` = the one escape hatch: foreign DOM in a named slot, opaque to inspector/capture.
+  For legacy pages only. Listed in the consumer's todo, never silent.
+- Tests: machine step + handlers under node (pure). Controllers in browser (C7).
