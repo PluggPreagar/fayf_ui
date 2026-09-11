@@ -2994,6 +2994,167 @@
    }
   ]
  },
+ "screens/run": {
+  "box": "stack, fill, clip, tint0",
+  "children": [
+   {
+    "name": "ws-head",
+    "extends": "component/ws-head",
+    "children": [
+     {
+      "name": "brand",
+      "extends": "atom/text.title",
+      "content": "fayf_ui"
+     },
+     {
+      "name": "crumbs",
+      "extends": "component/breadcrumb-trail",
+      "children": [
+       {
+        "name": "crumb-home",
+        "box": "hug",
+        "content": "Workspace"
+       },
+       ">",
+       {
+        "name": "crumb-page",
+        "box": "hug",
+        "content": "Run"
+       }
+      ]
+     },
+     {
+      "name": "head-actions",
+      "box": "row, mid, gap:1, hug",
+      "children": [
+       {
+        "name": "btn-pause",
+        "extends": "atom/button",
+        "box": "pad:1",
+        "content": "Pause"
+       },
+       {
+        "name": "btn-resume",
+        "extends": "atom/button",
+        "box": "pad:1",
+        "content": "Resume"
+       },
+       {
+        "name": "btn-cancel",
+        "extends": "atom/button",
+        "box": "pad:1",
+        "content": "Cancel"
+       },
+       {
+        "name": "btn-view-records",
+        "extends": "atom/button.ghost",
+        "box": "pad:1",
+        "content": "Records"
+       },
+       {
+        "name": "btn-view-graph",
+        "extends": "atom/button.ghost",
+        "box": "pad:1",
+        "content": "Graph"
+       },
+       {
+        "name": "btn-refresh",
+        "extends": "atom/button",
+        "box": "pad:1",
+        "content": "Refresh"
+       },
+       {
+        "name": "user",
+        "box": "row, mid, gap:1, hug",
+        "children": [
+         {
+          "extends": "atom/avatar",
+          "content": "P"
+         },
+         "Peter"
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "name": "body",
+    "box": "row, fill",
+    "children": [
+     {
+      "name": "side-panel",
+      "extends": "component/side-panel"
+     },
+     {
+      "name": "content",
+      "box": "stack, fill, pad:3, gap:3, scroll, solid, rounded",
+      "children": [
+       {
+        "name": "content-title",
+        "extends": "atom/text.title",
+        "content": "Run"
+       },
+       {
+        "name": "steps-title",
+        "box": "hug",
+        "content": "Steps"
+       },
+       {
+        "name": "steps",
+        "box": "stack, scroll, fixed, h:320, solid, rounded",
+        "content": ""
+       }
+      ]
+     },
+     {
+      "name": "detail",
+      "box": "stack, fixed, w:280, pad:3, gap:2, scroll, solid, rounded",
+      "children": [
+       {
+        "name": "detail-title",
+        "extends": "atom/text.title",
+        "content": "Event log"
+       },
+       {
+        "name": "event-log",
+        "box": "stack, gap:0, fill",
+        "content": ""
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "name": "status-bar",
+    "extends": "component/shell-status",
+    "children": [
+     {
+      "name": "status-text",
+      "box": "hug",
+      "content": "loading…"
+     },
+     {
+      "name": "status-right",
+      "box": "row, mid, gap:2, hug",
+      "children": [
+       {
+        "name": "status-version",
+        "box": "hug",
+        "content": "v0.1"
+       },
+       {
+        "name": "btn-theme",
+        "extends": "atom/icon-button",
+        "box": "w:16, h:16",
+        "content": "◐"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
  "screens/shell": {
   "box": "stack, fill, clip, tint0",
   "children": [

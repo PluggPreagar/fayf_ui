@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fayf_ui — run</title>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui/tokens.css">
+<style>html,body{height:100%;margin:0}
+body{background:var(--canvas);display:flex}
+.bx .ic{stroke:currentColor}</style>
+</head>
+<body>
+<!-- S6 (docs/superpowers/plans/2026-09-11-workspace-dashboard.md): the shell screen
+     filled by the run controller (ui/run.js, C11 L9). Machine JSON fetches one run's
+     snapshot, then opens a live SSE stream (ui/machine.js's `stream` effect) whose
+     messages update the status badge + append to the event log; a `run_finished`
+     event re-fetches the snapshot to refresh the steps table (ui/table.js). This
+     fixture demo has no real SSE server -- `opts.io.EventSource` below fakes one by
+     replaying a scripted JSON array from the same static file server, one message
+     every 400ms, same test-double seam every other page's `io.fetch` already is. -->
+<script type="module">
+import { resolve } from './ui/model.js';
+import { render } from './ui/render.js';
+import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
+import { mountInspectorToggle } from './ui/inspector.js';
+import { mountRun, FIXTURE_RUN_ID } from './ui/run.js';
+initStyleMode();
+const reg = await (await fetch('/registry.json')).json();
+const provenance = new Map();
+
+// Fixture-only fake SSE: fetches a JSON ARRAY of pre-scripted events from
+// `url` and dispatches them one at a time via `onmessage`, same shape a real
+// EventSource offers (`.onmessage`, `.onerror`, `.close()`). NOT part of
+// ui/run.js or ui/machine.js -- a test-double the fixture page supplies,
+// same seam `opts.io.fetch`/`opts.io.setTimeout` already are everywhere else.
+class FakeEventSource {
+  constructor(url) {
+    this.url = url;
+    this.onmessage = null;
+    this.onerror = null;
+    this._closed = false;
+    fetch(url).then(r => r.json()).then(events => {
+      let i = 0;
+      this._timer = setInterval(() => {
+        if (this._closed) return;
+        if (i >= events.length) { clearInterval(this._timer); return; }
+        if (this.onmessage) this.onmessage({ data: JSON.stringify(events[i]) });
+        i += 1;
+      }, 400);
+    }).catch(() => { if (this.onerror) this.onerror(); });
+  }
+  close() { this._closed = true; if (this._timer) clearInterval(this._timer); }
+}
+
+const el = render(resolve(reg['screens/run'], reg, [], new Set(), [], provenance));
+document.body.appendChild(el);
+mountStyleToggle(el, { inline: true });
+mountInspectorToggle(el, { sourceId: 'screens/run', provenance, target: el, inline: true });
+window.__emitted = [];
+const onEmit = (t, p) => window.__emitted.push([t, p]);
+window.__ctl = mountRun(el, reg, { onEmit, io: { EventSource: FakeEventSource } });
+// Second, independent mount for the error-path / POST-action tests: injected
+// io, its own container off the body flex flow so `body > .bx` keeps the
+// viewport (same pattern records.html/list.html already use).
+window.__mount = (io, urls) => {
+  const container = document.createElement('div');
+  container.className = 'run-mount';
+  container.style.cssText = 'position:absolute;left:0;top:0;width:1200px;height:800px;visibility:hidden;display:flex';
+  document.body.appendChild(container);
+  const root = render(resolve(reg['screens/run'], reg));
+  container.appendChild(root);
+  return mountRun(root, reg, { io: { EventSource: FakeEventSource, ...io }, onEmit, urls, runId: FIXTURE_RUN_ID });
+};
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

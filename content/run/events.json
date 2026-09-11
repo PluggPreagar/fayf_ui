@@ -1,0 +1,8 @@
+[
+  { "type": "run_started" },
+  { "status": "running", "step": "ingest", "message": "ingest 1/1" },
+  { "status": "running", "step": "nlp-parse", "message": "nlp-parse 0/0" },
+  { "type": "run_paused" },
+  { "type": "run_resumed" },
+  { "type": "run_finished" }
+]

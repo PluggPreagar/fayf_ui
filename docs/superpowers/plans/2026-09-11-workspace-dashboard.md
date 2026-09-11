@@ -22,7 +22,7 @@ Commands `refresh · theme` · data = GET `/api/runs` `/api/pipelines` `/api/iss
 | S3 ✓ | **table controller** `ui/table.js` — rows JSON → `stack` of `row`s, cells `fixed w`; windowed (`scroll` box, visible slice), sort, select → trigger `<name>.select`. Columns = part `component/table` | fayf_ui | JS + JSON | node: window math (2000 rows → ≤ 40 boxes); browser: sort/select/scroll |
 | S4 ✓ | **dashboard screen** `screens/dashboard.json` = `extends screens/shell` + content: `at-a-glance` (4 `atom/chip` counts), `recent-runs` (table slot), `issues` (table slot); `machines/dashboard.json` (states `loading · ready · error`; effects 3× fetch); fixture `content/dashboard/*.json` | fayf_ui | JSON | gallery, node machine test, browser table tests |
 | S5 | **processor stub** `frontend/fayf/dashboard.html` (~60 lines): screen refs · machine JSON · handlers (`status-dot` map, `e2e-deploy-` filter, counts) · effect targets `/api/…`. `fayf-skin.css`: luna aliases for repo tokens. Re-vendor pin | processor | HTML + JSON + handlers.js | `?test=1` parity with `dashboard.js` (counts, rows, nav, commands); old page kept as `dashboard-kit.html` until S6 done |
-| S6 | **page by page** issues ✓ → list ✓ → browse ✓ (filetree ctrl) → records ✓ (filetree ctrl, reused) / run (deferred, SSE) → profile ✓ → query ✓ (dynamic per-query table spec) → annotate ✓ (STORY-17.1 only, drill-down + coverage; full record editing deferred, needs `ui/form.js`) → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
+| S6 | **page by page** issues ✓ → list ✓ → browse ✓ (filetree ctrl) → records ✓ (filetree ctrl, reused) / run ✓ (new `stream` SSE effect) → profile ✓ → query ✓ (dynamic per-query table spec) → annotate ✓ (STORY-17.1 only, drill-down + coverage; full record editing deferred, needs `ui/form.js`) → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
 
 ## Controller set (C11: one file each, no more)
 
@@ -121,7 +121,7 @@ Sub-controller pattern = ui/table.js (status slice + spread handlers + self-tran
    "screen JSON + machine JSON + pure handlers; DOM only in fayf_ui".
 
 ### S6 — page by page
-issues ✓ → list ✓ → browse ✓ → records ✓ / run (deferred) → profile ✓ → query ✓ → annotate ✓ → graph last via `Embed`. Each:
+issues ✓ → list ✓ → browse ✓ → records ✓ / run ✓ → profile ✓ → query ✓ → annotate ✓ → graph last via `Embed`. Each:
 parity test, old page removed, nav points to new.
 
 **`field:"text"|"textarea"` shipped 2026-09-11** (see the "Known small items" note below for the full contract):
@@ -458,6 +458,43 @@ for this page (a per-speech child run's OWN `record_ids` only exist at that gran
 "annotate child session" issue note). `ui/annotate.js`'s exports a sibling controller needs: `SESSION_PICKER`,
 `REDE_PICKER`, `TREE`, `FIXTURE_URLS` (shape reference only), `coverageSets`/`badgeFor` (pure, portable as-is),
 `makeHandlers(urls)`, `initialData()`, `view`, `mountAnnotate(root, reg, opts)`.
+
+**run shipped 2026-09-11**: sixth S6 page, closing out the records/run pair — a live run-watch view (status
+badge, pause/resume/cancel, a live SSE event log, a steps table via `ui/table.js`). The one real new engine
+capability this page needed shipped FIRST, ahead of the page itself: `ui/machine.js` gained a `stream` effect
+(`{ stream: url, ok, err? }`) — opens a real `EventSource`, every message dispatches `ok` with the parsed JSON
+body (raw string if it doesn't parse); unlike `fetch`/`timer` (fire once), a stream stays open across many
+dispatches, closed only when the state that opened it ends — tracked per-epoch (`openStreams`: epoch ->
+`Set<EventSource>`), swept the instant the epoch advances, same "belongs to the state entry that started it"
+rule fetch/timer already follow, now with a real `.close()` instead of a silent drop. `opts.io.EventSource` is
+the injectable seam, mirroring `opts.io.fetch`/`setTimeout`. Verified with a fake `EventSource` class in
+`test/machine_test.js` (2 new blocks: open/multiple-messages/close-on-transition/dropped-after-close, and
+error delivery) BEFORE `ui/run.js` was built — so the page itself needed zero engine work. `machines/run.json`:
+`loading` (1 fetch, the run snapshot) → `ready`, whose OWN `enter` opens the event stream (fires on every real
+entry into `ready`, including after a refresh cycles back through `loading` — a deliberate, accepted difference
+from the ground truth, which only ever wires one `EventSource` at page load and never reconnects; reconnecting
+on refresh reads as an improvement, not a regression). `ui/run.js`: `STEPS` table spec, `FIXTURE_URLS`
+(`snapshot`/`events`/`action`), `initialData(runId)` (parametrized like `ui/records.js`), `makeHandlers(urls)` —
+pause/resume/cancel POST via `init:{method:'POST'}` (same idiom `ui/list.js`'s start-a-run uses), a `run.event`
+handler updates `data.status` from the message (mirrors the ground truth's own `EVENT_STATUS_BY_TYPE` map) and
+appends to a 200-capped log (oldest dropped first), `run_finished` re-fetches the snapshot to refresh the steps
+table. A steps-row click and the two head buttons ("View records"/"View on graph") all emit real page-nav
+triggers (`records.open`/`graph.open`) — no local selection kept, matching the ground truth's own real-navigation
+behavior. The fixture demo fakes SSE via its OWN `opts.io.EventSource` class in `run.html`'s bootstrap script
+(NOT in `ui/machine.js`) that replays a scripted JSON array of events on an interval — a test double at the same
+seam every page's `opts.io.fetch` already is; a real consumer just points `urls.events` at a genuine
+`EventSource('/api/runs/{id}/events')` and needs no such class. Node 320/320 (was 295), browser `run_test.js` all
+green in a fresh tab — the fake-stream replay visibly changes the status badge over real wall-clock time,
+pause/resume/cancel buttons track the current status correctly (disabled combinations per status, mirroring the
+ground truth's own `enabled()` callbacks via an explicit view-patch since the machine's own state-based guard
+can't express a data condition), a steps row click emits `records.open {run_id, step_id}`. **v1 simplifications**:
+the legacy `?step_id`/`?record_id` deep-link redirect is dropped (no `?`-param URL sync exists anywhere in this
+repo yet). **For the fayf_processor sibling**: `urls.snapshot(runId)` -> `GET /api/runs/{id}` (`Api.run`, already
+used by `ui/records.js`); `urls.events(runId)` -> a real `EventSource` on `Api.events(id)`'s own URL
+(`/api/runs/{id}/events`), no fake-replay class needed there; `urls.action(runId, action)` -> `POST
+/api/runs/{id}/(pause|resume|cancel)` (`Api.runAction`) — a genuine mutating write (pauses/resumes/cancels a
+real pipeline), do not exercise for real in an automated test against shared dev data, same judgment call the
+issues page's status-POST test made.
 
 ### Known small items
 - js_runner prints "Checks: 0" before async blocks (another session is fixing it — do not touch test/js_runner.js).
