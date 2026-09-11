@@ -3929,6 +3929,10 @@
       ]
      },
      {
+      "name": "inspect-splitter",
+      "box": "fixed, w:6, bare"
+     },
+     {
       "name": "inspect",
       "box": "stack, fill, w:1/12, pad:3, gap:2, scroll, solid, rounded",
       "children": [

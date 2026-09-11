@@ -65,6 +65,7 @@
           "children": [
             { "name": "detail-title", "extends": "atom/text.title", "content": "Detail" },
             { "name": "detail-body", "box": "stack, gap:0, fill", "content": "Select a record" } ] },
+        { "name": "inspect-splitter", "box": "fixed, w:6, bare" },
         { "name": "inspect", "box": "stack, fill, w:1/12, pad:3, gap:2, scroll, solid, rounded",
           "children": [
             { "name": "inspect-title", "extends": "atom/text.title", "content": "Inspect" },
