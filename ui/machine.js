@@ -37,8 +37,16 @@
 //                                   loading error disabled hidden -- absolute per paint
 // effects = fetch {url, ok, err} · emit {trigger, payload} · timer {ms, trigger}
 //         · send {trigger, payload} (self, synchronous, after paint)
+//         · stream {url, ok, err?} (SSE, a live EventSource -- every message
+//           dispatches `ok` with the parsed JSON body (raw string if it
+//           doesn't parse); `err` is optional, dispatched on a stream error.
+//           Not fire-once like fetch/timer: stays open until the state that
+//           started it ends, then is actively `.close()`d (same "belongs to
+//           the state entry that started it" rule below, with a real
+//           cleanup action instead of a silent drop).
 //   async effects belong to the state entry that started them: a fetch/timer
-//   result arriving after the machine left that state is dropped.
+//   result arriving after the machine left that state is dropped; a stream
+//   left open past its state is closed instead.
 import vocabulary from './vocabulary.json' with { type: 'json' };
 import { resolve } from './model.js';
 import { render } from './render.js';
@@ -83,6 +91,7 @@ export function validateMachine(machine) {
 //   { timer: 900, trigger: "pause.done" }
 //   { emit: "row.select", payload: {...} }
 //   { send: "flow.lock", payload: {...} }
+//   { stream: "/events", ok: "run.event", err: "run.streamFailed" }   -- err optional
 export function validateEffect(e, where = 'effect') {
   const kinds = EFFECTS.filter(k => k in e);
   if (kinds.length !== 1) throw new Error(`effect at ${where}: exactly one of ${EFFECTS.join('/')}, got ${JSON.stringify(e)}`);
@@ -90,6 +99,7 @@ export function validateEffect(e, where = 'effect') {
   if (k === 'fetch' && !(typeof e.fetch === 'string' && e.ok && e.err)) throw new Error(`effect at ${where}: fetch needs url string + ok + err triggers`);
   if (k === 'timer' && !(typeof e.timer === 'number' && e.timer >= 0 && e.trigger)) throw new Error(`effect at ${where}: timer needs ms number + trigger`);
   if ((k === 'emit' || k === 'send') && typeof e[k] !== 'string') throw new Error(`effect at ${where}: ${k} needs a trigger string`);
+  if (k === 'stream' && !(typeof e.stream === 'string' && e.ok)) throw new Error(`effect at ${where}: stream needs url string + ok trigger (err optional)`);
   return e;
 }
 
@@ -171,7 +181,7 @@ const isPatch = (v) => v && typeof v === 'object' && !Array.isArray(v) && !isNod
 // render + [data-name].
 //   opts.reg      registry for resolve
 //   opts.view     pure (status) -> { name: patch }
-//   opts.io       { fetch, setTimeout } injectable for tests
+//   opts.io       { fetch, setTimeout, EventSource } injectable for tests
 //   opts.onEmit   (trigger, payload) -> void   parent hook for `emit`
 //   opts.onStatus (status) -> void             after every paint
 //   opts.data     initial status.data
@@ -179,6 +189,7 @@ export function mountMachine(root, screen, machine, handlers = {}, opts = {}) {
   const { reg = {}, view = () => ({}), io = {}, onEmit = () => {}, onStatus = () => {}, data = {} } = opts;
   const doFetch = io.fetch || ((...a) => globalThis.fetch(...a));
   const doTimer = io.setTimeout || ((fn, ms) => globalThis.setTimeout(fn, ms));
+  const doStream = io.EventSource || globalThis.EventSource;
   let el;
   if (screen && typeof screen === 'object' && screen.nodeType === 1) el = screen;
   else { el = render(resolve(screen, reg)); root.appendChild(el); }
@@ -190,13 +201,21 @@ export function mountMachine(root, screen, machine, handlers = {}, opts = {}) {
   const events = new Set([...known].map(t => t.slice(t.lastIndexOf('.') + 1)));
   let { status, effects } = init(machine, data);
   let epoch = 0;   // bumps when status.state changes; stale async results are dropped
+  const openStreams = new Map();   // epoch that opened a stream -> Set<EventSource>, closed once that epoch ends
 
   const ctl = {
     el,
     get status() { return status; },
     dispatch(trigger, payload) {
       const r = step(machine, status, trigger, payload, handlers);
-      if (r.status.state !== status.state) epoch += 1;
+      if (r.status.state !== status.state) {
+        epoch += 1;
+        for (const [at, streams] of openStreams) {
+          if (at >= epoch) continue;
+          streams.forEach(es => es.close());
+          openStreams.delete(at);
+        }
+      }
       status = r.status;
       paint();
       onStatus(status);
@@ -242,6 +261,16 @@ export function mountMachine(root, screen, machine, handlers = {}, opts = {}) {
       doTimer(() => deliver(e.trigger, e.payload), e.timer);
     } else if ('emit' in e) {
       onEmit(e.emit, e.payload);
+    } else if ('stream' in e) {
+      const es = new doStream(e.stream);
+      if (!openStreams.has(at)) openStreams.set(at, new Set());
+      openStreams.get(at).add(es);
+      es.onmessage = (ev) => {
+        if (epoch !== at) { es.close(); return; }
+        let payload; try { payload = JSON.parse(ev.data); } catch { payload = ev.data; }
+        deliver(e.ok, payload);
+      };
+      if (e.err) es.onerror = () => deliver(e.err, { error: 'stream error' });
     }
   }
 

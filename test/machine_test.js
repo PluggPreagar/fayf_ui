@@ -60,6 +60,56 @@ tr.addBlock('machine: fetch error -> error state, retry re-issues the fetch', (r
    });
 });
 
+tr.addBlock('machine: stream effect -- SSE messages dispatch, closed when its state ends', (r) => {
+  r.run(() => {
+     const streams = [];
+     class FakeEventSource {
+       constructor(url) { this.url = url; this.closed = false; streams.push(this); }
+       close() { this.closed = true; }
+     }
+     const screen = { name: 'root', box: 'hug', children: [{ name: 'stop', box: 'hug', content: 'stop' }] };
+     const machine = { initial: 'watching', states: {
+       watching: { enter: [{ stream: '/events', ok: 'run.event', err: 'run.failed' }], 'run.event': 'watching', 'run.failed': 'watching', 'stop.click': 'stopped' },
+       stopped: {} } };
+     const events = [];
+     const handlers = { 'run.event': (s, p) => { events.push(p); return { status: s }; } };
+     const host = document.createElement('div');
+     const ctl = mountMachine(host, screen, machine, handlers, { io: { EventSource: FakeEventSource } });
+     r.check(streams.length === 1 && streams[0].url === '/events', 'stream effect opened one EventSource at the right url');
+     streams[0].onmessage({ data: JSON.stringify({ kind: 'tick', n: 1 }) });
+     r.check(events.length === 1 && events[0].n === 1, 'onmessage delivers the parsed JSON as the ok trigger payload', JSON.stringify(events));
+     streams[0].onmessage({ data: JSON.stringify({ n: 2 }) });
+     r.check(events.length === 2, 'a second message dispatches again -- stream stays open, unlike fetch/timer');
+     r.check(!streams[0].closed, 'still open while the state that opened it is current');
+     host.querySelector('[data-name="stop"]').click();
+     r.check(ctl.status.state === 'stopped', 'transitioned away from the streaming state');
+     r.check(streams[0].closed, 'the stream is actively closed once its state ends');
+     streams[0].onmessage({ data: JSON.stringify({ n: 3 }) });
+     r.check(events.length === 2, 'a message arriving after close is ignored, not delivered');
+     host.remove();
+  });
+});
+
+tr.addBlock('machine: stream effect -- err trigger on a stream error', (r) => {
+  r.run(() => {
+     const streams = [];
+     class FakeEventSource {
+       constructor(url) { this.closed = false; streams.push(this); }
+       close() { this.closed = true; }
+     }
+     const screen = { name: 'root2', box: 'hug' };
+     const machine = { initial: 'watching', states: { watching: {
+       enter: [{ stream: '/events', ok: 'run.event', err: 'run.failed' }], 'run.event': 'watching', 'run.failed': 'watching' } } };
+     let failed = null;
+     const handlers = { 'run.failed': (s, p) => { failed = p; return { status: s }; } };
+     const host = document.createElement('div');
+     mountMachine(host, screen, machine, handlers, { io: { EventSource: FakeEventSource } });
+     streams[0].onerror();
+     r.check(failed && failed.error === 'stream error', 'onerror dispatches the err trigger', JSON.stringify(failed));
+     host.remove();
+  });
+});
+
 tr.addBlock('machine: C2 -- unknown trigger throws, view naming a missing slot throws', (r) => {
   r.run(() => {
      let threw = null;

@@ -31,14 +31,17 @@ test('validateMachine: trigger needs <name>.<event>', () => {
 });
 
 test('validateEffect: exactly one kind, kind key carries the argument', () => {
-  assert.deepEqual(EFFECTS, ['fetch', 'emit', 'timer', 'send']);
+  assert.deepEqual(EFFECTS, ['fetch', 'emit', 'timer', 'send', 'stream']);
   assert.ok(validateEffect({ fetch: '/x', ok: 'a.b', err: 'a.c' }));
   assert.ok(validateEffect({ timer: 900, trigger: 'pause.done' }));
   assert.ok(validateEffect({ emit: 'row.select', payload: { id: 1 } }));
   assert.ok(validateEffect({ send: 'flow.lock' }));
+  assert.ok(validateEffect({ stream: '/events', ok: 'run.event' }), 'stream: err optional');
+  assert.ok(validateEffect({ stream: '/events', ok: 'run.event', err: 'run.streamFailed' }));
   assert.throws(() => validateEffect({ send: 1 }), /send needs a trigger string/);
   assert.throws(() => validateEffect({ fetch: '/x' }), /ok \+ err/);
   assert.throws(() => validateEffect({ timer: '900', trigger: 'x.y' }), /ms number/);
+  assert.throws(() => validateEffect({ stream: '/events' }), /stream needs url string \+ ok/);
   assert.throws(() => validateEffect({ fetch: '/x', timer: 1 }), /exactly one/);
   assert.throws(() => validateEffect({}), /exactly one/);
 });
