@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fayf_ui — records</title>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui/tokens.css">
+<style>html,body{height:100%;margin:0}
+body{background:var(--canvas);display:flex}
+.bx .ic{stroke:currentColor}</style>
+</head>
+<body>
+<!-- S6 (docs/superpowers/plans/2026-09-11-workspace-dashboard.md): the shell screen
+     filled by the records controller (ui/records.js, C11 L9). Machine JSON fetches
+     one run's metadata (steps + record ids, ALL known up front -- unlike browse.html's
+     lazy filesystem), a filetree sub-controller (ui/filetree.js) shows the step->record
+     tree with every node's children already populated; selecting a record fetches its
+     JSON output and renders it via ui/browse.js's exported detailBody(), reused as-is. -->
+<script type="module">
+import { resolve } from './ui/model.js';
+import { render } from './ui/render.js';
+import { initStyleMode, mountStyleToggle } from './ui/style-mode.js';
+import { mountInspectorToggle } from './ui/inspector.js';
+import { mountRecords, FIXTURE_RUN_ID } from './ui/records.js';
+initStyleMode();
+const reg = await (await fetch('/registry.json')).json();
+const provenance = new Map();
+const el = render(resolve(reg['screens/records'], reg, [], new Set(), [], provenance));
+document.body.appendChild(el);
+mountStyleToggle(el, { inline: true });
+mountInspectorToggle(el, { sourceId: 'screens/records', provenance, target: el, inline: true });
+window.__emitted = [];
+const onEmit = (t, p) => window.__emitted.push([t, p]);
+window.__ctl = mountRecords(el, reg, { onEmit });
+// Second, independent mount for the error-path test: injected io, its own
+// container off the body flex flow so `body > .bx` keeps the viewport.
+window.__mount = (io, urls) => {
+  const container = document.createElement('div');
+  container.className = 'records-mount';
+  container.style.cssText = 'position:absolute;left:0;top:0;width:1200px;height:800px;visibility:hidden;display:flex';
+  document.body.appendChild(container);
+  const root = render(resolve(reg['screens/records'], reg));
+  container.appendChild(root);
+  return mountRecords(root, reg, { io, onEmit, urls, runId: FIXTURE_RUN_ID });
+};
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

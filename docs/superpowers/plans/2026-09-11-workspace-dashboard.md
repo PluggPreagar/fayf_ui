@@ -22,7 +22,7 @@ Commands `refresh · theme` · data = GET `/api/runs` `/api/pipelines` `/api/iss
 | S3 ✓ | **table controller** `ui/table.js` — rows JSON → `stack` of `row`s, cells `fixed w`; windowed (`scroll` box, visible slice), sort, select → trigger `<name>.select`. Columns = part `component/table` | fayf_ui | JS + JSON | node: window math (2000 rows → ≤ 40 boxes); browser: sort/select/scroll |
 | S4 ✓ | **dashboard screen** `screens/dashboard.json` = `extends screens/shell` + content: `at-a-glance` (4 `atom/chip` counts), `recent-runs` (table slot), `issues` (table slot); `machines/dashboard.json` (states `loading · ready · error`; effects 3× fetch); fixture `content/dashboard/*.json` | fayf_ui | JSON | gallery, node machine test, browser table tests |
 | S5 | **processor stub** `frontend/fayf/dashboard.html` (~60 lines): screen refs · machine JSON · handlers (`status-dot` map, `e2e-deploy-` filter, counts) · effect targets `/api/…`. `fayf-skin.css`: luna aliases for repo tokens. Re-vendor pin | processor | HTML + JSON + handlers.js | `?test=1` parity with `dashboard.js` (counts, rows, nav, commands); old page kept as `dashboard-kit.html` until S6 done |
-| S6 | **page by page** issues ✓ → list ✓ → browse ✓ (filetree ctrl) → records/run (form ctrl) → profile/query/annotate → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
+| S6 | **page by page** issues ✓ → list ✓ → browse ✓ (filetree ctrl) → records ✓ (filetree ctrl, reused) / run (deferred, SSE) → profile/query/annotate → graph last via `Embed` | both | | each: parity test, old page removed, nav points to new |
 
 ## Controller set (C11: one file each, no more)
 
@@ -121,8 +121,8 @@ Sub-controller pattern = ui/table.js (status slice + spread handlers + self-tran
    "screen JSON + machine JSON + pure handlers; DOM only in fayf_ui".
 
 ### S6 — page by page
-issues ✓ → list ✓ → browse ✓ → records/run → profile/query/annotate → graph last via `Embed`. Each: parity test,
-old page removed, nav points to new.
+issues ✓ → list ✓ → browse ✓ → records ✓ / run (deferred) → profile/query/annotate → graph last via `Embed`. Each:
+parity test, old page removed, nav points to new.
 
 **`field:"text"|"textarea"` shipped 2026-09-11** (see the "Known small items" note below for the full contract):
 list.html's own deferred "start a run" is done with it. The real primitive gap for records/run is no longer "no
@@ -219,6 +219,52 @@ call is recovered by splitting on the FIRST `'/'`: `mount = path.split('/')[0]`,
 (spec didn't pin this exactly, said "inside a `stack, gap:0, fill` container" which matches what was shipped) rather
 than issues/list's `gap:1`, since raw text lines read better tight, not field-row-spaced.
 
+**records shipped 2026-09-11**: fourth S6 page, "records" (the first half of the records/run step — "run", the live
+SSE watch view, stays deferred separately, a different engine gap). No new sub-controller — the ONLY genuinely new
+thing vs. browse.html is that every node in this tree is already known from one run-metadata fetch, so it's built
+fully-populated up front rather than lazily: `ui/filetree.js`/`ui/machine.js` untouched, reused exactly as shipped.
+`machines/records.json` (loading: 1 fetch `/content/records/run.json` → ready/error; `tree.click`/`detail.loaded`/
+`detail.failed` self-transitions in ready — a per-record fetch failure never demotes the whole screen to the
+top-level `error` state, that's reserved for the run-metadata fetch itself; nav/theme/refresh same shape as
+browse/issues/list). `ui/records.js`: `TREE` spec, `FIXTURE_URLS.artifact(path)` → `` `/content/records/artifact/${path}.json` ``,
+`FIXTURE_RUN_ID` (`'run-2026-09-11'`, matches `content/records/run.json`'s own `run.run_id`) — `initialData(runId)`
+takes a PARAMETER, unlike every prior page's parameterless `initialData()`, since a consumer must know which run
+before mounting (real nav supplies `?run_id=`). `buildNodes(steps, recordIds)` (new, local to records.js): one `dir`
+node per step, `children` already an array of `file` nodes (no `children` key on those, matching filetree's own
+"not a dir" convention) — built directly rather than routed through `filetreeInit`'s own mount-mapping helper, since
+that helper hardcodes `children: null` for every entry (correct for browse.html's lazy one-level-at-a-time case,
+wrong for a tree whose whole shape is already known); `filetreeInit(TREE, [])`'s empty shape is still reused for the
+`{ sel: null, pendingPath: null }` frame, only `.nodes` is supplied directly — `filetreeHandlers`/`filetreeView`
+consume the result completely unmodified either way (they only ever read `t.nodes`/`t.sel`/`t.pendingPath`, never
+care how nodes got there). `selectingTree(urls)` wraps `filetreeHandlers` — SIMPLER than `ui/browse.js`'s dual-
+purpose wrapper: no lazy-load-on-expand branch at all (a step/dir click is always just the base toggle, zero
+effects), a record/file click adds a `detail.loaded`-bound fetch alongside the tree's own `select` emit, same shape
+as `ui/issues.js`'s `selectingMaster`. Detail pane reuses `ui/browse.js`'s exported `detailBody` DIRECTLY (imported,
+not reimplemented) via a small call-site adapter — `detailBody({ format: 'json', content: JSON.stringify(detail.value
+?? detail) })` — since the artifact response is `{ value, version }` here (this repo's fixture + the real API's
+`include_meta` shape) rather than browse.html's raw-file `{ format, content }`. `screens/records.json` (dashboard/
+issues.json's structure, `nav-records` on `cluster/nav-item.active`). Fixtures `content/records/run.json` (3 steps ×
+3 record_ids = 9 leaves) + `content/records/artifact/<step>/<record>.json` for 4 of those 9 (2 under `ingest`, 1
+each under `nlp-parse`/`index`, one of them nested/multi-line to exercise `detailBody`'s NBSP indentation properly)
+— the other 5 combinations have no fixture file on purpose, proving a clean `detail.failed` (404) path. `records.html`;
+`test/node/records_machine_test.js` (15 tests, mirrors `browse_machine_test.js`, simpler — no pendingPath/single-
+fetch-guard concept since nothing is lazy) + `test/records_test.js` (9 blocks, mirrors `browse_test.js`) → node
+236/236 (was 221), registry 84 ids. Browser-verified live (`?test=records.html` console sweep, all green after the
+last `─── TestRunner` marker, per the pane-sharing note below; screenshots confirm step→record tree expand + JSON
+detail render). **Known simplifications** (v1 scope, all explicitly bounded by the task): no "no run selected"
+run-picker mode (`initialData(runId)` assumes the consumer already knows it; a real page redirects to Pipelines
+instead of porting the picker table); no named-channel-only step special case (every step is a plain 2-level
+step→record tree — a record under a step whose type has ONLY named outputs just won't resolve in this v1, a real,
+accepted gap the ground truth itself only handles via a second metadata round-trip); no diff views (vs pre-edit
+history, vs another run) and no in-place edit+save (version-guarded PATCH) — both real, larger features, deferred
+same as browse.html's dropped edit; no tags display, no "Re-run…"/graph-jump buttons — cosmetic/navigational extras,
+skipped. **For the fayf_processor sibling wiring the real API**: artifact response shape assumed is `{ value,
+version }` (NOT a bare value) — if the real `GET /api/artifact/{run}/{path}` sometimes returns a bare value instead,
+the view-layer adapter's `detail.value ?? detail` already falls back to treating the whole payload as the value, so
+either shape works without a records.js change; `FIXTURE_URLS.artifact(path)` → `` `/content/records/artifact/${path}.json` ``,
+recovered against the real two-part call the same way browse.html's convention works (`path` = `step/record`, i.e.
+first path segment is the step id).
+
 ### Known small items
 - js_runner prints "Checks: 0" before async blocks (another session is fixing it — do not touch test/js_runner.js).
 - shell ws-head `between` with 3 children centres the crumbs; luna nav icon dots faint (checklist #14 class).
@@ -273,6 +319,18 @@ than issues/list's `gap:1`, since raw text lines read better tight, not field-ro
   mark active).
 - browse.html's detail pane caps rendered content at 500 lines (a trailing `'… truncated'` row beyond that) — bounded
   like the real tree-level API's own entry cap, not configurable in this v1.
+- records.html has no "no run selected" run-picker mode — `initialData(runId)` assumes a run is already chosen; the
+  processor sibling redirects to its Pipelines page instead when `?run_id=` is absent, rather than porting the
+  ground truth's run-picker `DataTable`.
+- records.html flattens every step to a plain 2-level step→record tree — the ground truth's named-channel-only step
+  special case (a 3rd tree level per-record, needed only for a step whose type has ONLY named outputs) is not
+  ported; a record under such a step simply won't resolve in this v1 (accepted gap, ground truth itself only
+  handles it via a second metadata round-trip this v1 doesn't replicate).
+- records.html ships READ only, same discipline as browse.html: no diff views (vs pre-edit history, vs another run
+  of the same pipeline), no in-place edit+save (version-guarded PATCH), no tags display, no "Re-run…"/graph-jump
+  buttons — all real, larger features/cosmetic extras, deferred.
+- records.html's "run" counterpart (the live SSE event-stream watch view) is a separate, still-fully-deferred page —
+  a different engine gap (server-sent events), not scoped into this "records" step at all.
 
 ## Open (next C9, one at a time)
 

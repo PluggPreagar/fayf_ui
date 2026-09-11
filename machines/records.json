@@ -1,0 +1,10 @@
+{ "initial": "loading",
+  "states": {
+    "loading": { "enter": [ { "fetch": "/content/records/run.json", "ok": "run.loaded", "err": "run.failed" } ],
+                 "run.loaded": "ready", "run.failed": "error" },
+    "ready": {
+      "tree.click": "ready", "detail.loaded": "ready", "detail.failed": "ready",
+      "btn-refresh.click": "loading", "btn-theme.click": "ready",
+      "nav-dashboard.click": "ready", "nav-pipelines.click": "ready", "nav-graph.click": "ready",
+      "nav-records.click": "ready", "nav-issues.click": "ready", "nav-settings.click": "ready" },
+    "error": { "btn-retry.click": "loading" } } }

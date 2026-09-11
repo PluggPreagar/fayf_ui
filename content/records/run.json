@@ -1,0 +1,2 @@
+{ "run": { "run_id": "run-2026-09-11", "pipeline": "bundestag-unified", "status": "done", "record_ids": ["21_67", "21_68", "21_69"] },
+  "steps": { "ingest": {}, "nlp-parse": {}, "index": {} } }

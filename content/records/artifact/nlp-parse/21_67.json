@@ -1,0 +1,1 @@
+{ "value": { "record_id": "21_67", "step": "nlp-parse", "tokens": ["Es", "folgt", "die", "Tagesordnung"], "entities": [{ "text": "Tagesordnung", "type": "AGENDA" }], "meta": { "lang": "de", "model": "spacy-de-lg" } }, "version": 2 }
