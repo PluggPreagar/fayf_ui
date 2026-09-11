@@ -1,7 +1,16 @@
 // ui/render.js -- L2. The ONLY DOM writer (C5).
 import { parse, print, parseGapGrowth } from './model.js';
 
-const PASSTHRU = ['path', 'from', 'to', 'relation', 'motion'];
+const PASSTHRU = ['path', 'from', 'to', 'relation', 'motion', 'field'];
+
+// `field` (optional, plain data key -- not a dial, C8's token strings stay
+// the closed 12-dial box vocabulary): 'text' | 'textarea' -> a real
+// <input>/<textarea> instead of a div, C11 controllers' one escape hatch
+// short of a full new primitive. `content` becomes the field's initial
+// `.value` (not textContent -- a form field's value isn't "content" in the
+// round-trippable capture() sense; a field node's `content` is therefore
+// NOT captured back by capture() below, a known, accepted asymmetry).
+const FIELD_TAG = { text: 'input', textarea: 'textarea' };
 
 // Elastic gap (gap:2+/gap:2++): CSS `gap` is one uniform value per container,
 // so it can't flex on its own. Instead we skip `gap` entirely and interleave
@@ -19,7 +28,9 @@ function gapSpacer(growth, direction) {
 }
 
 export function render(node, doc = document) {
-  const el = doc.createElement('div');
+  const tag = node.field && FIELD_TAG[node.field];
+  if (node.field && !tag) throw new Error(`render: unknown field '${node.field}' (text|textarea)`);
+  const el = doc.createElement(tag ?? 'div');
   const d = node.box ?? {};
   const growth = parseGapGrowth(d.gap);
   el.className = ['bx', ...Object.entries(d)
@@ -46,8 +57,8 @@ export function render(node, doc = document) {
   for (const k of PASSTHRU) if (node[k] != null) extra[k] = node[k];
   if (Object.keys(extra).length) el.dataset.extra = JSON.stringify(extra);
   if (node.content != null) {
-    el.textContent = node.content;
-    el.dataset.hasContent = '1';
+    if (tag) el.value = node.content;
+    else { el.textContent = node.content; el.dataset.hasContent = '1'; }
   }
   const children = node.children ?? [];
   children.forEach((child, i) => {

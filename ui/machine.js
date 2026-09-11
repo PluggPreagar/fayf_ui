@@ -16,7 +16,9 @@
 //     Bound as one capture-phase listener per event type on the mounted
 //     element (capture, so non-bubbling events like "scroll" arrive too).
 //     Payload = { name, event, target, path } -- path = data-names from the
-//     event target upward; "scroll" adds scrollTop + clientHeight of e.target.
+//     event target upward; "scroll" adds scrollTop + clientHeight of e.target;
+//     "input"/"change" add `value` (e.target.value, real <input>/<textarea>
+//     fields only -- render.js's `field` node property, see its header).
 //     A control (trigger element without trigger elements inside) is enabled
 //     iff one of its triggers fires in the current state (guard = machine);
 //     a surface (root, or a trigger element holding controls) is never disabled.
@@ -26,7 +28,9 @@
 // status  = { state, data }            -- the only mutable thing, owned by the controller
 // handler = (status, payload) -> { status, effects? }      pure, no DOM/fetch/timers
 // view    = (status) -> { [name]: patch }                  pure, controller paints it
-//   patch = string                         text content
+//   patch = string                         text content (a <input>/<textarea>
+//                                           target's `.value` instead, C11's
+//                                           `field` escape hatch)
 //         | node-json | [node-json]        children, rendered via L2
 //         | { content?, env?, state? }     content as above, resolve env, state tokens
 //   state tokens (C8 token string): actionable selected correct wrong readonly
@@ -243,7 +247,11 @@ export function mountMachine(root, screen, machine, handlers = {}, opts = {}) {
     const content = isPatch(patch) ? patch.content : patch;
     if (content === undefined) return;
     if (content == null) { morphChildren(target, []); return; }
-    if (typeof content === 'string') { if (target.textContent !== content) target.textContent = content; return; }
+    if (typeof content === 'string') {
+      if ('value' in target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) { if (target.value !== content) target.value = content; return; }
+      if (target.textContent !== content) target.textContent = content;
+      return;
+    }
     const env = isPatch(patch) ? (patch.env || []) : [];
     morphChildren(target, (Array.isArray(content) ? content : [content]).map(node => render(resolve(node, reg, env))));
   }
@@ -304,6 +312,7 @@ export function mountMachine(root, screen, machine, handlers = {}, opts = {}) {
       const name = candidates.find(n => on.has(`${n}.${ev}`)) ?? candidates[0];
       const payload = { name, event: ev, target: path[0] ?? ROOT, path };
       if (ev === 'scroll') Object.assign(payload, { scrollTop: e.target.scrollTop, clientHeight: e.target.clientHeight });
+      if ((ev === 'input' || ev === 'change') && 'value' in e.target) payload.value = e.target.value;
       ctl.dispatch(`${name}.${ev}`, payload);
     }, true);   // capture: `scroll` does not bubble
   }
