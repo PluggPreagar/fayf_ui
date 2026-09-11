@@ -487,9 +487,31 @@ seam every page's `opts.io.fetch` already is; a real consumer just points `urls.
 green in a fresh tab — the fake-stream replay visibly changes the status badge over real wall-clock time,
 pause/resume/cancel buttons track the current status correctly (disabled combinations per status, mirroring the
 ground truth's own `enabled()` callbacks via an explicit view-patch since the machine's own state-based guard
-can't express a data condition), a steps row click emits `records.open {run_id, step_id}`. **v1 simplifications**:
-the legacy `?step_id`/`?record_id` deep-link redirect is dropped (no `?`-param URL sync exists anywhere in this
-repo yet). **For the fayf_processor sibling**: `urls.snapshot(runId)` -> `GET /api/runs/{id}` (`Api.run`, already
+can't express a data condition), a steps row click emits `records.open {run_id, step_id}`. Registry 88 ids.
+**Two necessary corrections to the machine JSON beyond the task's own illustrative block**: `ready` gained
+`"run.loaded": "ready"` / `"run.failed": "ready"` self-transitions — the `run_finished`-triggered snapshot
+re-fetch dispatches those same triggers while already in `ready`; without a `ready`-scoped entry they would be
+full no-ops (C11: a known-but-inert trigger runs no handler), silently dropping the steps-table refresh. `ready`
+also gained `"btn-view-records.click"`/`"btn-view-graph.click"` — required by the handler bullet list but missing
+from the given JSON block, and dispatching an undeclared trigger throws (C2). **One real C10 fit bug found +
+fixed**: 6 command buttons + the user block in `head-actions` overflowed `ws-head` in this environment's measured
+viewport (a between-justified row with no shrink) — fixed by `head-actions`' `gap:2` to `gap:1`, a `pad:1` box
+override on each of the 6 buttons, and shortening the two ghost nav buttons' labels ("View records" to "Records",
+"View on graph" to "Graph") — verified via live `getBoundingClientRect()` measurement, not a formula (checklist #4).
+**Testing note**: the fake-stream browser test block initially polled the RENDERED status-text for the transient
+`paused` state (only ~1 replay tick wide, `run_resumed` follows immediately) — flaky under this environment's
+actual timer cadence (looser than the nominal 400ms), caught by running the suite twice, not by a single green
+run. Made robust by polling `ctl.status.data.log` content (a permanent record once written) instead of the
+fast-moving rendered value, with generous timeouts; the pause/resume/cancel button-reactivity assertion (which
+DOES need the rendered class list) uses a deterministic direct `ctl.dispatch('run.event', ...)` instead of racing
+the real replay. **Real manual click-through** (a live `Pause` click against the actual, unmocked dev server)
+confirms the server.py limitation noted below drives a clean `action.failed` (`HTTP 501`), no crash, `actioning`
+still clears. **v1 simplifications**: the legacy `?step_id`/`?record_id` deep-link redirect is dropped (no
+`?`-param URL sync exists anywhere in this repo yet); pause/resume/cancel against this repo's own `server.py`
+(a plain `SimpleHTTPRequestHandler`, no `do_POST`) always 501s in the live fixture demo — unlike `ui/list.js`'s
+`urls.startRun: null` local-optimistic dodge, this page's `urls.action` is genuinely non-null per the task's own
+spec, so `test/run_test.js` exercises the real POST success/no-op paths via an injected `io.fetch` instead (same
+seam `test/list_test.js`'s error-path block already uses). **For the fayf_processor sibling**: `urls.snapshot(runId)` -> `GET /api/runs/{id}` (`Api.run`, already
 used by `ui/records.js`); `urls.events(runId)` -> a real `EventSource` on `Api.events(id)`'s own URL
 (`/api/runs/{id}/events`), no fake-replay class needed there; `urls.action(runId, action)` -> `POST
 /api/runs/{id}/(pause|resume|cancel)` (`Api.runAction`) — a genuine mutating write (pauses/resumes/cancels a
@@ -560,8 +582,12 @@ issues page's status-POST test made.
 - records.html ships READ only, same discipline as browse.html: no diff views (vs pre-edit history, vs another run
   of the same pipeline), no in-place edit+save (version-guarded PATCH), no tags display, no "Re-run…"/graph-jump
   buttons — all real, larger features/cosmetic extras, deferred.
-- records.html's "run" counterpart (the live SSE event-stream watch view) is a separate, still-fully-deferred page —
-  a different engine gap (server-sent events), not scoped into this "records" step at all.
+- records.html's "run" counterpart (the live SSE event-stream watch view) shipped 2026-09-11 — see the "run
+  shipped" note above; the records/run pair is now complete.
+- run.html's pause/resume/cancel always 501 against this repo's own `server.py` (no `do_POST`) — a real click
+  drives a clean `action.failed`, no crash, but never actually succeeds in the live fixture demo; `test/run_test.js`
+  exercises the real POST success/no-op paths via an injected `io.fetch` instead. run.html has no `?step_id`/
+  `?record_id` legacy redirect (dropped, no `?`-param URL sync exists anywhere in this repo).
 - query.html has no `?q=&run=` deep-link URL sync (same class of drop as browse.html's `?mount=&path=&at=`); Run
   fires only on an explicit button click, never on textarea blur/commit like the ground truth's own textarea
   "commit" event (typing just updates `data.q`); no per-column custom/wide-column widths (`ui/table.js`'s plain
