@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { init, step, validateMachine } from '../../ui/machine.js';
-import { browseMachine, handlers, view, initialData, TREE, detailBody } from '../../ui/browse.js';
+import { browseMachine, makeHandlers, handlers, view, initialData, TREE, detailBody, detailEditor, splitMountPath } from '../../ui/browse.js';
 
 // The browse (files explorer) flow as JSON in, JSON out (C11): machines/browse.json
 // + pure handlers + pure view, on the shipped fixtures. No DOM.
@@ -12,6 +12,9 @@ const RUNS_LEVEL = fixture('content/browse/level/runs.json');
 const RUN1_LEVEL = fixture('content/browse/level/runs/run-2026-09-01.json');
 const LOGS_LEVEL = fixture('content/browse/level/runs/run-2026-09-01/logs.json');
 const RESULT_FILE = fixture('content/browse/file/runs/run-2026-09-01/result.json.json');
+const BACKEND_LEVEL = fixture('content/browse/level/backend.json');
+const CONFIG_LEVEL = fixture('content/browse/level/backend/config.json');
+const SETTINGS_FILE = fixture('content/browse/file/backend/config/settings.yaml.json');
 const M = browseMachine;
 const MOUNTS_FETCH = { fetch: '/content/browse/mounts.json', ok: 'mounts.loaded', err: 'mounts.failed' };
 const go = (s, trigger, payload) => step(M, s, trigger, payload, handlers);
@@ -39,6 +42,8 @@ test('init -> loading with 1 fetch effect (mounts); tree empty', () => {
   assert.deepEqual(status.data[TREE.name].nodes, []);
   assert.equal(status.data.detail, null);
   assert.equal(status.data.error, null);
+  assert.equal(status.data.editText, '');
+  assert.equal(status.data.saveMsg, '');
 });
 
 test('view in loading: status-text "loading…", tree empty + loading token', () => {
@@ -46,7 +51,7 @@ test('view in loading: status-text "loading…", tree empty + loading token', ()
   assert.equal(v['status-text'], 'loading…');
   assert.equal(v['crumb-page'], 'Browse');
   assert.equal(v['detail-title'], 'No file open');
-  assert.equal(v['detail-body'], 'Select a file');
+  assert.deepEqual(v['detail-body'], { content: 'Select a file' });
   assert.deepEqual(v[TREE.name], { content: [], state: 'loading' });
 });
 
@@ -136,7 +141,7 @@ test('clicking a file: issues a file.loaded-bound fetch, does NOT touch pendingP
   assert.equal(r.status.data[TREE.name].sel, 'runs/README.md');
 });
 
-test('file.loaded: data.detail set, detailLoading cleared; view shows the selected path as detail-title, pretty JSON as detail-body', () => {
+test('file.loaded: data.detail set, detailLoading cleared, editText seeded; view shows the selected path as detail-title, a real editable field as detail-body', () => {
   let s = go(loaded(), 'tree.click', click('runs')).status;
   s = go(s, 'level.loaded', RUNS_LEVEL).status;
   s = go(s, 'tree.click', click('runs/README.md')).status;   // a file click -- sets tree.sel, unlike a dir click
@@ -144,26 +149,86 @@ test('file.loaded: data.detail set, detailLoading cleared; view shows the select
   const r = go(s, 'file.loaded', RESULT_FILE);
   assert.deepEqual(r.status.data.detail, RESULT_FILE);
   assert.equal(r.status.data.detailLoading, false);
+  assert.equal(r.status.data.editText, detailBody(RESULT_FILE), 'editText seeded from the loaded file, pretty-printed');
   const v = view(r.status);
   assert.equal(v['detail-title'], 'runs/README.md', 'shows the selected node path (tree.sel), not something from the file payload');
-  const body = detailBody(RESULT_FILE);
-  assert.ok(body.length > 1, 'multi-line JSON -> multiple rows, not one blob');
-  assert.equal(body[0].content, '{');
-  assert.ok(body.some(row => row.content.startsWith('  ')), 'indented line uses NBSP, not a plain leading space');
+  assert.deepEqual(v['detail-body'], { content: detailEditor(detailBody(RESULT_FILE)) });
+  assert.deepEqual(v['btn-save'], { state: 'disabled' }, 'this fixture file is not writable');
 });
 
-test('detailBody: non-JSON passes through as-is, split into lines; invalid JSON falls back to raw', () => {
-  const text = detailBody({ format: 'text', content: 'line1\n  line2\n' });
-  assert.deepEqual(text.map(row => row.content), ['line1', '  line2', '']);
-  const bad = detailBody({ format: 'json', content: 'not json' });
-  assert.deepEqual(bad.map(row => row.content), ['not json']);
+test('detailBody: pretty-prints JSON, passes everything else through as-is, falls back to raw on invalid JSON', () => {
+  assert.equal(detailBody({ format: 'json', content: '{"a":1}' }), '{\n  "a": 1\n}');
+  assert.equal(detailBody({ format: 'text', content: 'plain text\nsecond line' }), 'plain text\nsecond line');
+  assert.equal(detailBody({ format: 'json', content: 'not json' }), 'not json');
 });
 
-test('detailBody: caps at 500 lines with a trailing truncated row', () => {
-  const content = Array.from({ length: 520 }, (_, i) => `line ${i}`).join('\n');
-  const body = detailBody({ format: 'text', content });
-  assert.equal(body.length, 501);
-  assert.equal(body.at(-1).content, '… truncated');
+test('a writable file (settings.yaml fixture): btn-save actionable; typing updates editText', () => {
+  let s = go(loaded(), 'tree.click', click('backend')).status;
+  s = go(s, 'level.loaded', BACKEND_LEVEL).status;
+  s = go(s, 'tree.click', click('backend/config')).status;
+  s = go(s, 'level.loaded', CONFIG_LEVEL).status;
+  s = go(s, 'tree.click', click('backend/config/settings.yaml')).status;
+  const r = go(s, 'file.loaded', SETTINGS_FILE);
+  assert.equal(r.status.data.detail.writable, true);
+  assert.deepEqual(view(r.status)['btn-save'], { state: 'actionable' });
+  const typed = go(r.status, 'detail-editor.input', { value: 'server:\n  port: 9090\n' });
+  assert.equal(typed.status.data.editText, 'server:\n  port: 9090\n');
+});
+
+test('btn-save.click, no real backend (FIXTURE_URLS.saveFile is null): saves locally, bumps the hash, shows a confirmation', () => {
+  let s = go(loaded(), 'tree.click', click('backend')).status;
+  s = go(s, 'level.loaded', BACKEND_LEVEL).status;
+  s = go(s, 'tree.click', click('backend/config')).status;
+  s = go(s, 'level.loaded', CONFIG_LEVEL).status;
+  s = go(s, 'tree.click', click('backend/config/settings.yaml')).status;
+  s = go(s, 'file.loaded', SETTINGS_FILE).status;
+  const beforeHash = s.data.detail.hash;
+  s = go(s, 'detail-editor.input', { value: 'server:\n  port: 9999\n' }).status;
+  const r = go(s, 'btn-save.click');
+  assert.deepEqual(r.effects, [], 'no fetch -- fixture demo has no writable backend, mutates locally');
+  assert.notEqual(r.status.data.detail.hash, beforeHash, 'hash bumped so a second local save is distinguishable');
+  assert.equal(r.status.data.saveMsg, 'Saved (local)');
+});
+
+test('btn-save.click on a non-writable file: no-op, no effects', () => {
+  let s = go(loaded(), 'tree.click', click('runs')).status;
+  s = go(s, 'level.loaded', RUNS_LEVEL).status;
+  s = go(s, 'tree.click', click('runs/README.md')).status;
+  s = go(s, 'file.loaded', RESULT_FILE).status;
+  const r = go(s, 'btn-save.click');
+  assert.deepEqual(r, { status: s, effects: [] });
+});
+
+test('btn-save.click with a real urls.saveFile: fires the right PATCH fetch effect; save.ok updates the hash; save.err surfaces the server message', () => {
+  const saveUrls = { ...handlers, level: (p) => `/content/browse/level/${p}.json`, file: (p) => `/content/browse/file/${p}.json`,
+    saveFile: (mount, relPath, content, ifMatch) => ({ url: `/api/browse/${mount}/file`, init: { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: relPath, content, if_match: ifMatch }) } }) };
+  const h = makeHandlers(saveUrls);
+  const goH = (s, trigger, payload) => step(M, s, trigger, payload, h);
+  let s = goH(start().status, 'mounts.loaded', MOUNTS_FX).status;
+  s = goH(s, 'tree.click', click('backend')).status;
+  s = goH(s, 'level.loaded', BACKEND_LEVEL).status;
+  s = goH(s, 'tree.click', click('backend/config')).status;
+  s = goH(s, 'level.loaded', CONFIG_LEVEL).status;
+  s = goH(s, 'tree.click', click('backend/config/settings.yaml')).status;
+  s = goH(s, 'file.loaded', SETTINGS_FILE).status;
+  s = goH(s, 'detail-editor.input', { value: 'server:\n  port: 1\n' }).status;
+  const r = goH(s, 'btn-save.click');
+  assert.equal(r.effects.length, 1);
+  assert.equal(r.effects[0].fetch, '/api/browse/backend/file');
+  assert.deepEqual(JSON.parse(r.effects[0].init.body), { path: 'config/settings.yaml', content: 'server:\n  port: 1\n', if_match: SETTINGS_FILE.hash });
+  assert.equal(r.status.data.saveMsg, 'Saving…');
+
+  const ok = goH(r.status, 'save.ok', { hash: 'fx-settings-2' });
+  assert.equal(ok.status.data.detail.hash, 'fx-settings-2');
+  assert.equal(ok.status.data.saveMsg, 'Saved');
+
+  const err = goH(r.status, 'save.err', { error: 'HTTP 409', body: { error: 'this file changed since you loaded it -- reload and try again' } });
+  assert.equal(err.status.data.saveMsg, 'Save failed: this file changed since you loaded it -- reload and try again', 'prefers the server’s own JSON error body over the generic HTTP status');
+});
+
+test('splitMountPath: mount root vs nested path', () => {
+  assert.deepEqual(splitMountPath('backend'), ['backend', '']);
+  assert.deepEqual(splitMountPath('backend/config/settings.yaml'), ['backend', 'config/settings.yaml']);
 });
 
 test('file.failed: detailLoading cleared, error set', () => {
@@ -202,6 +267,7 @@ test('nav click emits nav.go with the target; theme click emits theme.toggle', (
     assert.deepEqual(r.effects, [{ emit: 'nav.go', payload: { to } }]);
   }
   assert.deepEqual(go(s, 'btn-theme.click').effects, [{ emit: 'theme.toggle' }]);
+  assert.deepEqual(go(s, 'brand.click').effects, [{ emit: 'nav.go', payload: { to: 'dashboard' } }], 'brand click -> nav.go dashboard');
 });
 
 test('unknown trigger throws (C2); tree handler keyed by tree.click', () => {

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resolve, diff } from '../../ui/model.js';
+import { resolve, diff, guessIcon } from '../../ui/model.js';
 
 const reg = {
   'base/box': { box: 'stack, hug, bare, square' },
@@ -113,6 +113,37 @@ test('provenance: records path + extends for every node, path threads through ch
   assert.deepEqual(provenance.get('0'), { path: [0], extends: 'atom/button' });
   assert.deepEqual(provenance.get('1'), { path: [1], extends: null });
 });
+// icon guess (default `icon` for a button whose author forgot one) -- keyword match, gated to atom/button*
+test('guessIcon: keyword match, first hit wins, case-insensitive', () => {
+  assert.equal(guessIcon('Refresh'), '⟳');
+  assert.equal(guessIcon('Start a run'), '+');       // 'start' checked before the generic 'run'
+  assert.equal(guessIcon('Run query'), '⚡');
+  assert.equal(guessIcon('Profile berechnen'), '∑');
+  assert.equal(guessIcon('HINT!!'), '!');
+  assert.equal(guessIcon('nonsense label'), undefined);
+  assert.equal(guessIcon(undefined), undefined);
+});
+test('icon guess fires on atom/button when no icon is set', () => {
+  const n = resolve({ extends: 'atom/button', content: 'Refresh' }, reg);
+  assert.equal(n.icon, '⟳');
+});
+test('icon guess fires through a variant (atom/button.primary)', () => {
+  const n = resolve({ extends: 'atom/button.primary', content: 'Start a run' }, reg);
+  assert.equal(n.icon, '+');
+});
+test('an explicit icon always wins over the guess', () => {
+  const n = resolve({ extends: 'atom/button', content: 'Refresh', icon: '★' }, reg);
+  assert.equal(n.icon, '★');
+});
+test('icon guess never fires outside a button-like extends', () => {
+  const n = resolve({ box: 'hug', content: 'Refresh' }, reg);
+  assert.equal(n.icon, undefined);
+});
+test('icon guess: no keyword match leaves icon unset', () => {
+  const n = resolve(reg['atom/button'], reg); // content: 'Go'
+  assert.equal(n.icon, undefined);
+});
+
 test('provenance: nested children get multi-segment paths', () => {
   const doc = { box: 'stack', children: [
     { box: 'row', children: [ { box: 'hug', content: 'x' }, { box: 'hug', content: 'y' } ] },

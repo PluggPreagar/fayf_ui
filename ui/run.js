@@ -198,6 +198,7 @@ export function makeHandlers(urls = FIXTURE_URLS) {
     'btn-view-records.click': (s) => ({ status: s, effects: [{ emit: 'records.open', payload: { run_id: s.data.runId } }] }),
     'btn-view-graph.click': (s) => ({ status: s, effects: [{ emit: 'graph.open', payload: { run: s.data.runId } }] }),
     ...Object.fromEntries(NAV.map(to => [`nav-${to}.click`, (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to } }] })])),
+    'brand.click': (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to: 'dashboard' } }] }),
   };
 }
 

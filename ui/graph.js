@@ -17,8 +17,11 @@
 // entirely outside this repo's render/resolve pipeline.
 //
 // ONE machine state (`ready`), no fetch at all -- immediately ready, nav +
-// theme only (even simpler than ui/query.js's single-state, one-fetch shape).
-// status.data = {} -- nothing to track, view() only ever sets crumb-page.
+// theme + refresh only (even simpler than ui/query.js's single-state,
+// one-fetch shape). status.data = {} -- nothing to track, view() only ever
+// sets crumb-page. btn-refresh has nothing of fayf_ui's own to re-fetch; it
+// just emits `graph.refresh` (same emit-and-let-the-consumer-act pattern as
+// theme/nav) so fayf_processor's iframe owner can reload the embed.
 import graphMachine from '../machines/graph.json' with { type: 'json' };
 import { mountMachine } from './machine.js';
 
@@ -33,8 +36,15 @@ export function initialData() {
 
 // Pure. (status, payload) -> { status, effects? }
 export const handlers = {
+  // No fetch of our own to re-run (status.data is always {}) -- this just
+  // emits, same as theme/nav, so the consumer mounting the real iframe
+  // (fayf_processor, see the header comment) can reload it. A no-op here
+  // while the embed slot is empty, exactly like btn-theme/nav are no-ops
+  // without a listener.
+  'btn-refresh.click': (s) => ({ status: s, effects: [{ emit: 'graph.refresh' }] }),
   'btn-theme.click': (s) => ({ status: s, effects: [{ emit: 'theme.toggle' }] }),
   ...Object.fromEntries(NAV.map(to => [`nav-${to}.click`, (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to } }] })])),
+  'brand.click': (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to: 'dashboard' } }] }),
 };
 
 // Pure. status -> { name: patch }.

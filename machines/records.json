@@ -4,8 +4,9 @@
                  "run.loaded": "ready", "run.failed": "error" },
     "ready": {
       "tree.click": "ready", "detail.loaded": "ready", "detail.failed": "ready",
+      "detail-editor.input": "ready", "btn-save.click": "ready", "save.ok": "ready", "save.err": "ready",
       "btn-refresh.click": "loading", "btn-theme.click": "ready",
       "nav-dashboard.click": "ready", "nav-pipelines.click": "ready", "nav-graph.click": "ready",
       "nav-records.click": "ready", "nav-issues.click": "ready", "nav-browse.click": "ready",
-      "nav-query.click": "ready", "nav-annotate.click": "ready", "nav-profile.click": "ready" },
+      "nav-query.click": "ready", "nav-annotate.click": "ready", "nav-profile.click": "ready", "brand.click": "ready" },
     "error": { "btn-retry.click": "loading" } } }

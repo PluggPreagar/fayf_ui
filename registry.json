@@ -4,7 +4,7 @@
   "content": "3"
  },
  "atom/avatar": {
-  "box": "row, mid, packed, aspect-locked, w:20, solid, circle, tint2",
+  "box": "row, mid, evenly, aspect-locked, w:20, solid, circle, tint2",
   "content": "M"
  },
  "atom/badge": {
@@ -53,7 +53,7 @@
  },
  "atom/floating-action-button": {
   "box": "row, mid, packed, fixed, w:28, h:28, solid, circle, tint1",
-  "content": "+"
+  "icon": "+"
  },
  "atom/flow-connector": {
   "box": "stack, bare, square, fixed, w:80, h:24",
@@ -63,7 +63,7 @@
  },
  "atom/icon-button": {
   "box": "row, mid, packed, fixed, w:22, h:22, solid, rounded",
-  "content": "+"
+  "icon": "+"
  },
  "atom/image-placeholder": {
   "box": "stack, square, fixed, w:80, h:56, dashed, tint0",
@@ -760,7 +760,7 @@
    {
     "extends": "atom/icon-button",
     "box": "square",
-    "content": "−"
+    "icon": "−"
    },
    {
     "box": "row, mid, packed, fixed, w:26, h:22, hairline, square",
@@ -769,7 +769,7 @@
    {
     "extends": "atom/icon-button",
     "box": "square",
-    "content": "+"
+    "icon": "+"
    }
   ]
  },
@@ -777,8 +777,9 @@
   "box": "bare, square, row, mid, gap:1, hug",
   "children": [
    {
-    "box": "row, mid, packed, fixed, w:18, h:18, solid, rounded",
-    "content": "‹"
+    "extends": "atom/icon-button",
+    "box": "w:18, h:18",
+    "icon": "‹"
    },
    {
     "box": "row, mid, packed, fixed, w:18, h:18, solid, rounded, tint1",
@@ -789,8 +790,9 @@
     "content": "2"
    },
    {
-    "box": "row, mid, packed, fixed, w:18, h:18, solid, rounded",
-    "content": "›"
+    "extends": "atom/icon-button",
+    "box": "w:18, h:18",
+    "icon": "›"
    }
   ]
  },
@@ -809,9 +811,9 @@
   "box": "bare, square, stack, gap:1, hug",
   "children": [
    {
-    "extends": "atom/button",
+    "extends": "atom/icon-button",
     "name": "anchor",
-    "content": "?"
+    "icon": "?"
    },
    {
     "name": "bubble",
@@ -959,7 +961,7 @@
         "name": "btn-theme",
         "extends": "atom/icon-button",
         "box": "w:16, h:16, bare",
-        "content": "◐"
+        "icon": "◐"
        }
       ]
      }
@@ -1232,14 +1234,14 @@
    },
    {
     "extends": "atom/icon-button",
-    "content": "×"
+    "icon": "×"
    },
    {
     "box": "fixed, w:1, h:16, tint3"
    },
    {
     "extends": "atom/icon-button",
-    "content": "▾"
+    "icon": "▾"
    }
   ]
  },
@@ -1425,8 +1427,9 @@
         "children": [
          {
           "name": "page-prev",
-          "box": "row, mid, packed, fixed, w:18, h:18, solid, rounded",
-          "content": "‹"
+          "extends": "atom/icon-button",
+          "box": "w:18, h:18",
+          "icon": "‹"
          },
          {
           "name": "page-1",
@@ -1440,8 +1443,9 @@
          },
          {
           "name": "page-next",
-          "box": "row, mid, packed, fixed, w:18, h:18, solid, rounded",
-          "content": "›"
+          "extends": "atom/icon-button",
+          "box": "w:18, h:18",
+          "icon": "›"
          }
         ]
        }
@@ -1475,18 +1479,13 @@
     "extends": "component/ws-head",
     "children": [
      {
-      "name": "brand",
-      "extends": "atom/text.title",
-      "content": "fayf_ui"
-     },
-     {
       "name": "crumbs",
       "extends": "component/breadcrumb-trail",
       "children": [
        {
-        "name": "crumb-home",
-        "box": "hug",
-        "content": "Workspace"
+        "name": "brand",
+        "box": "hug, pad:2",
+        "content": "fayf_ui"
        },
        ">",
        {
@@ -1720,7 +1719,7 @@
           "name": "btn-theme",
           "extends": "atom/icon-button",
           "box": "w:16, h:16, bare",
-          "content": "◐"
+          "icon": "◐"
          }
         ]
        }
@@ -1738,18 +1737,13 @@
     "extends": "component/ws-head",
     "children": [
      {
-      "name": "brand",
-      "extends": "atom/text.title",
-      "content": "fayf_ui"
-     },
-     {
       "name": "crumbs",
       "extends": "component/breadcrumb-trail",
       "children": [
        {
-        "name": "crumb-home",
-        "box": "hug",
-        "content": "Workspace"
+        "name": "brand",
+        "box": "hug, pad:2",
+        "content": "fayf_ui"
        },
        ">",
        {
@@ -1929,9 +1923,27 @@
       "box": "stack, fixed, w:280, pad:3, gap:2, scroll, solid, rounded",
       "children": [
        {
-        "name": "detail-title",
-        "extends": "atom/text.title",
-        "content": "Detail"
+        "name": "detail-head",
+        "box": "row, mid, between, gap:1",
+        "children": [
+         {
+          "name": "detail-title",
+          "extends": "atom/text.title",
+          "box": "fill, clip",
+          "content": "Detail"
+         },
+         {
+          "name": "btn-save",
+          "extends": "atom/button.primary",
+          "box": "hug, disabled",
+          "content": "Save"
+         }
+        ]
+       },
+       {
+        "name": "save-msg",
+        "box": "hug",
+        "content": ""
        },
        {
         "name": "detail-body",
@@ -1968,7 +1980,7 @@
           "name": "btn-theme",
           "extends": "atom/icon-button",
           "box": "w:16, h:16, bare",
-          "content": "◐"
+          "icon": "◐"
          }
         ]
        }
@@ -1986,18 +1998,13 @@
     "extends": "component/ws-head",
     "children": [
      {
-      "name": "brand",
-      "extends": "atom/text.title",
-      "content": "fayf_ui"
-     },
-     {
       "name": "crumbs",
       "extends": "component/breadcrumb-trail",
       "children": [
        {
-        "name": "crumb-home",
-        "box": "hug",
-        "content": "Workspace"
+        "name": "brand",
+        "box": "hug, pad:2",
+        "content": "fayf_ui"
        },
        ">",
        {
@@ -2302,7 +2309,7 @@
           "name": "btn-theme",
           "extends": "atom/icon-button",
           "box": "w:16, h:16, bare",
-          "content": "◐"
+          "icon": "◐"
          }
         ]
        }
@@ -2320,18 +2327,13 @@
     "extends": "component/ws-head",
     "children": [
      {
-      "name": "brand",
-      "extends": "atom/text.title",
-      "content": "fayf_ui"
-     },
-     {
       "name": "crumbs",
       "extends": "component/breadcrumb-trail",
       "children": [
        {
-        "name": "crumb-home",
-        "box": "hug",
-        "content": "Workspace"
+        "name": "brand",
+        "box": "hug, pad:2",
+        "content": "fayf_ui"
        },
        ">",
        {
@@ -2345,6 +2347,11 @@
       "name": "head-actions",
       "box": "row, mid, gap:2, hug",
       "children": [
+       {
+        "name": "btn-refresh",
+        "extends": "atom/button",
+        "content": "Refresh"
+       },
        {
         "name": "user",
         "box": "row, mid, gap:1, hug",
@@ -2487,6 +2494,10 @@
       "content": ""
      }
     ]
+   },
+   {
+    "name": "status-bar",
+    "extends": "component/shell-status"
    }
   ]
  },
@@ -2498,18 +2509,13 @@
     "extends": "component/ws-head",
     "children": [
      {
-      "name": "brand",
-      "extends": "atom/text.title",
-      "content": "fayf_ui"
-     },
-     {
       "name": "crumbs",
       "extends": "component/breadcrumb-trail",
       "children": [
        {
-        "name": "crumb-home",
-        "box": "hug",
-        "content": "Workspace"
+        "name": "brand",
+        "box": "hug, pad:2",
+        "content": "fayf_ui"
        },
        ">",
        {
@@ -2728,7 +2734,7 @@
           "name": "btn-theme",
           "extends": "atom/icon-button",
           "box": "w:16, h:16, bare",
-          "content": "◐"
+          "icon": "◐"
          }
         ]
        }
@@ -2746,18 +2752,13 @@
     "extends": "component/ws-head",
     "children": [
      {
-      "name": "brand",
-      "extends": "atom/text.title",
-      "content": "fayf_ui"
-     },
-     {
       "name": "crumbs",
       "extends": "component/breadcrumb-trail",
       "children": [
        {
-        "name": "crumb-home",
-        "box": "hug",
-        "content": "Workspace"
+        "name": "brand",
+        "box": "hug, pad:2",
+        "content": "fayf_ui"
        },
        ">",
        {
@@ -2991,7 +2992,7 @@
           "name": "btn-theme",
           "extends": "atom/icon-button",
           "box": "w:16, h:16, bare",
-          "content": "◐"
+          "icon": "◐"
          }
         ]
        }
@@ -3148,18 +3149,13 @@
     "extends": "component/ws-head",
     "children": [
      {
-      "name": "brand",
-      "extends": "atom/text.title",
-      "content": "fayf_ui"
-     },
-     {
       "name": "crumbs",
       "extends": "component/breadcrumb-trail",
       "children": [
        {
-        "name": "crumb-home",
-        "box": "hug",
-        "content": "Workspace"
+        "name": "brand",
+        "box": "hug, pad:2",
+        "content": "fayf_ui"
        },
        ">",
        {
@@ -3408,7 +3404,7 @@
           "name": "btn-theme",
           "extends": "atom/icon-button",
           "box": "w:16, h:16, bare",
-          "content": "◐"
+          "icon": "◐"
          }
         ]
        }
@@ -3426,18 +3422,13 @@
     "extends": "component/ws-head",
     "children": [
      {
-      "name": "brand",
-      "extends": "atom/text.title",
-      "content": "fayf_ui"
-     },
-     {
       "name": "crumbs",
       "extends": "component/breadcrumb-trail",
       "children": [
        {
-        "name": "crumb-home",
-        "box": "hug",
-        "content": "Workspace"
+        "name": "brand",
+        "box": "hug, pad:2",
+        "content": "fayf_ui"
        },
        ">",
        {
@@ -3676,7 +3667,7 @@
           "name": "btn-theme",
           "extends": "atom/icon-button",
           "box": "w:16, h:16, bare",
-          "content": "◐"
+          "icon": "◐"
          }
         ]
        }
@@ -3746,18 +3737,13 @@
     "extends": "component/ws-head",
     "children": [
      {
-      "name": "brand",
-      "extends": "atom/text.title",
-      "content": "fayf_ui"
-     },
-     {
       "name": "crumbs",
       "extends": "component/breadcrumb-trail",
       "children": [
        {
-        "name": "crumb-home",
-        "box": "hug",
-        "content": "Workspace"
+        "name": "brand",
+        "box": "hug, pad:2",
+        "content": "fayf_ui"
        },
        ">",
        {
@@ -3937,9 +3923,27 @@
       "box": "stack, fill, w:8/12, pad:3, gap:2, scroll, solid, rounded",
       "children": [
        {
-        "name": "detail-title",
-        "extends": "atom/text.title",
-        "content": "Detail"
+        "name": "detail-head",
+        "box": "row, mid, between, gap:1",
+        "children": [
+         {
+          "name": "detail-title",
+          "extends": "atom/text.title",
+          "box": "fill, clip",
+          "content": "Detail"
+         },
+         {
+          "name": "btn-save",
+          "extends": "atom/button.primary",
+          "box": "hug, disabled",
+          "content": "Save"
+         }
+        ]
+       },
+       {
+        "name": "save-msg",
+        "box": "hug",
+        "content": ""
        },
        {
         "name": "detail-body",
@@ -3996,7 +4000,7 @@
           "name": "btn-theme",
           "extends": "atom/icon-button",
           "box": "w:16, h:16, bare",
-          "content": "◐"
+          "icon": "◐"
          }
         ]
        }
@@ -4014,18 +4018,13 @@
     "extends": "component/ws-head",
     "children": [
      {
-      "name": "brand",
-      "extends": "atom/text.title",
-      "content": "fayf_ui"
-     },
-     {
       "name": "crumbs",
       "extends": "component/breadcrumb-trail",
       "children": [
        {
-        "name": "crumb-home",
-        "box": "hug",
-        "content": "Workspace"
+        "name": "brand",
+        "box": "hug, pad:2",
+        "content": "fayf_ui"
        },
        ">",
        {
@@ -4280,7 +4279,7 @@
           "name": "btn-theme",
           "extends": "atom/icon-button",
           "box": "w:16, h:16, bare",
-          "content": "◐"
+          "icon": "◐"
          }
         ]
        }
@@ -4298,18 +4297,13 @@
     "extends": "component/ws-head",
     "children": [
      {
-      "name": "brand",
-      "extends": "atom/text.title",
-      "content": "fayf_ui"
-     },
-     {
       "name": "crumbs",
       "extends": "component/breadcrumb-trail",
       "children": [
        {
-        "name": "crumb-home",
-        "box": "hug",
-        "content": "Workspace"
+        "name": "brand",
+        "box": "hug, pad:2",
+        "content": "fayf_ui"
        },
        ">",
        {

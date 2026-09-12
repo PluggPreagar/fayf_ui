@@ -32,7 +32,10 @@
 //                                           target's `.value` instead, C11's
 //                                           `field` escape hatch)
 //         | node-json | [node-json]        children, rendered via L2
-//         | { content?, env?, state? }     content as above, resolve env, state tokens
+//         | { content?, icon?, env?, state? } content as above; `icon` repaints
+//                                           an icon-bearing target's `.bx-icon`
+//                                           glyph span (render.js's `icon`
+//                                           node property) without touching content
 //   state tokens (C8 token string): actionable selected correct wrong readonly
 //                                   loading error disabled hidden -- absolute per paint
 // effects = fetch {url, ok, err} · emit {trigger, payload} · timer {ms, trigger}
@@ -255,8 +258,16 @@ export function mountMachine(root, screen, machine, handlers = {}, opts = {}) {
     if ('fetch' in e) {
       Promise.resolve()
         .then(() => doFetch(e.fetch, e.init))
-        .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
-        .then(json => deliver(e.ok, json), err => deliver(e.err, { error: String(err.message || err) }));
+        // A non-2xx response's own JSON body (e.g. a PATCH's 409 conflict
+        // reason) is worth more than a bare status code -- read it when
+        // present and thread it through as `body`, alongside the existing
+        // `error` string every err handler already relies on.
+        .then(async res => {
+          const body = await res.json().catch(() => null);
+          if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { body });
+          return body;
+        })
+        .then(json => deliver(e.ok, json), err => deliver(e.err, { error: String(err.message || err), ...(err.body != null ? { body: err.body } : {}) }));
     } else if ('timer' in e) {
       doTimer(() => deliver(e.trigger, e.payload), e.timer);
     } else if ('emit' in e) {
@@ -278,11 +289,20 @@ export function mountMachine(root, screen, machine, handlers = {}, opts = {}) {
   const active = () => new Set(Object.keys(machine.states[status.state]).filter(k => k !== 'enter'));
 
   function paintContent(target, patch) {
+    if (isPatch(patch) && patch.icon !== undefined) {
+      const iconEl = target.querySelector(':scope > .bx-icon');
+      if (iconEl && iconEl.textContent !== patch.icon) iconEl.textContent = patch.icon;
+    }
     const content = isPatch(patch) ? patch.content : patch;
     if (content === undefined) return;
     if (content == null) { morphChildren(target, []); return; }
     if (typeof content === 'string') {
       if ('value' in target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) { if (target.value !== content) target.value = content; return; }
+      // An icon-bearing target (render.js's `icon` node property) keeps its
+      // glyph in a sibling `.bx-icon` span -- patch just the label span so a
+      // plain string content patch doesn't blow the icon away via textContent.
+      const labelEl = target.querySelector(':scope > .bx-label');
+      if (labelEl) { if (labelEl.textContent !== content) labelEl.textContent = content; return; }
       if (target.textContent !== content) target.textContent = content;
       return;
     }

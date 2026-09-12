@@ -1,7 +1,7 @@
 // ui/render.js -- L2. The ONLY DOM writer (C5).
 import { parse, print, parseGapGrowth, parseSizeWeight } from './model.js';
 
-const PASSTHRU = ['path', 'from', 'to', 'relation', 'motion', 'field'];
+const PASSTHRU = ['path', 'from', 'to', 'relation', 'motion', 'field', 'icon'];
 
 // `field` (optional, plain data key -- not a dial, C8's token strings stay
 // the closed 12-dial box vocabulary): 'text' | 'textarea' -> a real
@@ -63,7 +63,29 @@ export function render(node, doc = document) {
   const extra = {};
   for (const k of PASSTHRU) if (node[k] != null) extra[k] = node[k];
   if (Object.keys(extra).length) el.dataset.extra = JSON.stringify(extra);
-  if (node.content != null) {
+  // `icon` (optional, plain data key, same class as `field` above -- not a
+  // dial): a glyph shown before `content`. Together they collapse title-only
+  // / icon+title / icon-only buttons into one part, told apart only by which
+  // of the two keys is present. Rendered as two plain (non-`.bx`) spans, not
+  // real box children -- capture()'s child-walk already ignores non-`.bx`
+  // nodes (same trick gapSpacer uses), so the round trip reads them back
+  // through `.bx-label`'s text, not `node.children`.
+  if (node.icon != null) {
+    if (tag) { if (node.content != null) el.value = node.content; }
+    else {
+      const iconEl = doc.createElement('span');
+      iconEl.className = 'bx-icon';
+      iconEl.textContent = node.icon;
+      el.appendChild(iconEl);
+      if (node.content != null) {
+        const labelEl = doc.createElement('span');
+        labelEl.className = 'bx-label';
+        labelEl.textContent = node.content;
+        el.appendChild(labelEl);
+        el.dataset.hasContent = '1';
+      }
+    }
+  } else if (node.content != null) {
     if (tag) el.value = node.content;
     else { el.textContent = node.content; el.dataset.hasContent = '1'; }
   }
@@ -99,6 +121,7 @@ export function capture(el) {
   if (el.dataset.extra) Object.assign(node, JSON.parse(el.dataset.extra));
   const kids = [...el.children].filter(c => c.classList?.contains('bx'));
   if (kids.length) node.children = kids.map(capture);
-  else if (el.dataset.hasContent) node.content = el.textContent;
+  else if (el.dataset.hasContent)
+    node.content = node.icon != null ? (el.querySelector(':scope > .bx-label')?.textContent ?? '') : el.textContent;
   return node;
 }

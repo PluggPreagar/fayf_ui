@@ -22,8 +22,9 @@ tr.addBlock('quiz: hint reveal and multiple-choice flow', (r) => {
      r.check(answers.length === 4, 'renders 4 answers for lesson1');
 
      const actionBtn = root.querySelector('[data-name="btn-action"]'); // "Check" while answering, becomes "Next" once revealed
+     const actionLabel = () => actionBtn.querySelector('.bx-label').textContent;
      r.check(!actionBtn.classList.contains('bx-disabled'), 'Check enabled in multiple mode');
-     r.check(actionBtn.textContent === 'Check', 'labeled Check while answering');
+     r.check(actionLabel() === 'Check', 'labeled Check while answering');
 
      const selector0 = root.querySelector('[data-name="selector-0"]');
      const selector1 = root.querySelector('[data-name="selector-1"]');
@@ -60,7 +61,7 @@ tr.addBlock('quiz: hint reveal and multiple-choice flow', (r) => {
      // honest about it (used to stay fully enabled-looking after already
      // checking in) -- relabels to "Next" here too (enterRevealed).
      r.check(actionBtn.classList.contains('bx-disabled'), 'disabled once checked in -- no longer misleadingly actionable');
-     r.check(actionBtn.textContent === 'Next', 'relabeled to Next once revealed');
+     r.check(actionLabel() === 'Next', 'relabeled to Next once revealed');
    });
 });
 

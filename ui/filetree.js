@@ -109,7 +109,11 @@ export function filetreeView(spec, t) {
       const key = `${name}-node-${encodeURIComponent(node.path)}`;
       rows.push({
         name: key, box: 'row, mid, gap:1, clip, pad:1, bare, fixed, h:22',
-        content: '  '.repeat(depth) + glyphOf(node) + node.name,
+        // Regular spaces collapse under default `white-space:normal` (every
+        // depth rendered flush-left, no visible indent -- issue #71); NBSP
+        // (U+00A0) doesn't collapse. Same fix shape as browse.js's detail
+        // pane (ui/browse.js's own leading-space substitution).
+        content: '  '.repeat(depth) + glyphOf(node) + node.name,
       });
       patches[key] = { state: 'actionable' + (node.kind === 'file' && t.sel != null && String(t.sel) === String(node.path) ? ', selected' : '') };
       if (node.kind === 'dir' && node.open && node.children) walk(node.children, depth + 1);

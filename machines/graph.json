@@ -1,7 +1,8 @@
 { "initial": "ready",
   "states": {
     "ready": {
+      "btn-refresh.click": "ready",
       "btn-theme.click": "ready",
       "nav-dashboard.click": "ready", "nav-pipelines.click": "ready", "nav-graph.click": "ready",
       "nav-records.click": "ready", "nav-issues.click": "ready", "nav-browse.click": "ready",
-      "nav-query.click": "ready", "nav-annotate.click": "ready", "nav-profile.click": "ready" } } }
+      "nav-query.click": "ready", "nav-annotate.click": "ready", "nav-profile.click": "ready", "brand.click": "ready" } } }

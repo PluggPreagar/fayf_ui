@@ -192,6 +192,7 @@ test('nav click emits nav.go with the target; theme click emits theme.toggle', (
     assert.deepEqual(r.effects, [{ emit: 'nav.go', payload: { to } }]);
   }
   assert.deepEqual(go(s, 'btn-theme.click').effects, [{ emit: 'theme.toggle' }]);
+  assert.deepEqual(go(s, 'brand.click').effects, [{ emit: 'nav.go', payload: { to: 'dashboard' } }], 'brand click -> nav.go dashboard');
 });
 
 test('unknown trigger throws (C2); tree handler keyed by master.click', () => {

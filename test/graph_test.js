@@ -17,14 +17,14 @@ const state = (scope = root()) => scope.dataset.machineState;
 const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues',
   'nav-browse', 'nav-query', 'nav-annotate', 'nav-profile'];
 
-tr.addBlock('graph: load -- ready immediately (no loading state), crumb, no status-bar, no detail panel', (r) => {
+tr.addBlock('graph: load -- ready immediately (no loading state), crumb, status-bar, no detail panel', (r) => {
   r.waitFor(() => document.body.dataset.ready === '1', 3000)
    .run(async () => {
      r.check(!!root(), 'screen mounted at body > .bx');
      r.check(state() === 'ready', 'machine starts (and stays) ready -- no loading/fetch at all', state());
      r.check(text('crumb-page') === 'Graph', 'crumb-page "Graph"', text('crumb-page'));
-     r.check(!q('status-bar'), 'no status-bar region -- deliberately bare shell');
-     r.check(!q('detail'), 'no detail side panel -- deliberately bare shell');
+     r.check(!!q('status-bar'), 'status-bar region present -- shared shell chrome, same as every other page');
+     r.check(!q('detail'), 'no detail side panel -- deliberately bare shell (embed slot takes its place)');
      r.check(!!q('side-panel'), 'side-panel present (nav rail)');
      r.check(q('nav-graph').classList.contains('bx-brand'), 'nav-graph marked active', q('nav-graph').className);
    });
@@ -48,8 +48,14 @@ tr.addBlock('graph: nav + theme emit', (r) => {
        const to = name.slice('nav-'.length);
        r.check(!!last && last[0] === 'nav.go' && last[1] && last[1].to === to, `${name}.click -> emit nav.go {to:'${to}'}`, JSON.stringify(last));
      }
-     r.check(!q('btn-theme'), 'no btn-theme element on this screen (no status-bar) -- theme.toggle has no live trigger here');
-     r.check(state() === 'ready', 'still ready after nav clicks', state());
+     q('btn-theme').click(); await settled();
+     r.check(window.__emitted.at(-1)[0] === 'theme.toggle', 'btn-theme.click -> emit theme.toggle', JSON.stringify(window.__emitted.at(-1)));
+     q('btn-refresh').click(); await settled();
+     r.check(window.__emitted.at(-1)[0] === 'graph.refresh', 'btn-refresh.click -> emit graph.refresh', JSON.stringify(window.__emitted.at(-1)));
+     q('brand').click(); await settled();
+     const lastBrand = window.__emitted.at(-1);
+     r.check(!!lastBrand && lastBrand[0] === 'nav.go' && lastBrand[1] && lastBrand[1].to === 'dashboard', "brand.click -> emit nav.go {to:'dashboard'}", JSON.stringify(lastBrand));
+     r.check(state() === 'ready', 'still ready after nav/theme clicks', state());
   });
 });
 

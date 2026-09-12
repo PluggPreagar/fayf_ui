@@ -7,7 +7,7 @@ const tr = new TestRunner({ stopOnError: false });
 
 // Contract of data-names between screens/shell.json and its consumers.
 const NAMES = [
-  'ws-head', 'brand', 'crumbs', 'crumb-home', 'crumb-page', 'head-actions', 'btn-primary', 'user',
+  'ws-head', 'brand', 'crumbs', 'crumb-page', 'head-actions', 'btn-primary', 'user',
   'body', 'side-panel',
   'nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues',
   'nav-browse', 'nav-query', 'nav-annotate', 'nav-profile',

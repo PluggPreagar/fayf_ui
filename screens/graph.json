@@ -2,14 +2,14 @@
   "children": [
     { "name": "ws-head", "extends": "component/ws-head",
       "children": [
-        { "name": "brand", "extends": "atom/text.title", "content": "fayf_ui" },
         { "name": "crumbs", "extends": "component/breadcrumb-trail",
           "children": [
-            { "name": "crumb-home", "box": "hug", "content": "Workspace" },
+            { "name": "brand", "box": "hug, pad:2", "content": "fayf_ui" },
             ">",
             { "name": "crumb-page", "box": "hug", "content": "Graph" } ] },
         { "name": "head-actions", "box": "row, mid, gap:2, hug",
           "children": [
+            { "name": "btn-refresh", "extends": "atom/button", "content": "Refresh" },
             { "name": "user", "box": "row, mid, gap:1, hug",
               "children": [
                 { "extends": "atom/avatar", "content": "P" },
@@ -55,4 +55,5 @@
               "children": [
                 { "name": "icon-profile", "extends": "cluster/dot", "box": "w:14, h:14, hairline, tint2" },
                 "Profile" ] } ] },
-        { "name": "embed", "box": "stack, fill, clip, bare", "content": "" } ] } ] }
+        { "name": "embed", "box": "stack, fill, clip, bare", "content": "" } ] },
+    { "name": "status-bar", "extends": "component/shell-status" } ] }

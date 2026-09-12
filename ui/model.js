@@ -52,6 +52,44 @@ export function print(dials, primitive = 'box') {
 
 const toDials = (v, prim) => typeof v === 'string' ? parse(v, prim) : { ...v };
 
+// L1 -- default-icon guess (render.js's `icon` node property). Only fires
+// for a node whose immediate `extends` is one of these known button ids --
+// gated so a data-table header or a plain text label never grows an icon
+// just because its content happens to say "Records". An explicit `icon` on
+// the node always wins (resolve() only calls this when one is absent) --
+// this fills a gap for buttons nobody remembered to icon, it never overrides.
+const ICON_GUESS_TYPES = new Set([
+  'atom/button', 'atom/button.primary', 'atom/button.ghost', 'atom/button.hint', 'atom/button.know',
+]);
+
+// Keyword (not exact-string) match, case-insensitive, first hit wins --
+// real labels ("Start a run", "Profile berechnen") still match on the verb/
+// noun that carries the action, not the whole sentence. Order matters where
+// two keywords could both appear (e.g. "Start a run" -- 'start' checked
+// before the generic 'run' so the button reads as create/start, not execute).
+const ICON_GUESS = [
+  [/refresh|retry/i, '⟳'],
+  [/\bnew\b|\bstart\b/i, '+'],
+  [/\bpause\b/i, '‖'],
+  [/\bresume\b|\bplay\b/i, '▸'],
+  [/\bcancel\b|\bclose\b|\bdelete\b|\bremove\b/i, '✕'],
+  [/\brecords?\b/i, '▤'],
+  [/\bgraph\b/i, '↗'],
+  [/\brun\b/i, '⚡'],
+  [/\bcompute\b|berechnen/i, '∑'],
+  [/\bhint\b/i, '!'],
+  [/\bcheck\b/i, '✓'],
+  [/\bnext\b/i, '→'],
+  [/\bok\b/i, '✓'],
+  [/\bsave\b/i, '✓'],
+];
+
+export function guessIcon(title) {
+  if (typeof title !== 'string') return undefined;
+  for (const [re, glyph] of ICON_GUESS) if (re.test(title)) return glyph;
+  return undefined;
+}
+
 function pickConditional(candidates, env) {
   const known = new Set(vocabulary.condition);
   const scored = candidates.map(c => {
@@ -92,6 +130,10 @@ export function resolve(doc, registry = {}, env = [], seen = new Set(), path = [
     if (node[prim] != null) node[prim] = toDials(node[prim], prim);
   if (node.content != null && node.children)
     throw new Error(`content xor children violated${node.name ? ` at '${node.name}'` : ''}`);
+  if (node.icon == null && ICON_GUESS_TYPES.has(link) && typeof node.content === 'string') {
+    const guess = guessIcon(node.content);
+    if (guess) node.icon = guess;
+  }
   if (node.children)
     node.children = node.children.map((c, i) => resolve(c, registry, env, seen, [...path, i], provenance));
   return node;

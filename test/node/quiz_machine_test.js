@@ -63,6 +63,7 @@ test('multiple mode: answer clicks toggle selection, stay answering; Check locks
   assert.equal(v.answers.content[0].children[0].content, '✓', 'selector 0 ticked');
   assert.equal(v.answers.content[2].children[0].content, '', 'selector 2 unticked');
   assert.equal(v['btn-action'].content, 'Check');
+  assert.equal(v['btn-action'].icon, '✓');
   assert.equal(v['btn-action'].state, '', 'Check enabled in multiple mode');
   assert.equal(v['hint-panel'].state, 'hidden');
   s = go(s, 'root.click', clickAnswer(1)).status;          // deselect 4
@@ -79,6 +80,7 @@ test('multiple mode: answer clicks toggle selection, stay answering; Check locks
   assert.equal(v['answer-2'].state, 'readonly, selected, correct');
   assert.equal(v.answers.content[0].children[2].name, 'icon-done');
   assert.equal(v['btn-action'].content, 'Next');
+  assert.equal(v['btn-action'].icon, '→');
 });
 
 test('a missed correct answer is wrong; wrong overall auto-reveals the hint', () => {

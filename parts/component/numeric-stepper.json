@@ -1,4 +1,4 @@
 { "box": "bare, square, row, mid, gap:0, hug",
-  "children": [ { "extends": "atom/icon-button", "box": "square", "content": "−" },
+  "children": [ { "extends": "atom/icon-button", "box": "square", "icon": "−" },
     { "box": "row, mid, packed, fixed, w:26, h:22, hairline, square", "content": "3" },
-    { "extends": "atom/icon-button", "box": "square", "content": "+" } ] }
+    { "extends": "atom/icon-button", "box": "square", "icon": "+" } ] }

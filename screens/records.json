@@ -2,10 +2,9 @@
   "children": [
     { "name": "ws-head", "extends": "component/ws-head",
       "children": [
-        { "name": "brand", "extends": "atom/text.title", "content": "fayf_ui" },
         { "name": "crumbs", "extends": "component/breadcrumb-trail",
           "children": [
-            { "name": "crumb-home", "box": "hug", "content": "Workspace" },
+            { "name": "brand", "box": "hug, pad:2", "content": "fayf_ui" },
             ">",
             { "name": "crumb-page", "box": "hug", "content": "Records" } ] },
         { "name": "head-actions", "box": "row, mid, gap:2, hug",
@@ -63,7 +62,11 @@
         { "name": "detail-splitter", "box": "fixed, w:6, bare" },
         { "name": "detail", "box": "stack, fill, w:8/12, pad:3, gap:2, scroll, solid, rounded",
           "children": [
-            { "name": "detail-title", "extends": "atom/text.title", "content": "Detail" },
+            { "name": "detail-head", "box": "row, mid, between, gap:1",
+              "children": [
+                { "name": "detail-title", "extends": "atom/text.title", "box": "fill, clip", "content": "Detail" },
+                { "name": "btn-save", "extends": "atom/button.primary", "box": "hug, disabled", "content": "Save" } ] },
+            { "name": "save-msg", "box": "hug", "content": "" },
             { "name": "detail-body", "box": "stack, gap:0, fill", "content": "Select a record" } ] },
         { "name": "inspect-splitter", "box": "fixed, w:6, bare" },
         { "name": "inspect", "box": "stack, fill, w:1/12, pad:3, gap:2, scroll, solid, rounded",
@@ -78,4 +81,4 @@
             { "name": "status-version", "box": "hug", "content": "v0.1" },
             { "name": "status-buttons", "extends": "cluster/button-group",
               "children": [
-                { "name": "btn-theme", "extends": "atom/icon-button", "box": "w:16, h:16, bare", "content": "◐" } ] } ] } ] } ] }
+                { "name": "btn-theme", "extends": "atom/icon-button", "box": "w:16, h:16, bare", "icon": "◐" } ] } ] } ] } ] }

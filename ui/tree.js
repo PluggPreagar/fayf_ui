@@ -82,9 +82,9 @@ export function treeView(spec, t) {
   const content = [];
   for (const { group, rows } of groups) {
     const glyph = isOpen(group) ? '▾' : '▸';
-    content.push({ name: `${name}-group-${group}`, box: 'row, mid, gap:1, pad:1, hug, bare', content: `${glyph} ${group} (${rows.length})` });
+    content.push({ name: `${name}-group-${group}`, box: 'row, mid, gap:1, pad:1, clamp, bare', content: `${glyph} ${group} (${rows.length})` });
     if (isOpen(group)) for (const row of rows) {
-      content.push({ name: `${name}-item-${row[rowKey]}`, box: 'row, mid, gap:1, pad:3, hug, bare', content: String(row[labelKey] ?? '') });
+      content.push({ name: `${name}-item-${row[rowKey]}`, box: 'row, mid, gap:1, pad:3, clamp, bare', content: String(row[labelKey] ?? '') });
     }
   }
 

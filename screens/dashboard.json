@@ -2,10 +2,9 @@
   "children": [
     { "name": "ws-head", "extends": "component/ws-head",
       "children": [
-        { "name": "brand", "extends": "atom/text.title", "content": "fayf_ui" },
         { "name": "crumbs", "extends": "component/breadcrumb-trail",
           "children": [
-            { "name": "crumb-home", "box": "hug", "content": "Workspace" },
+            { "name": "brand", "box": "hug, pad:2", "content": "fayf_ui" },
             ">",
             { "name": "crumb-page", "box": "hug", "content": "Dashboard" } ] },
         { "name": "head-actions", "box": "row, mid, gap:2, hug",
@@ -95,4 +94,4 @@
             { "name": "status-version", "box": "hug", "content": "v0.1" },
             { "name": "status-buttons", "extends": "cluster/button-group",
               "children": [
-                { "name": "btn-theme", "extends": "atom/icon-button", "box": "w:16, h:16, bare", "content": "◐" } ] } ] } ] } ] }
+                { "name": "btn-theme", "extends": "atom/icon-button", "box": "w:16, h:16, bare", "icon": "◐" } ] } ] } ] } ] }

@@ -139,12 +139,14 @@ test('filetreeView: open dir walks its children, indented by depth; loading dir 
   const names = v.tree.content.map(n => n.name);
   assert.deepEqual(names, ['tree-node-runs', nodeName('runs/run-1'), nodeName('runs/a.json'), 'tree-node-backend']);
   assert.equal(v.tree.content[0].content, '▾ Runs');
-  assert.equal(v.tree.content[1].content, '  ▸ run-1');
-  assert.equal(v.tree.content[2].content, '  · a.json');
+  // NBSP (U+00A0), not a plain space -- regular spaces collapse under
+  // `white-space:normal` (issue #71), leaving every depth flush-left.
+  assert.equal(v.tree.content[1].content, '  ▸ run-1');
+  assert.equal(v.tree.content[2].content, '  · a.json');
 
   const loadingT = setLoading(t, 'runs/run-1', true);
   v = filetreeView(SPEC, loadingT);
-  assert.equal(v.tree.content[1].content, '  … run-1');
+  assert.equal(v.tree.content[1].content, '  … run-1');
 });
 
 test('filetreeView: file row state actionable + selected when sel matches', () => {

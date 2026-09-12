@@ -18,7 +18,7 @@ test('machines/graph.json validates; JSON round-trip identical; one state, no en
   assert.deepEqual(JSON.parse(JSON.stringify(M)), M);
   assert.deepEqual(JSON.parse(readFileSync(new URL('../../machines/graph.json', import.meta.url), 'utf-8')), M);
   assert.equal(M.initial, 'ready');
-  assert.equal(Object.keys(M.states).length, 1, 'one state only -- no loading/error split, no fetch at all');
+  assert.equal(Object.keys(M.states).length, 1, 'one state only -- no loading/error split, no fetch at all (btn-refresh only emits)');
   assert.equal(M.states.ready.enter, undefined, 'no enter effects -- immediately ready');
 });
 
@@ -46,11 +46,22 @@ test('nav click emits nav.go with the target; theme click emits theme.toggle; bo
   const r = step(M, s, 'btn-theme.click', click('btn-theme'), handlers);
   assert.deepEqual(r.effects, [{ emit: 'theme.toggle' }]);
   assert.equal(r.status.state, 'ready');
+  const rb = step(M, s, 'brand.click', click('brand'), handlers);
+  assert.deepEqual(rb.effects, [{ emit: 'nav.go', payload: { to: 'dashboard' } }], 'brand click -> nav.go dashboard');
+  assert.equal(rb.status.state, 'ready');
+});
+
+test('btn-refresh click emits graph.refresh (nothing of our own to re-fetch -- consumer reloads the embed); stays ready', () => {
+  const s = init(M, initialData()).status;
+  const r = step(M, s, 'btn-refresh.click', click('btn-refresh'), handlers);
+  assert.deepEqual(r.effects, [{ emit: 'graph.refresh' }]);
+  assert.equal(r.status.state, 'ready');
+  assert.deepEqual(r.status, s, 'no data change -- handler is a pure pass-through');
 });
 
 test('unknown trigger throws (C2); handlers keyed for every machine trigger', () => {
   const s = init(M, initialData()).status;
   assert.throws(() => step(M, s, 'btn-run.click', click('btn-run'), handlers), /unknown trigger/);
   for (const k of triggers(M)) assert.equal(typeof handlers[k], 'function', k);
-  assert.equal(triggers(M).size, NAV.length + 1, 'nav-* (6) + btn-theme -- exactly, no fetch triggers');
+  assert.equal(triggers(M).size, NAV.length + 3, 'nav-* (9) + btn-theme + brand + btn-refresh -- exactly, no fetch triggers');
 });

@@ -189,6 +189,7 @@ export function makeHandlers(urls = FIXTURE_URLS) {
     'btn-refresh.click': (s) => ({ status: s, effects: [{ fetch: urls.runs, ok: 'runs.loaded', err: 'runs.failed' }] }),
     'btn-theme.click': (s) => ({ status: s, effects: [{ emit: 'theme.toggle' }] }),
     ...Object.fromEntries(NAV.map(to => [`nav-${to}.click`, (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to } }] })])),
+    'brand.click': (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to: 'dashboard' } }] }),
   };
 }
 

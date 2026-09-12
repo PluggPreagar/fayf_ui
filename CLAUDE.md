@@ -25,6 +25,12 @@ Part = saved preset of dials = JSON file. A node's `field: "text"|"textarea"`
 (plain property, not a dial) renders a real `<input>`/`<textarea>` instead of
 a `div` — C11 controllers' one escape hatch for real form input, `content`/
 view-patch strings become `.value` there (`ui/render.js`/`ui/machine.js`).
+A node's `icon` (also plain property, same class as `field`) is a glyph shown
+before `content` — one button model, told apart only by which of the two
+keys is set: `content` alone = title, `icon`+`content` = icon+title, `icon`
+alone = icon-only. Rendered as plain `.bx-icon`/`.bx-label` spans (not `.bx`
+children); a `view()` patch can repaint either one — a string patches the
+label, `{content, icon}` patches both (`ui/render.js`/`ui/machine.js`).
 Spec: `docs/superpowers/specs/2026-08-27-wireframe-ui-design.md`.
 
 ## Ladder

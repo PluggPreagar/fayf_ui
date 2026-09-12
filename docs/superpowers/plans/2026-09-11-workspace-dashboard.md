@@ -555,6 +555,18 @@ reg, opts)`. **Known simplification**: no `btn-theme`/status-bar on this screen 
 consumer wanting a theme toggle here would add one to `screens/graph.json`'s `head-actions`; the machine
 already supports it.
 
+**status-bar restored 2026-09-12**: the "drops status-bar" decision above was reversed — every other S6
+page carries the shared `ws-head`/side-panel/status-bar shell chrome, and a user audit flagged graph.html
+as the one page silently missing it. `screens/graph.json` gained `{"name": "status-bar", "extends":
+"component/shell-status"}` as a plain sibling of `body` (shell.json's own line, zero overrides needed —
+the part's own default "ready"/`v0.1`/`btn-theme` content already fits this screen's single always-`ready`
+state, so no `ui/graph.js` change was needed). `btn-theme` is therefore live on this screen again (it
+rides in on `component/shell-status`, not `head-actions` — `head-actions` still carries no theme control,
+unchanged). `test/graph_test.js` flipped its two negative assertions (`no status-bar` / `no btn-theme`) to
+positive ones matching every other page's test shape; the "no detail panel" assertion is unchanged (the
+embed slot still takes that region's place). Detail panel still deliberately absent — only status-bar was
+restored.
+
 ### Known small items
 - js_runner prints "Checks: 0" before async blocks (another session is fixing it — do not touch test/js_runner.js).
 - shell ws-head `between` with 3 children centres the crumbs; luna nav icon dots faint (checklist #14 class).
@@ -646,6 +658,21 @@ already supports it.
   prior page's failed-fetch path already carries (ground truth itself toasts-and-continues).
 - annotate.html has no `?run=&rede=` deep-link URL sync (same class of drop as browse.html's `?mount=&path=&at=`)
   and no `nav-annotate` side-panel item (this repo's shared NAV set is still the 6-item S4/S5 simplification).
+
+**head simplified 2026-09-12** (post-S6, cross-cutting -- all 10 pages + shell.json): the standalone
+`brand` title box and the `crumb-home` "Workspace" crumb were two elements saying almost the same thing --
+`crumb-home` was 100% identical text on every single page and neither was ever clickable. Merged: `brand`
+now replaces `crumb-home` as the crumb trail's first segment (`fayf_ui > <Page>`), and is a real link --
+every machine's `ready` state gained `"brand.click": "ready"` and every controller gained a `brand.click`
+handler emitting `nav.go {to:'dashboard'}` (same shape as the existing `nav-*.click` handlers). No `view()`
+change needed anywhere (static content, like `crumb-home` before it); `ui/machine.js`'s existing
+trigger-driven `bx-actionable` marking picked it up for free. `registry.json` rebuilt (still 90 ids). Full
+node (336/336) + browser suite (every page, all green, new `brand.click` assertions added throughout)
+plus a live click-through confirming real navigation. fayf_processor re-vendored via the proper
+`FAYF_UI_SRC`-pointed `fetch_vendor_assets.py` run (receipt hashes updated correctly, not a raw copy) --
+see that repo's own TODO-214 for the one real gap it caught (7 pages load their machine from a local
+`frontend/fayf/<page>-machine.json` override, not the vendored copy, and each needed the same one-line
+addition by hand).
 
 ## Open (next C9, one at a time)
 

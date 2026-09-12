@@ -10,6 +10,14 @@
 // selected record's JSON output (detail), with diff views and in-place
 // editing in the full version.
 //
+// Real edit + Save, 2026-09-12: a genuine, tested backend endpoint
+// (backend/api/artefacts.py's patch_step_output, PATCH /api/step/{run}/
+// {step}/{record}, if_version optimistic concurrency) already existed --
+// the OLD ui-kit frontend used it (frontend/api.js's saveArtifact), the
+// migration to this repo just never wired it up. Still deferred (a real,
+// separate gap, same discipline as before): diff views (vs pre-edit
+// history, vs another run), tags display, "Re-run..."/graph-jump buttons.
+//
 // v1 scope (docs/superpowers/plans/2026-09-11-workspace-dashboard.md S6,
 // "records" -- the first half of the records/run step, "run" -- the live SSE
 // watch view -- is a separate, deferred engine gap):
@@ -22,11 +30,8 @@
 //     whose type has ONLY named outputs) -- every step is a plain 2-level
 //     step->record tree; a record under such a step just won't resolve in
 //     this v1 (a real, accepted gap -- the ground truth itself only handles
-//     it via a second metadata round-trip this v1 doesn't replicate).
-//   - no diff views (vs pre-edit history, vs another run), no in-place
-//     edit+save (version-guarded PATCH), no tags display, no "Re-run..."/
-//     graph-jump buttons -- all deferred, same discipline as browse.html's
-//     dropped edit.
+//     it via a second metadata round-trip this v1 doesn't replicate). Same
+//     reason Save only ever PATCHes `/api/step/...`, never `/api/channel/...`.
 //
 // Unlike ui/browse.js's filetree usage, this tree is NEVER lazy: one
 // run-metadata fetch (`run.json`) already knows every step id AND every
@@ -46,16 +51,25 @@
 //
 // status.data = { runId, runMeta: null | { run_id, pipeline, status,
 //                  record_ids }, tree: filetreeStatus, detail: null | detail
-//                  response, detailLoading, error }
+//                  response, detailLoading, error, editText, saveMsg }
 import recordsMachine from '../machines/records.json' with { type: 'json' };
 import { mountMachine } from './machine.js';
 import { filetreeInit, filetreeHandlers, filetreeView } from './filetree.js';
-import { detailBody } from './browse.js';
+import { detailBody, detailEditor } from './browse.js';
 
 export { recordsMachine };
 
 export const TREE = { name: 'tree' };
-export const FIXTURE_URLS = { artifact: (path) => `/content/records/artifact/${path}.json` };
+// `saveArtifact` builds a PATCH {url, init} for `Api.saveArtifact`'s real
+// shape (backend/api/artefacts.py's patch_step_output: {value, if_version}
+// body against /api/step/{run}/{step}/{record}, {value, version} on 200,
+// 409 on a stale if_version -- also 409 while the run is still in
+// progress, PATCH only ever applies to a terminal run). `null` here (this
+// repo's own fixture demo has no writable backend) means Save mutates
+// status.data locally instead of firing a fetch -- same "no urls ->
+// local-optimistic" convention ui/issues.js's status changes established,
+// also used by ui/browse.js's own saveFile default.
+export const FIXTURE_URLS = { artifact: (path) => `/content/records/artifact/${path}.json`, saveArtifact: null };
 export const FIXTURE_RUN_ID = 'run-2026-09-11';   // matches content/records/run.json's own run.run_id
 
 const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
@@ -75,11 +89,19 @@ function buildNodes(steps, recordIds) {
 
 // Pure. status.data at mount: nothing loaded, tree empty (no run metadata yet).
 export function initialData(runId) {
-  return { runId, runMeta: null, [TREE.name]: filetreeInit(TREE, []), detail: null, detailLoading: false, error: null };
+  return { runId, runMeta: null, [TREE.name]: filetreeInit(TREE, []), detail: null, detailLoading: false, error: null,
+    editText: '', saveMsg: '' };
 }
 
 const withData = (s, patch) => ({ ...s, data: { ...s.data, ...patch } });
 const reset = (s) => ({ status: withData(s, { error: null }) });
+
+// Pure. The detail response is a bare value or { value, version } (view()'s
+// adapter already handles both) -- this pulls just the text a Save needs to
+// parse back, same JSON-pretty-print detailBody (ui/browse.js) already does.
+function editTextFor(detail) {
+  return detailBody({ format: 'json', content: JSON.stringify(detail && detail.value !== undefined ? detail.value : detail) });
+}
 
 // filetree handlers, wrapped: filetreeHandlers' own click keeps its pure
 // dir-toggle / file-select behaviour (and its `${name}.select` emit) -- a
@@ -120,12 +142,36 @@ export function makeHandlers(urls = FIXTURE_URLS) {
     // payload = whatever the fixture/real endpoint returns -- a bare value or
     // { value, version }, not assumed which (view()'s adapter handles both,
     // same "wrapped" check the ground truth's own loadArtifact() makes).
-    'detail.loaded': (s, p) => ({ status: withData(s, { detail: p, detailLoading: false }) }),
+    'detail.loaded': (s, p) => ({ status: withData(s, { detail: p, detailLoading: false, editText: editTextFor(p), saveMsg: '' }) }),
     'detail.failed': (s, p) => ({ status: withData(s, { detailLoading: false, error: p && p.error }) }),
+    'detail-editor.input': (s, p) => ({ status: withData(s, { editText: (p && p.value) ?? '' }) }),
+    // Save: the run must be terminal and the record selected -- both already
+    // guaranteed by how this screen gets here (v1 has no "run in progress"
+    // path at all), so the only real client-side guard is that the typed
+    // text is still valid JSON (the backend stores a real parsed value, not
+    // a string -- patch_step_output's own `new_value: Any`).
+    'btn-save.click': (s) => {
+      const d = s.data;
+      if (!d.detail) return { status: s, effects: [] };
+      let value;
+      try { value = JSON.parse(d.editText); }
+      catch (e) { return { status: withData(s, { saveMsg: `Save failed: invalid JSON (${e.message})` }), effects: [] }; }
+      const t = d[TREE.name];
+      if (!urls.saveArtifact) {
+        const version = (d.detail && d.detail.version != null ? d.detail.version : 0) + 1;
+        return { status: withData(s, { detail: { value, version }, editText: editTextFor({ value, version }), saveMsg: 'Saved (local)' }) };
+      }
+      const [stepId, recordId] = String(t.sel).split('/');
+      const { url, init } = urls.saveArtifact(d.runId, stepId, recordId, value, d.detail && d.detail.version);
+      return { status: withData(s, { saveMsg: 'Saving…' }), effects: [{ fetch: url, init, ok: 'save.ok', err: 'save.err' }] };
+    },
+    'save.ok': (s, p) => ({ status: withData(s, { detail: p, editText: editTextFor(p), saveMsg: 'Saved' }) }),
+    'save.err': (s, p) => ({ status: withData(s, { saveMsg: `Save failed: ${(p && p.body && p.body.error) || (p && p.error) || 'error'}` }) }),
     'btn-refresh.click': reset,
     'btn-retry.click': reset,
     'btn-theme.click': (s) => ({ status: s, effects: [{ emit: 'theme.toggle' }] }),
     ...Object.fromEntries(NAV.map(to => [`nav-${to}.click`, (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to } }] })])),
+    'brand.click': (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to: 'dashboard' } }] }),
   };
 }
 
@@ -149,17 +195,15 @@ export function view(s) {
   // Generic, schema-agnostic metadata about the SELECTION -- deliberately not
   // per-record-type field splitting (session_nr/speaker_name/etc, only known
   // for THIS run's step types), which the header comment already scopes out
-  // of v1 (no diff views, no in-place edit -- same discipline). Everything
-  // here is already on status.data regardless of what kind of record it is.
+  // of v1 (no diff views), same discipline.
   const [stepId, recordId] = selPath ? selPath.split('/') : [null, null];
   const patches = {
     'crumb-page': 'Records',
     'status-text': loading ? 'loading…' : s.state === 'error' ? `failed: ${d.error}` : `${d.runMeta ? d.runMeta.pipeline + ' · ' : ''}run ${d.runId}`,
     'detail-title': selPath || 'Select a record',
-    // detailBody (ui/browse.js) expects { format, content }; the artifact
-    // response is a bare value or { value, version } -- adapt it here, a
-    // small call-site wrapper, not a change to browse.js's own contract.
-    'detail-body': d.detail ? detailBody({ format: 'json', content: JSON.stringify(d.detail.value ?? d.detail) }) : d.detailLoading ? 'Loading…' : 'Select a record',
+    'detail-body': { content: d.detail ? detailEditor(d.editText) : (d.detailLoading ? 'Loading…' : 'Select a record') },
+    'btn-save': { state: d.detail ? 'actionable' : 'disabled' },
+    'save-msg': d.saveMsg || '',
     'inspect-body': selPath ? [
       inspectRow('Step', stepId),
       inspectRow('Record', recordId),

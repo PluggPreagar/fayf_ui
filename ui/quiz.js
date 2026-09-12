@@ -119,6 +119,7 @@ export function view(s) {
     'hint-panel': { state: [result, (d.hint || (revealed && !correct)) ? '' : 'hidden'].filter(Boolean).join(', ') },
     answers: { content, env: q.layout ? ['spacious'] : [], state: '' },
     'btn-action': { content: s.state === 'answering' ? 'Check' : 'Next',
+                    icon: s.state === 'answering' ? '✓' : '→',
                     state: s.state === 'answering' && q.mode !== 'multiple' ? 'disabled' : '' },
   };
   q.answers.forEach((a, i) => {

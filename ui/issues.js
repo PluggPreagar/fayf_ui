@@ -85,6 +85,7 @@ export function makeHandlers(urls = FIXTURE_URLS) {
     'btn-retry.click': reset,
     'btn-theme.click': (s) => ({ status: s, effects: [{ emit: 'theme.toggle' }] }),
     ...Object.fromEntries(NAV.map(to => [`nav-${to}.click`, (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to } }] })])),
+    'brand.click': (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to: 'dashboard' } }] }),
   };
 }
 
@@ -104,7 +105,7 @@ function detailBody(detail) {
     // detail panel (C10) and needs no new primitive.
     { name: 'detail-status', box: 'row, mid, gap:1, scroll',
       children: STATUSES.map(v => ({ name: `detail-status-${v}`, extends: 'atom/chip', content: v })) },
-    { box: 'stack, gap:1, fill', content: detail.body || '' },
+    { box: 'stack, gap:1, clamp', content: detail.body || '' },
     fieldRow('Created', detail.created),
     fieldRow('Page', detail.page),
   ];

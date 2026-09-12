@@ -17,6 +17,9 @@ const root = () => document.querySelector('body > .bx');
 const q = (name, scope = root()) => scope.querySelector(`[data-name="${name}"]`);
 const qa = (sel, scope = root()) => [...scope.querySelectorAll(sel)];
 const text = (name, scope) => (q(name, scope)?.textContent ?? '').trim();
+// An icon-bearing node (render.js's `icon` property) keeps its label in a
+// sibling `.bx-label` span -- text() alone would include the icon glyph too.
+const label = (name, scope) => (q(name, scope)?.querySelector('.bx-label')?.textContent ?? '').trim();
 const state = (scope = root()) => scope.dataset.machineState;
 const NAV = ['nav-dashboard', 'nav-pipelines', 'nav-graph', 'nav-records', 'nav-issues',
   'nav-browse', 'nav-query', 'nav-annotate', 'nav-profile'];
@@ -70,8 +73,8 @@ tr.addBlock('profile: run-picker -- 0/1 picked leaves Compute disabled (click no
 tr.addBlock('profile: Compute -- fetches + renders the speakers table', (r) => {
   r.run(async () => {
      q('btn-compute').click();
-     r.check(text('btn-compute') === 'Computing…', 'button label flips to Computing…', text('btn-compute'));
-     r.check(await until(() => text('btn-compute') !== 'Computing…', 3000), 'compute settles', text('btn-compute'));
+     r.check(label('btn-compute') === 'Computing…', 'button label flips to Computing…', label('btn-compute'));
+     r.check(await until(() => label('btn-compute') !== 'Computing…', 3000), 'compute settles', label('btn-compute'));
      r.check(!!q('speakers-head'), 'speakers-head present after compute');
      const rows = qa('[data-name^="speakers-row-"]');
      r.check(rows.length === 4, 'speakers table has 4 rows (the fixture profiles)', rows.length);
@@ -152,6 +155,9 @@ tr.addBlock('profile: nav + theme emit', (r) => {
      r.check(!!last && last[0] === 'nav.go' && last[1] && last[1].to === 'dashboard', "nav-dashboard.click -> emit nav.go {to:'dashboard'}", JSON.stringify(last));
      q('btn-theme').click(); await settled();
      r.check(window.__emitted.at(-1)[0] === 'theme.toggle', 'btn-theme.click -> emit theme.toggle', JSON.stringify(window.__emitted.at(-1)));
+     q('brand').click(); await settled();
+     const lastBrand = window.__emitted.at(-1);
+     r.check(!!lastBrand && lastBrand[0] === 'nav.go' && lastBrand[1] && lastBrand[1].to === 'dashboard', "brand.click -> emit nav.go {to:'dashboard'}", JSON.stringify(lastBrand));
      r.check(state() === 'ready', 'still ready after nav/theme', state());
    });
 });

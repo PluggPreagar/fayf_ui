@@ -141,6 +141,9 @@ tr.addBlock('annotate: refresh re-fetches sessions; nav + theme emit', (r) => {
      r.check(!!last && last[0] === 'nav.go' && last[1] && last[1].to === 'dashboard', "nav-dashboard.click -> emit nav.go {to:'dashboard'}", JSON.stringify(last));
      q('btn-theme').click(); await settled();
      r.check(window.__emitted.at(-1)[0] === 'theme.toggle', 'btn-theme.click -> emit theme.toggle');
+     q('brand').click(); await settled();
+     const lastBrand = window.__emitted.at(-1);
+     r.check(!!lastBrand && lastBrand[0] === 'nav.go' && lastBrand[1] && lastBrand[1].to === 'dashboard', "brand.click -> emit nav.go {to:'dashboard'}", JSON.stringify(lastBrand));
   });
 });
 

@@ -168,6 +168,7 @@ export function makeHandlers(urls = FIXTURE_URLS) {
     'btn-refresh.click': (s) => ({ status: s, effects: [{ fetch: urls.runs, ok: 'runs.loaded', err: 'runs.failed' }] }),
     'btn-theme.click': (s) => ({ status: s, effects: [{ emit: 'theme.toggle' }] }),
     ...Object.fromEntries(NAV.map(to => [`nav-${to}.click`, (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to } }] })])),
+    'brand.click': (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to: 'dashboard' } }] }),
   };
 }
 
@@ -207,8 +208,8 @@ function sentenceRows(paragraphs, sets, badgesReady) {
     p.sentences.forEach((s, si) => {
       const ps = `P${pi}/S${si}`;
       const badge = badgesReady ? badgeFor(ps, sets).label : '…';
-      out.push({ box: 'row, mid, gap:1, hug',
-        children: [ { box: 'fixed, w:16', content: badge }, { box: 'hug', content: s.text } ] });
+      out.push({ box: 'row, mid, gap:1, clamp',
+        children: [ { box: 'fixed, w:16', content: badge }, { box: 'fill', content: s.text } ] });
     });
   });
   return out;
