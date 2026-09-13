@@ -2189,6 +2189,11 @@
             "name": "stat-running",
             "extends": "atom/text.title",
             "content": "–"
+           },
+           {
+            "name": "stat-running-sub",
+            "box": "hug",
+            "content": ""
            }
           ]
          },
@@ -2234,6 +2239,11 @@
             "name": "stat-issues",
             "extends": "atom/text.title",
             "content": "–"
+           },
+           {
+            "name": "stat-issues-sub",
+            "box": "hug",
+            "content": ""
            }
           ]
          }
@@ -2253,6 +2263,11 @@
         "name": "issues-title",
         "box": "hug",
         "content": "Issues"
+       },
+       {
+        "name": "issues-badges",
+        "box": "row, gap:1, scroll, hug",
+        "content": ""
        },
        {
         "name": "issues",

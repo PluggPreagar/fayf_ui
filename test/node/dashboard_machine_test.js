@@ -150,6 +150,41 @@ test('view in ready: stat values, status-text, both table heads, <= 20 rows per 
     assert.ok(keys.indexOf(k) < firstRow, `${k} painted before row patches`);
 });
 
+test('view in ready: stat-tile sub-messages (runs total, issues total)', () => {
+  const s = loadAll().status;
+  const v = view(s);
+  assert.equal(v['stat-running-sub'], `${RUNS_FX.length} runs total`);
+  assert.equal(v['stat-issues-sub'], `${ISSUES_FX.length} total`);
+});
+
+test('view in loading: stat-tile sub-messages blank', () => {
+  const v = view(start().status);
+  assert.equal(v['stat-running-sub'], '');
+  assert.equal(v['stat-issues-sub'], '');
+});
+
+test('stat-tile sub-messages: "none yet" / "none filed" when a list is empty', () => {
+  let s = go(start().status, 'runs.loaded', []).status;
+  s = go(s, 'pipelines.loaded', PIPES_FX).status;
+  s = drive(s, 'issues.loaded', []).status;
+  const v = view(s);
+  assert.equal(v['stat-running-sub'], 'none yet');
+  assert.equal(v['stat-issues-sub'], 'none filed');
+});
+
+test('issues-badges: one chip per non-zero lifecycle status, in STATUSES order, "<status> <count>"', () => {
+  const s = loadAll().status;
+  const v = view(s);
+  const tally = {};
+  for (const i of ISSUES_FX) tally[i.status] = (tally[i.status] || 0) + 1;
+  const expectedOrder = ['in-progress', 'open', 'ready', 'blocked', 'done', 'archived'].filter(st => tally[st]);
+  assert.deepEqual(v['issues-badges'].content.map(c => c.name), expectedOrder.map(st => `badge-${st}`));
+  assert.deepEqual(v['issues-badges'].content.map(c => c.content), expectedOrder.map(st => `${st} ${tally[st]}`));
+  for (const c of v['issues-badges'].content) assert.equal(c.extends, 'atom/chip');
+  // sanity: the fixture actually exercises every status (no vacuously-true assertion above)
+  assert.equal(expectedOrder.length, 6, 'fixture should cover all 6 lifecycle statuses');
+});
+
 test('run row click: table sel + data.sel + emit recent-runs.select + run.open; detail shows the run', () => {
   const s0 = loadAll().status;
   const r = go(s0, 'recent-runs.click', click('recent-runs', 'recent-runs-row-r-0001'));

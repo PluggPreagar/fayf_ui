@@ -27,6 +27,11 @@ export const ISSUES = { name: 'issues', rowKey: 'id', columns: [
 
 const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', 'query', 'annotate', 'profile'];
 const ISSUE_OPEN = ['open', 'in-progress'];
+// Lifecycle order for the status-breakdown badges above the issues table --
+// same list as ui/issues.js's own STATUSES, duplicated rather than imported
+// (this file's own NAV array above is the same kind of small shared-vocab
+// list every controller already keeps its own copy of, not a cross-import).
+const ISSUE_STATUSES = ['in-progress', 'open', 'ready', 'blocked', 'done', 'archived'];
 const TEST_DEPLOY = /^e2e-deploy-/;
 const NO_LOADED = { runs: false, pipelines: false, issues: false };
 
@@ -44,6 +49,14 @@ export const counts = (d) => ({
   issues:    issueRows(d).filter(i => ISSUE_OPEN.includes(i.status)).length,
 });
 const issueRows = (d) => Array.isArray(d.issues) ? d.issues : (d.issues && d.issues.rows) || [];
+
+// Pure. One tally per lifecycle status, for the badge row above the issues
+// table (ground truth: a Badge per non-zero status, `${status} ${count}`).
+const issueStatusCounts = (d) => {
+  const tally = {};
+  for (const row of issueRows(d)) tally[row.status] = (tally[row.status] || 0) + 1;
+  return tally;
+};
 
 const withData = (s, patch) => ({ ...s, data: { ...s.data, ...patch } });
 const flag = (s, key) => ({ ...s.data.loaded, [key]: true });
@@ -138,12 +151,28 @@ export function view(s) {
   const c = counts(d);
   const loading = s.state === 'loading';
   const stat = (n) => loading ? '–' : String(n);
+  // Ground truth: "Runs" carried a "X running · Y failed" / "none yet"
+  // sub-message, "Issues open" a "Z total" / "none filed" one -- this repo's
+  // own 4-tile layout (Running/Failed split into their own tiles, not one
+  // combined "Runs" field) already shows running/failed as PRIMARY numbers,
+  // so the one piece of context actually missing is each tile's own TOTAL.
+  const runsSub = loading ? '' : d.runs.length ? `${d.runs.length} runs total` : 'none yet';
+  const totalIssues = issueRows(d).length;
+  const issuesSub = loading ? '' : totalIssues ? `${totalIssues} total` : 'none filed';
+  const statusCounts = issueStatusCounts(d);
   const patches = {
     'crumb-page': 'Dashboard',
     'stat-running': stat(c.running),
+    'stat-running-sub': runsSub,
     'stat-failed': stat(c.failed),
     'stat-pipelines': stat(c.pipelines),
     'stat-issues': stat(c.issues),
+    'stat-issues-sub': issuesSub,
+    // One chip per non-zero lifecycle status (ground truth: a Badge per
+    // status, never one for a status with zero issues).
+    'issues-badges': { content: ISSUE_STATUSES.filter(st => statusCounts[st]).map(st => ({
+      name: `badge-${st}`, extends: 'atom/chip', content: `${st} ${statusCounts[st]}`,
+    })) },
     'status-text': loading ? 'loading…' : s.state === 'error' ? `failed: ${d.error}` : `${d.runs.length} runs · ${c.pipelines} pipelines`,
     'detail-title': d.sel ? (d.sel.kind === 'run' ? `Run ${d.sel.row.run_id}` : `Issue #${d.sel.row.number}`) : 'Detail',
     'detail-body': d.sel ? Object.entries(d.sel.row).map(([k, v]) => fieldRow(k, v)) : 'Select a run or an issue',

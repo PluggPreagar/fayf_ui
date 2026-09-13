@@ -64,7 +64,8 @@
                 { "name": "tile-running", "extends": "cluster/stat-tile",
                   "children": [
                     { "box": "hug", "content": "Running" },
-                    { "name": "stat-running", "extends": "atom/text.title", "content": "–" } ] },
+                    { "name": "stat-running", "extends": "atom/text.title", "content": "–" },
+                    { "name": "stat-running-sub", "box": "hug", "content": "" } ] },
                 { "name": "tile-failed", "extends": "cluster/stat-tile",
                   "children": [
                     { "box": "hug", "content": "Failed" },
@@ -76,10 +77,12 @@
                 { "name": "tile-issues", "extends": "cluster/stat-tile",
                   "children": [
                     { "box": "hug", "content": "Open issues" },
-                    { "name": "stat-issues", "extends": "atom/text.title", "content": "–" } ] } ] },
+                    { "name": "stat-issues", "extends": "atom/text.title", "content": "–" },
+                    { "name": "stat-issues-sub", "box": "hug", "content": "" } ] } ] },
             { "name": "recent-runs-title", "box": "hug", "content": "Recent runs" },
             { "name": "recent-runs", "box": "stack, scroll, fixed, h:240, solid, rounded", "content": "" },
             { "name": "issues-title", "box": "hug", "content": "Issues" },
+            { "name": "issues-badges", "box": "row, gap:1, scroll, hug", "content": "" },
             { "name": "issues", "box": "stack, scroll, fixed, h:240, solid, rounded", "content": "" } ] },
         { "name": "detail-splitter", "box": "fixed, w:6, bare" },
         { "name": "detail", "box": "stack, fixed, w:280, pad:3, gap:2, scroll, solid, rounded",
