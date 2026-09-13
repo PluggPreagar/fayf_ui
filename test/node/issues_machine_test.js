@@ -25,7 +25,7 @@ test('machines/issues.json validates; JSON round-trip identical', () => {
 test('fixtures: list covers all 6 statuses, at least one per status; ids unique', () => {
   assert.ok(LIST_FX.length >= 8, `list ${LIST_FX.length}`);
   for (const i of LIST_FX) {
-    assert.deepEqual(Object.keys(i).sort(), ['id', 'number', 'page', 'status', 'title']);
+    assert.deepEqual(Object.keys(i).sort(), ['body', 'id', 'number', 'page', 'status', 'title', ...(i.has_sketch ? ['has_sketch'] : [])].sort());
     assert.ok(STATUSES.includes(i.status), i.status);
   }
   for (const status of STATUSES) assert.ok(LIST_FX.some(i => i.status === status), `no fixture issue with status ${status}`);
@@ -56,11 +56,36 @@ test('view in loading: status-text "loading…", master empty + loading token', 
   assert.deepEqual(v[MASTER.name], { content: [], state: 'loading' });
 });
 
-test('list.loaded: master tree populated, transitions to ready', () => {
+test('list.loaded: master tree populated (has_sketch rows get a 📷 title prefix), transitions to ready', () => {
   const r = go(start().status, 'list.loaded', LIST_FX);
   assert.equal(r.status.state, 'ready', 'list.loaded -> ready per the machine');
   assert.deepEqual(r.effects, []);
-  assert.deepEqual(r.status.data[MASTER.name].rows, LIST_FX);
+  assert.deepEqual(r.status.data.allIssues, LIST_FX, 'the raw, undecorated list is kept for re-filtering');
+  const rows = r.status.data[MASTER.name].rows;
+  assert.equal(rows.length, LIST_FX.length);
+  for (let i = 0; i < LIST_FX.length; i++) {
+    if (LIST_FX[i].has_sketch) assert.deepEqual(rows[i], { ...LIST_FX[i], title: '📷 ' + LIST_FX[i].title });
+    else assert.deepEqual(rows[i], LIST_FX[i]);
+  }
+  assert.ok(LIST_FX.some(i => i.has_sketch), 'fixture sanity: at least one has_sketch row to exercise the decoration');
+});
+
+test('filter-issues.input: matches title OR body (case-insensitive), preserves tree open/sel, empty text resets', () => {
+  const s0 = loaded();
+  // open a group + select a row first, so the filter must NOT reset either.
+  const target = LIST_FX.find(i => i.status === 'open');
+  const s1 = go(s0, 'master.click', click(`master-item-${target.id}`)).status;
+  const r = go(s1, 'filter-issues.input', { value: 'zoom' });
+  assert.equal(r.status.data.filterText, 'zoom');
+  const rows = r.status.data[MASTER.name].rows;
+  assert.deepEqual(rows.map(x => x.id), ['iss-2'], 'matches title substring, case-insensitive query vs mixed-case title');
+  assert.equal(r.status.data[MASTER.name].sel, target.id, 'selection preserved across a filter keystroke');
+  // body-only match (the word doesn't appear in any title)
+  const r2 = go(r.status, 'filter-issues.input', { value: 'scroll wheel' });
+  assert.deepEqual(r2.status.data[MASTER.name].rows.map(x => x.id), ['iss-2'], 'matches body text too');
+  // clearing the filter restores every row
+  const r3 = go(r2.status, 'filter-issues.input', { value: '' });
+  assert.equal(r3.status.data[MASTER.name].rows.length, LIST_FX.length);
 });
 
 test('view in ready: status-text counts, tree grouped by status in STATUSES order', () => {
@@ -100,6 +125,99 @@ test('detail.loaded: data.detail set, detailLoading cleared; view shows title + 
   assert.equal(chips.name, 'detail-status');
   assert.deepEqual(chips.children.map(c => c.name), STATUSES.map(x => `detail-status-${x}`));
   for (const st of STATUSES) assert.deepEqual(v[`detail-status-${st}`], { state: st === detail.status ? 'selected' : 'actionable' });
+});
+
+test('detailBody parses recent_actions/marked_elements into a readable list instead of the raw repr text', () => {
+  const s0 = loaded();
+  const afterClick = go(s0, 'master.click', click('master-item-iss-2')).status;
+  const detail = DETAIL_FX('iss-2');
+  const s = go(afterClick, 'detail.loaded', detail).status;
+  const v = view(s);
+  const texts = v['detail-body'].map(n => n.content).filter(c => typeof c === 'string');
+  assert.ok(texts.includes('recent_actions'), 'label row present');
+  assert.ok(texts.some(t => t.includes('2026-08-03T12:59:38.100Z') && t.includes('click button "Zoom in"')),
+    'parsed {ts, action} entry rendered as one readable line, not the raw python-repr string');
+  assert.ok(texts.includes('marked_elements'));
+  assert.ok(texts.some(t => t === 'div.canvas:nth-of-type(1) > svg.edge-layer'), 'parsed plain-string list entry');
+  assert.ok(!texts.some(t => t.includes("[{'ts'")), 'raw repr text never shown verbatim');
+});
+
+test('btn-edit only actionable for an open issue; click seeds editText from body (sketch ref stripped)', () => {
+  const s0 = loaded();
+  const openTarget = LIST_FX.find(i => i.status === 'open');
+  const closedTarget = LIST_FX.find(i => i.status !== 'open');
+  let s = go(s0, 'master.click', click(`master-item-${openTarget.id}`)).status;
+  s = go(s, 'detail.loaded', DETAIL_FX(openTarget.id)).status;
+  assert.deepEqual(view(s)['btn-edit'], { state: 'actionable' });
+
+  const r = go(s, 'btn-edit.click');
+  assert.equal(r.status.data.editing, true);
+  assert.equal(r.status.data.editText, 'Zooming with the scroll wheel snaps to a far zoom level instead of scaling smoothly.',
+    'the ![screen sketch](...) markdown ref create_issue appends is stripped back off for editing');
+  const v = view(r.status);
+  assert.deepEqual(v['detail-body'][0], { name: 'detail-editor', box: 'fill, pad:2, solid, rounded', field: 'textarea', content: r.status.data.editText });
+  assert.deepEqual(v['btn-edit'], { state: 'disabled' }, 'no re-entrant edit while already editing');
+  // Found live: detailEditor()'s content has no detail-status-* chips at all
+  // (that row is part of detailBody()'s read-only rows only) -- patching
+  // those slots anyway made ui/machine.js's own name-checked morph throw
+  // ("view names slot ... not in screen"), a real crash the first live test
+  // of the edit flow hit immediately.
+  for (const st of STATUSES) assert.ok(!(`detail-status-${st}` in v), `detail-status-${st} must not be patched while editing`);
+
+  // a non-open issue never gets an actionable Edit button, and clicking it anyway is a no-op
+  let s2 = go(s0, 'master.click', click(`master-item-${closedTarget.id}`)).status;
+  s2 = go(s2, 'detail.loaded', DETAIL_FX(closedTarget.id)).status;
+  assert.deepEqual(view(s2)['btn-edit'], { state: 'disabled' });
+  assert.deepEqual(go(s2, 'btn-edit.click').status, s2);
+});
+
+test('edit flow, urls.updateBody null (demo): type, cancel discards, save is local-optimistic', () => {
+  const s0 = loaded();
+  const target = LIST_FX.find(i => i.status === 'open');
+  let s = go(s0, 'master.click', click(`master-item-${target.id}`)).status;
+  s = go(s, 'detail.loaded', DETAIL_FX(target.id)).status;
+  s = go(s, 'btn-edit.click').status;
+
+  const typed = go(s, 'detail-editor.input', { value: 'Edited body text.' }).status;
+  assert.equal(typed.data.editText, 'Edited body text.');
+
+  const cancelled = go(typed, 'btn-cancel-edit.click').status;
+  assert.equal(cancelled.data.editing, false);
+  assert.equal(cancelled.data.editText, '');
+  assert.equal(cancelled.data.detail.body, DETAIL_FX(target.id).body, 'cancel discards the edit, detail.body untouched');
+
+  const r = go(typed, 'btn-save-edit.click');
+  assert.deepEqual(r.effects, [], 'no backend configured -> no fetch effect');
+  assert.equal(r.status.data.editing, false);
+  assert.equal(r.status.data.detail.body, 'Edited body text.');
+});
+
+test('edit flow, urls.updateBody configured: real POST, save-body.ok/err', () => {
+  const urls = { detail: FIXTURE_URLS.detail, status: null, updateBody: (id) => `/api/issues/${id}/body` };
+  const h = makeHandlers(urls);
+  const target = LIST_FX.find(i => i.status === 'open');
+  let s = go(loaded(h), 'master.click', click(`master-item-${target.id}`), h).status;
+  s = go(s, 'detail.loaded', DETAIL_FX(target.id), h).status;
+  s = go(s, 'btn-edit.click', undefined, h).status;
+  s = go(s, 'detail-editor.input', { value: 'Real backend edit.' }, h).status;
+
+  const r = go(s, 'btn-save-edit.click', undefined, h);
+  assert.deepEqual(r.effects, [{
+    fetch: `/api/issues/${target.id}/body`,
+    init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ body: 'Real backend edit.' }) },
+    ok: 'save-body.ok', err: 'save-body.err',
+  }]);
+  assert.equal(r.status.data.editing, true, 'still editing until the fetch resolves');
+
+  // server re-appends the sketch ref on its own response -- detail.body should
+  // reflect exactly what a fresh GET would now return, not the bare edited text.
+  const ok = go(r.status, 'save-body.ok', { id: target.id, body: 'Real backend edit.\n\n![screen sketch](x.jpg)' }, h);
+  assert.equal(ok.status.data.editing, false);
+  assert.equal(ok.status.data.detail.body, 'Real backend edit.\n\n![screen sketch](x.jpg)');
+  assert.equal(ok.status.data.saveError, null);
+
+  const err = go(r.status, 'save-body.err', { error: 'HTTP 500', body: { error: 'issue is not open' } }, h);
+  assert.equal(err.status.data.saveError, 'issue is not open', 'the server\'s own message wins over the bare HTTP status');
 });
 
 test('status chip click, urls.status = null (demo): sets status locally, no effect', () => {

@@ -58,11 +58,16 @@
         { "name": "content", "box": "stack, fill, pad:3, gap:3, scroll, solid, rounded",
           "children": [
             { "name": "content-title", "extends": "atom/text.title", "content": "Issues" },
+            { "name": "filter-row", "box": "stack, clamp", "content": "" },
             { "name": "master", "box": "stack, gap:1, fill", "content": "" } ] },
         { "name": "detail-splitter", "box": "fixed, w:6, bare" },
         { "name": "detail", "box": "stack, fixed, w:280, pad:3, gap:2, scroll, solid, rounded",
           "children": [
-            { "name": "detail-title", "extends": "atom/text.title", "content": "Detail" },
+            { "name": "detail-head", "box": "row, mid, between, gap:1",
+              "children": [
+                { "name": "detail-title", "extends": "atom/text.title", "box": "fill, clip", "content": "Detail" },
+                { "name": "btn-edit", "extends": "atom/button", "box": "hug, disabled", "content": "Edit" } ] },
+            { "name": "save-error", "box": "hug", "content": "" },
             { "name": "detail-body", "box": "stack, gap:1, fill", "content": "Select an issue" } ] } ] },
     { "name": "status-bar", "extends": "component/shell-status",
       "children": [
