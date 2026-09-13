@@ -150,14 +150,15 @@ test('view in ready: stat values, status-text, both table heads, <= 20 rows per 
     assert.ok(keys.indexOf(k) < firstRow, `${k} painted before row patches`);
 });
 
-test('run row click: table sel + data.sel + emit recent-runs.select; detail shows the run', () => {
+test('run row click: table sel + data.sel + emit recent-runs.select + run.open; detail shows the run', () => {
   const s0 = loadAll().status;
   const r = go(s0, 'recent-runs.click', click('recent-runs', 'recent-runs-row-r-0001'));
   assert.equal(r.status.state, 'ready');
   const row = RUNS_FX.find(x => x.run_id === 'r-0001');
   assert.equal(r.status.data[RUNS.name].sel, 'r-0001');
   assert.deepEqual(r.status.data.sel, { kind: 'run', row });
-  assert.deepEqual(r.effects, [{ emit: 'recent-runs.select', payload: row }], 'emit kept for the parent');
+  assert.deepEqual(r.effects, [{ emit: 'recent-runs.select', payload: row }, { emit: 'run.open', payload: { run_id: row.run_id } }],
+    'select kept for the parent, plus run.open (ground truth: a run row navigates to the live run-watch page)');
   const v = view(r.status);
   assert.equal(v['detail-title'], 'Run r-0001');
   assert.deepEqual(v['detail-body'].map(n => n.children.map(c => c.content)),
@@ -170,7 +171,8 @@ test('issue row click: sel kind issue, detail "Issue #<number>"', () => {
   const target = ISSUES_FX[3];
   const r = go(s, 'issues.click', click('issues', `issues-row-${target.id}`));
   assert.deepEqual(r.status.data.sel, { kind: 'issue', row: target });
-  assert.deepEqual(r.effects, [{ emit: 'issues.select', payload: target }]);
+  assert.deepEqual(r.effects, [{ emit: 'issues.select', payload: target }, { emit: 'nav.go', payload: { to: 'issues' } }],
+    'ground truth: an issue row navigates to the issues screen');
   const v = view(r.status);
   assert.equal(v['detail-title'], `Issue #${target.number}`);
   assert.equal(v[`issues-row-${target.id}`].state, 'actionable, selected');
@@ -243,6 +245,7 @@ test('nav click emits nav.go with the target; theme click emits theme.toggle; bo
   }
   assert.deepEqual(go(s, 'btn-theme.click').effects, [{ emit: 'theme.toggle' }]);
   assert.deepEqual(go(s, 'brand.click').effects, [{ emit: 'nav.go', payload: { to: 'dashboard' } }], 'brand click -> nav.go dashboard');
+  assert.deepEqual(go(s, 'btn-primary.click').effects, [{ emit: 'nav.go', payload: { to: 'pipelines' } }], '"Start a run" -> pipelines list');
   assert.deepEqual(go(start().status, 'nav-issues.click'), { status: start().status, effects: [] }, 'inert while loading');
 });
 

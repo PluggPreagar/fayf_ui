@@ -7,7 +7,7 @@
                  "runs.failed": "error", "pipelines.failed": "error", "issues.failed": "error",
                  "flow.ready": "ready" },
     "ready":   { "recent-runs.click": "ready", "recent-runs.scroll": "ready", "issues.click": "ready", "issues.scroll": "ready",
-                 "btn-refresh.click": "loading", "btn-theme.click": "ready",
+                 "btn-refresh.click": "loading", "btn-theme.click": "ready", "btn-primary.click": "ready",
                  "nav-dashboard.click": "ready", "nav-pipelines.click": "ready", "nav-graph.click": "ready",
                  "nav-records.click": "ready", "nav-issues.click": "ready", "nav-browse.click": "ready",
                  "nav-query.click": "ready", "nav-annotate.click": "ready", "nav-profile.click": "ready", "brand.click": "ready" },

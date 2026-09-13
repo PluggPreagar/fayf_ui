@@ -70,8 +70,15 @@ const carryClientHeight = (spec, rows, prevWindow, extra = {}) => ({
 
 // Table handlers, wrapped: the table handler keeps its own slice + `emit`
 // <name>.select; the wrapper ALSO sets data.sel from that emit's payload
-// (the row). The emit stays -- a parent (onEmit) still hears the selection.
-function selecting(spec, kind) {
+// (the row) -- a quick-glance detail panel without leaving the page. The
+// emit stays -- a parent (onEmit) still hears the selection.
+//
+// `navEmit(row)` (optional): a row click navigates away in the ground
+// truth (Recent-runs -> the live run-watch page, an Issues row -> the
+// issues screen) -- when given, its `{emit, payload}` is appended
+// alongside the selection so a parent (onEmit) can act on it, same
+// precedent as ui/list.js's own `run.open` emit for its runs table.
+function selecting(spec, kind, navEmit) {
   const h = tableHandlers(spec);
   const click = h[`${spec.name}.click`];
   return {
@@ -79,7 +86,9 @@ function selecting(spec, kind) {
     [`${spec.name}.click`]: (s, p) => {
       const r = click(s, p);
       const e = (r.effects || []).find(x => x.emit === `${spec.name}.select`);
-      return e ? { ...r, status: withData(r.status, { sel: { kind, row: e.payload } }) } : r;
+      if (!e) return r;
+      const withSel = { ...r, status: withData(r.status, { sel: { kind, row: e.payload } }) };
+      return navEmit ? { ...withSel, effects: [...withSel.effects, navEmit(e.payload)] } : withSel;
     },
   };
 }
@@ -108,10 +117,14 @@ export const handlers = {
   'btn-refresh.click': reset,
   'btn-retry.click':   reset,
   'btn-theme.click': (s) => ({ status: s, effects: [{ emit: 'theme.toggle' }] }),
+  // "Start a run" (ground truth: navigated to the pipelines list, the same
+  // destination nav-pipelines.click already goes to -- no separate flow of
+  // its own here, C2: one action, one route).
+  'btn-primary.click': (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to: 'pipelines' } }] }),
   ...Object.fromEntries(NAV.map(to => [`nav-${to}.click`, (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to } }] })])),
   'brand.click': (s) => ({ status: s, effects: [{ emit: 'nav.go', payload: { to: 'dashboard' } }] }),
-  ...selecting(RUNS, 'run'),
-  ...selecting(ISSUES, 'issue'),
+  ...selecting(RUNS, 'run', (row) => ({ emit: 'run.open', payload: { run_id: row.run_id } })),
+  ...selecting(ISSUES, 'issue', () => ({ emit: 'nav.go', payload: { to: 'issues' } })),
 };
 
 const RETRY = { name: 'btn-retry', box: 'row, mid, packed, pad:2, solid, rounded', content: 'Retry' };
