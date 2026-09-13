@@ -37,6 +37,15 @@
 }
 .bx { box-sizing:border-box; position:relative; display:flex; flex-direction:row;
       min-width:0; min-height:0; font:12px/1.3 var(--prose); color:var(--text); }
+/* render.js's `field` escape hatch (a real <input>/<textarea>, not a div) --
+   unlike a plain .bx div (transparent by default, filled only by a fill-tint/
+   .bx-solid dial), a native form control gets its OWN background from the
+   BROWSER, driven by the page's color-scheme -- under a dark host theme that
+   native background goes dark while .bx's `color:var(--text)` above is still
+   the skin's light-canvas text color, blacking the control out (found live,
+   issue: markdown source unreadable under a dark host theme). Every skin's
+   --paper is defined for exactly this "content surface" role already. */
+input.bx, textarea.bx { background:var(--paper); }
 /* icon+label (render.js's `icon` node property): plain spans, not `.bx`
    children -- margin only when a label sibling exists, none for icon-only. */
 .bx-icon:not(:only-child) { margin-right:4px; }
