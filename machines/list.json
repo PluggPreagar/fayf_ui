@@ -8,7 +8,8 @@
     "ready": {
       "pipelines.click": "ready", "pipelines.scroll": "ready",
       "runs.click": "ready", "runs.scroll": "ready",
-      "start-record-id.input": "ready", "btn-start-run.click": "ready",
+      "runs-filter.input": "ready", "runs-tools.click": "ready", "runs-pager.click": "ready",
+      "record-rows.input": "ready", "record-rows.click": "ready", "btn-start-run.click": "ready",
       "start.saved": "ready", "start.failed": "ready",
       "btn-refresh.click": "loading", "btn-theme.click": "ready",
       "nav-dashboard.click": "ready", "nav-pipelines.click": "ready", "nav-graph.click": "ready",

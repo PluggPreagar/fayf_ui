@@ -41,7 +41,7 @@ tr.addBlock('list: load -- 2 fetches -> ready, status-text, both tables real row
      r.check(!!q('runs-head'), 'runs-head present');
      const pipeRows = rowsOf('pipelines'), runRows = rowsOf('runs');
      r.check(pipeRows.length === Math.min(pipelines.length, 20), 'pipelines table painted rows (windowed)', pipeRows.length);
-     r.check(runRows.length > 0 && runRows.length <= 20, 'runs table painted rows (windowed)', runRows.length);
+     r.check(runRows.length === Math.min(runs.length, 12), 'runs table painted rows (paged, pageSize 12 -- ground-truth parity)', runRows.length);
      r.check(text('detail-title') === 'Pipelines', 'detail-title default "Pipelines"', text('detail-title'));
      const totalRow = q('detail-body').textContent;
      r.check(totalRow.includes(String(runs.length)), 'detail-body shows total runs count', totalRow);
@@ -61,38 +61,56 @@ tr.addBlock('list: pipeline filter -- click filters runs table + detail stats, c
      r.check(text('detail-title') === `Pipeline: ${target}`, 'detail-title "Pipeline: <name>"', text('detail-title'));
      r.check(text('status-text').includes(`filtered: ${target}`), 'status-text shows filtered marker', text('status-text'));
      const filteredRows = rowsOf('runs');
-     r.check(filteredRows.length === Math.min(targetRuns.length, 20), 'runs table shrinks to the pipeline\'s rows', `${filteredRows.length} vs ${targetRuns.length}`);
+     r.check(filteredRows.length === Math.min(targetRuns.length, 12), 'runs table shrinks to the pipeline\'s rows', `${filteredRows.length} vs ${targetRuns.length}`);
      r.check(q('detail-body').textContent.includes(String(targetRuns.length)), 'detail-body total updates to the filtered count', q('detail-body').textContent);
 
      row.click(); await settled();
      r.check(!row.classList.contains('bx-selected'), 'clicking the same pipeline row again clears the selection');
      r.check(text('detail-title') === 'Pipelines', 'detail-title back to "Pipelines"', text('detail-title'));
      r.check(!text('status-text').includes('filtered:'), 'status-text filtered marker gone', text('status-text'));
-     r.check(rowsOf('runs').length === Math.min(runs.length, 20), 'runs table back to the full list', rowsOf('runs').length);
+     r.check(rowsOf('runs').length === Math.min(runs.length, 12), 'runs table back to the full list', rowsOf('runs').length);
    });
 });
 
-tr.addBlock('list: start a run -- field types, no-op guards, local-optimistic emits run.open', (r) => {
+tr.addBlock('list: start a run -- multi-row entry, validation, local-optimistic emits run.open', (r) => {
   r.run(async () => {
      const pipelines = await fixture('pipelines');
      const target = pipelines[1];   // a different pipeline than the filter test used
      q(`pipelines-row-${target}`).click(); await settled();
-     const field = q('start-record-id'), btn = q('btn-start-run');
-     r.check(field && field.tagName === 'INPUT', 'start-record-id is a real <input>', field && field.tagName);
+     const field0 = q('record-id-0'), addBtn = q('record-add'), btn = q('btn-start-run');
+     r.check(field0 && field0.tagName === 'INPUT', 'record-id-0 is a real <input>', field0 && field0.tagName);
+     r.check(!!addBtn, 'record-add present');
      r.check(!!btn, 'btn-start-run present');
+
      const before = window.__emitted.length;
      btn.click(); await settled();
-     r.check(window.__emitted.length === before, 'no-op: Start run with an empty field emits nothing');
+     r.check(window.__emitted.length === before, 'no-op: Start run with every row blank emits nothing');
+     r.check(text('detail-body').includes('at least one record id'), 'validation message shown', text('detail-body'));
 
-     field.value = '21_67';
-     field.dispatchEvent(new Event('input', { bubbles: true }));
+     field0.value = '21/67';
+     field0.dispatchEvent(new Event('input', { bubbles: true }));
      await settled();
-     r.check(field.value === '21_67', 'typed value stays in the field (view patch does not clobber it)');
+     btn.click(); await settled();
+     r.check(window.__emitted.length === before, 'no-op: "/" in a record id is rejected, not submitted');
+     r.check(text('detail-body').includes("can't contain"), 'slash-rejection message shown', text('detail-body'));
+
+     field0.value = '21_67';
+     field0.dispatchEvent(new Event('input', { bubbles: true }));
+     await settled();
+     r.check(field0.value === '21_67', 'typed value stays in the field (view patch does not clobber it)');
+
+     addBtn.click(); await settled();
+     const field1 = q('record-id-1');
+     r.check(!!field1, 'Add record grows a second row');
+     field1.value = '21_68';
+     field1.dispatchEvent(new Event('input', { bubbles: true }));
+     await settled();
 
      btn.click(); await settled();
      const opened = window.__emitted.find(e => e[0] === 'run.open' && e[1].run_id === `${target}-21_67`);
-     r.check(!!opened, 'run.open emitted with pipeline-record_id', JSON.stringify(window.__emitted.at(-1)));
-     r.check(field.value === '', 'field cleared after starting');
+     r.check(!!opened, 'run.open emitted with pipeline-<first record id>', JSON.stringify(window.__emitted.at(-1)));
+     r.check(q('record-id-0').value === '', 'rows reset after starting');
+     r.check(!q('record-id-1'), 'back down to a single (blank) row');
 
      q(`pipelines-row-${target}`).click(); await settled();   // deselect, leave state clean for later blocks
   });
@@ -110,6 +128,44 @@ tr.addBlock('list: run row click -- emits run.open with the run_id, no page nav 
      r.check(!!open && String(open[1].run_id) === id, 'onEmit got run.open with the same run_id', JSON.stringify(open));
      r.check(state() === 'ready', 'still ready after a run click (no real nav in this demo)', state());
    });
+});
+
+tr.addBlock('list: runs table is filterable/exportable/paged (ground-truth parity)', (r) => {
+  r.run(async () => {
+     const runs = await fixture('runs');
+     r.check(!!q('runs-filter') && q('runs-filter').tagName === 'INPUT', 'runs-tools carries a real filter <input>');
+     r.check(!!q('runs-export-csv') && !!q('runs-export-json'), 'runs-tools carries CSV + JSON export buttons');
+     r.check(rowsOf('runs').length === Math.min(runs.length, 12), 'one page = pageSize (12) rows', rowsOf('runs').length);
+     r.check(q('runs-page-prev').classList.contains('bx-disabled'), 'page 1: Prev disabled');
+     const hasNext = runs.length > 12;
+     r.check(q('runs-page-next').classList.contains('bx-disabled') !== hasNext, 'Next enabled iff more than one page', `runs=${runs.length}`);
+
+     if (hasNext) {
+       q('runs-page-next').click(); await settled();
+       r.check(rowsOf('runs').length === Math.min(runs.length - 12, 12), 'page 2: the next slice', rowsOf('runs').length);
+       q('runs-page-prev').click(); await settled();
+       r.check(rowsOf('runs').length === 12, 'back to page 1', rowsOf('runs').length);
+     }
+
+     const targetPipeline = runs[0].pipeline;
+     const field = q('runs-filter');
+     field.value = targetPipeline;
+     field.dispatchEvent(new Event('input', { bubbles: true }));
+     await settled();
+     const expected = runs.filter(x => String(x.pipeline).includes(targetPipeline) || String(x.run_id).includes(targetPipeline) || String(x.status).includes(targetPipeline) || String(x.started_at).includes(targetPipeline)).length;
+     r.check(rowsOf('runs').length === Math.min(expected, 12), 'filtering narrows the paged runs table', `${rowsOf('runs').length} vs ${expected}`);
+     r.check(q('runs-page-prev').classList.contains('bx-disabled'), 'a new filter restarts paging at page 1');
+
+     const before = window.__emitted.length;
+     q('runs-export-csv').click();
+     const evt = window.__emitted.at(-1);
+     r.check(window.__emitted.length === before + 1 && evt[0] === 'runs.export' && evt[1].format === 'csv' && evt[1].filename === 'runs.csv', 'CSV export emits runs.export with the spec.exportName filename', JSON.stringify(evt));
+
+     field.value = '';
+     field.dispatchEvent(new Event('input', { bubbles: true }));
+     await settled();
+     r.check(rowsOf('runs').length === Math.min(runs.length, 12), 'clearing the filter restores the full (paged) row count', rowsOf('runs').length);
+  });
 });
 
 tr.addBlock('list: refresh -- ready -> loading -> ready', (r) => {
@@ -162,7 +218,13 @@ tr.addBlock('list: nav + theme emit', (r) => {
 });
 
 tr.addBlock('list: fit (C10) -- root does not scroll, tables sized, content fits', (r) => {
-  r.run(() => {
+  r.run(async () => {
+     // Yield a frame before measuring -- a synchronous fit-check running
+     // immediately after a preceding block's DOM mutations can read a
+     // stale, not-yet-reflowed layout box otherwise (found live: every
+     // measurement below came back tiny at a real 1280px viewport,
+     // self-correcting the instant anything else triggered a reflow).
+     await new Promise(requestAnimationFrame);
      const el = root();
      r.check(el.scrollWidth <= el.clientWidth, 'root: no horizontal overflow', `${el.scrollWidth} > ${el.clientWidth}`);
      r.check(el.scrollHeight <= el.clientHeight, 'root: no vertical overflow', `${el.scrollHeight} > ${el.clientHeight}`);
@@ -173,7 +235,7 @@ tr.addBlock('list: fit (C10) -- root does not scroll, tables sized, content fits
      const c = q('content');
      r.check(c.scrollWidth <= c.clientWidth, 'content: scrollWidth <= clientWidth', `${c.scrollWidth} > ${c.clientWidth}`);
      const cr = c.getBoundingClientRect();
-     const out = ['pipelines', 'runs'].filter(n => {
+     const out = ['pipelines', 'runs-tools', 'runs', 'runs-pager'].filter(n => {
        const b = q(n).getBoundingClientRect();
        return b.left < cr.left - 1 || b.right > cr.right + 1;
      });

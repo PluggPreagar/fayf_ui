@@ -61,7 +61,9 @@
             { "name": "pipelines-title", "box": "hug", "content": "Pipelines" },
             { "name": "pipelines", "box": "stack, scroll, fixed, h:140, solid, rounded", "content": "" },
             { "name": "runs-title", "box": "hug", "content": "Runs" },
-            { "name": "runs", "box": "stack, scroll, fixed, h:320, solid, rounded", "content": "" } ] },
+            { "name": "runs-tools", "box": "row, mid, gap:2, hug", "content": "" },
+            { "name": "runs", "box": "stack, scroll, fixed, h:320, solid, rounded", "content": "" },
+            { "name": "runs-pager", "box": "row, mid, gap:2, hug", "content": "" } ] },
         { "name": "detail-splitter", "box": "fixed, w:6, bare" },
         { "name": "detail", "box": "stack, fixed, w:280, pad:3, gap:2, scroll, solid, rounded",
           "children": [

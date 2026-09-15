@@ -35,7 +35,12 @@ const loadAll = () => {
 };
 const click = (name, ...path) => ({ name, event: 'click', target: path[0], path: [...path, name, 'content', 'body', 'root'] });
 const scroll = (name, clientHeight) => ({ name, event: 'scroll', target: name, path: [name, 'content', 'body', 'root'], scrollTop: 0, clientHeight });
-const rowsOf = (v, name) => v[name].content.slice(2, -1);
+// Name-prefix filter, not a positional slice: PIPELINES stays virtual-scroll
+// (head + top spacer + rows + bottom spacer), but RUNS now opts into
+// paging:'pages' (head + exactly one page of rows, no spacers -- ui/table.js's
+// own header) -- a fixed slice(2, -1) would silently drop RUNS' first and
+// last real row instead of the (absent) spacers.
+const rowsOf = (v, name) => v[name].content.filter(c => typeof c.name === 'string' && c.name.startsWith(`${name}-row-`));
 
 test('machines/list.json validates; JSON round-trip identical', () => {
   assert.equal(validateMachine(M), M);
@@ -88,7 +93,7 @@ test('loaded x2 (any order): flags set, self-transition = stay, second sends flo
   assert.deepEqual(d.effects, [], 'drive() consumed the send; no other effects');
 });
 
-test('view in ready: status-text counts, both table heads, windowed rows', () => {
+test('view in ready: status-text counts, both table heads, pipelines windowed / runs paged', () => {
   let s = loadAll().status;
   s = go(s, 'pipelines.scroll', scroll('pipelines', 140)).status;
   s = go(s, 'runs.scroll', scroll('runs', 320)).status;
@@ -98,7 +103,9 @@ test('view in ready: status-text counts, both table heads, windowed rows', () =>
   assert.equal(v[RUNS.name].content[0].name, 'runs-head');
   const pipeRows = rowsOf(v, PIPELINES.name), runRows = rowsOf(v, RUNS.name);
   assert.equal(pipeRows.length, windowOf({ scrollTop: 0, clientHeight: 140 }, PIPES_FX.length).count);
-  assert.ok(runRows.length > 0 && runRows.length <= 20, `runs painted ${runRows.length}`);
+  // RUNS is now paged (pageSize 12, ground-truth parity) -- the `.scroll`
+  // dispatch above is a no-op for row count (paging ignores window).
+  assert.equal(runRows.length, 12, `runs painted ${runRows.length}`);
   const newest = [...RUNS_FX].sort((a, b) => b.started_at.localeCompare(a.started_at))[0];
   assert.equal(runRows[0].name, `runs-row-${newest.run_id}`, 'newest run first');
   // paint order: content-level slots before table row patches
@@ -138,49 +145,127 @@ test('pipeline select toggles filter; runs table re-derived to only that pipelin
   assert.deepEqual(r3.status.data[RUNS.name].rows, RUNS_FX.filter(r => r.pipeline === other));
 });
 
+test('?pipeline= deep link: initialData(name) seeds pipelineFilter, pipelines.loaded selects that row, runs.loaded pre-filters', () => {
+  const target = PIPES_FX[0];
+  let s = init(M, initialData(target)).status;
+  assert.equal(s.data.pipelineFilter, target, 'seeded before either fetch resolves');
+  s = go(s, 'pipelines.loaded', PIPES_FX).status;
+  assert.equal(s.data[PIPELINES.name].sel, target, 'pipelines table pre-selects the deep-linked row');
+  const r = drive(s, 'runs.loaded', RUNS_FX);
+  assert.deepEqual(r.status.data[RUNS.name].rows, RUNS_FX.filter(x => x.pipeline === target), 'runs table arrives already scoped to the deep-linked pipeline');
+  const v = view(r.status);
+  assert.equal(v['detail-title'], `Pipeline: ${target}`);
+  assert.ok(v['status-text'].includes(`filtered: ${target}`), v['status-text']);
+});
+
+const rowInput = (i, value) => ({ name: 'record-rows', event: 'input', target: `record-id-${i}`, path: [`record-id-${i}`, 'record-rows', 'root'], value });
+const rowClick = (n) => ({ name: 'record-rows', event: 'click', target: n, path: [n, 'record-rows', 'root'] });
+
 test('start a run: needs a pipeline selected AND a record id, else no-op', () => {
   const s0 = loadAll().status;
   assert.deepEqual(go(s0, 'btn-start-run.click'), { status: s0, effects: [] }, 'no pipeline selected');
   const selected = go(s0, 'pipelines.click', click('pipelines', `pipelines-row-${PIPES_FX[0]}`)).status;
-  assert.deepEqual(go(selected, 'btn-start-run.click'), { status: selected, effects: [] }, 'no record id typed yet');
-  const typed = go(selected, 'start-record-id.input', { value: '  ' }).status;   // blank after trim
-  assert.deepEqual(go(typed, 'btn-start-run.click'), { status: typed, effects: [] }, 'blank record id');
+  const r = go(selected, 'btn-start-run.click');
+  assert.deepEqual(r.effects, []);
+  assert.equal(r.status.data.startError, 'add at least one record id', 'no record id typed yet');
+  const typed = go(selected, 'record-rows.input', rowInput(0, '  ')).status;   // blank after trim
+  const r2 = go(typed, 'btn-start-run.click');
+  assert.equal(r2.status.data.startError, 'add at least one record id', 'blank record id');
 });
 
-test('start a run, local-optimistic (urls.startRun null): emits run.open, resets the field', () => {
+test('start a run: record-id validation -- rejects "/" and "\\\\", blocks duplicates', () => {
+  const s0 = go(loadAll().status, 'pipelines.click', click('pipelines', `pipelines-row-${PIPES_FX[0]}`)).status;
+  const slash = go(s0, 'record-rows.input', rowInput(0, '21/67')).status;
+  const r1 = go(slash, 'btn-start-run.click');
+  assert.ok(r1.status.data.startError.includes('can\'t contain'), r1.status.data.startError);
+  assert.deepEqual(r1.effects, []);
+
+  const twoRows = go(go(s0, 'record-rows.click', rowClick('record-add')).status, 'record-rows.input', rowInput(0, '21_67')).status;
+  const dup = go(twoRows, 'record-rows.input', rowInput(1, '21_67')).status;
+  const r2 = go(dup, 'btn-start-run.click');
+  assert.equal(r2.status.data.startError, 'duplicate record id: 21_67');
+  assert.deepEqual(r2.effects, []);
+});
+
+test('start a run: Add record / remove a row -- always at least one row left', () => {
+  const s0 = go(loadAll().status, 'pipelines.click', click('pipelines', `pipelines-row-${PIPES_FX[0]}`)).status;
+  const added = go(s0, 'record-rows.click', rowClick('record-add')).status;
+  assert.deepEqual(added.data.recordRows, ['', '']);
+  const removed = go(added, 'record-rows.click', rowClick('record-remove-0')).status;
+  assert.deepEqual(removed.data.recordRows, ['']);
+  const removedLast = go(removed, 'record-rows.click', rowClick('record-remove-0')).status;
+  assert.deepEqual(removedLast.data.recordRows, [''], 'removing the only row blanks it instead of leaving zero rows');
+});
+
+test('start a run, local-optimistic (urls.startRun null): multi-row emits run.open (first id), resets the rows', () => {
   const s0 = loadAll().status;
   let s = go(s0, 'pipelines.click', click('pipelines', `pipelines-row-${PIPES_FX[0]}`)).status;
-  s = go(s, 'start-record-id.input', { value: '21_67' }).status;
-  assert.equal(s.data.recordId, '21_67');
+  s = go(s, 'record-rows.click', rowClick('record-add')).status;
+  s = go(s, 'record-rows.input', rowInput(0, '21_67')).status;
+  s = go(s, 'record-rows.input', rowInput(1, '21_68')).status;
+  assert.deepEqual(s.data.recordRows, ['21_67', '21_68']);
   const r = go(s, 'btn-start-run.click');
   assert.deepEqual(r.effects, [{ emit: 'run.open', payload: { run_id: `${PIPES_FX[0]}-21_67` } }]);
-  assert.equal(r.status.data.recordId, '', 'field cleared');
+  assert.deepEqual(r.status.data.recordRows, [''], 'rows reset');
   assert.equal(r.status.data.starting, false);
 });
 
-test('start a run, real backend (urls.startRun configured): POST fetch, then start.saved emits run.open', () => {
+test('start a run, real backend (urls.startRun configured): POST carries ALL non-blank ids, start.saved emits run.open', () => {
   const urls = { startRun: (pipeline) => `/api/pipelines/${pipeline}/runs` };
   const h = makeHandlers(urls);
   const goH = (s, trigger, payload) => step(M, s, trigger, payload, h);
   const s0 = loadAll().status;
   let s = goH(s0, 'pipelines.click', click('pipelines', `pipelines-row-${PIPES_FX[0]}`)).status;
-  s = goH(s, 'start-record-id.input', { value: '21_67' }).status;
+  s = goH(s, 'record-rows.click', rowClick('record-add')).status;
+  s = goH(s, 'record-rows.input', rowInput(0, '21_67')).status;
+  s = goH(s, 'record-rows.input', rowInput(1, '21_68')).status;
   const r1 = goH(s, 'btn-start-run.click');
   assert.equal(r1.status.data.starting, true);
   assert.deepEqual(r1.effects, [{
     fetch: `/api/pipelines/${PIPES_FX[0]}/runs`,
     init: { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ record_ids: ['21_67'], initial_inputs: {} }) },
+      body: JSON.stringify({ record_ids: ['21_67', '21_68'], initial_inputs: {} }) },
     ok: 'start.saved', err: 'start.failed',
   }]);
   assert.deepEqual(goH(r1.status, 'btn-start-run.click'), { status: r1.status, effects: [] }, 'already starting -- no double POST');
   const r2 = goH(r1.status, 'start.saved', { run_id: 'r-999' });
   assert.deepEqual(r2.effects, [{ emit: 'run.open', payload: { run_id: 'r-999' } }]);
   assert.equal(r2.status.data.starting, false);
-  assert.equal(r2.status.data.recordId, '');
+  assert.deepEqual(r2.status.data.recordRows, ['']);
   const r3 = goH(r1.status, 'start.failed', { error: 'HTTP 500' });
   assert.equal(r3.status.data.starting, false);
   assert.equal(r3.status.data.startError, 'HTTP 500');
+});
+
+test('pipeline switch resets the entry form (rows + startError)', () => {
+  const s0 = go(loadAll().status, 'pipelines.click', click('pipelines', `pipelines-row-${PIPES_FX[0]}`)).status;
+  const dirty = go(s0, 'record-rows.input', rowInput(0, '21/67')).status;   // leaves a startError via btn-start-run
+  const withError = go(dirty, 'btn-start-run.click').status;
+  assert.ok(withError.data.startError);
+  const other = go(withError, 'pipelines.click', click('pipelines', `pipelines-row-${PIPES_FX[1]}`)).status;
+  assert.deepEqual(other.data.recordRows, ['']);
+  assert.equal(other.data.startError, null);
+});
+
+test('runs table: filterable/exportable/paged (ground-truth parity) -- filter narrows rows, export emits, pager pages', () => {
+  const s0 = loadAll().status;
+  const targetPipeline = RUNS_FX[0].pipeline;
+  const filtered = go(s0, 'runs-filter.input', { name: 'runs-filter', event: 'input', value: targetPipeline });
+  assert.equal(filtered.status.data[RUNS.name].filter, targetPipeline);
+  const v = view(filtered.status);
+  const rowsShown = v[RUNS.name].content.filter(c => typeof c.name === 'string' && c.name.startsWith('runs-row-'));
+  const expectedCount = RUNS_FX.filter(r => String(r.pipeline).includes(targetPipeline)).length;
+  assert.equal(rowsShown.length, Math.min(expectedCount, 12), 'filter narrows the paged rows to matches only');
+
+  const exportPath = (n) => ({ name: 'runs-tools', event: 'click', target: n, path: [n, 'runs-tools', 'root'] });
+  const csv = go(s0, 'runs-tools.click', exportPath('runs-export-csv'));
+  assert.equal(csv.effects[0].emit, 'runs.export');
+  assert.equal(csv.effects[0].payload.format, 'csv');
+  assert.equal(csv.effects[0].payload.filename, 'runs.csv', 'spec.exportName wins over the bare table name');
+
+  const pagePath = (n) => ({ name: 'runs-pager', event: 'click', target: n, path: [n, 'runs-pager', 'root'] });
+  const next = go(s0, 'runs-pager.click', pagePath('runs-page-next'));
+  assert.equal(next.status.data[RUNS.name].page, 2, 'Next advances the page (pageSize 12, ground-truth parity)');
 });
 
 test('runs table row click: effects include emit runs.select AND emit run.open with the run_id, no local sel/detail state added', () => {
