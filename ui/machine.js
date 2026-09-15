@@ -171,6 +171,25 @@ function morph(a, b) {
   if (cur) a.style.cursor = cur;
   if (b.dataset.hasContent) a.dataset.hasContent = '1'; else delete a.dataset.hasContent;
   if (b.tagName === 'INPUT' || b.tagName === 'TEXTAREA') { if (a.value !== b.value) a.value = b.value; return; }
+  // icon+label leaf (render.js's `icon` node property, PASSTHRU'd into
+  // data-extra so an icon CHANGE already fails `same` above and takes the
+  // replaceWith branch instead -- reaching here means a's icon is identical,
+  // only the label can differ): two plain, unmarked spans holding raw text,
+  // neither carrying its own data-has-content. morphChildren's generic
+  // recursion below strips a leaf's raw text node as "a previous string
+  // paint" and finds no element child to put back, silently blanking the
+  // button -- same shape paintContent's string-patch case already
+  // special-cases (touch `.bx-label` only), morph() needs the identical
+  // special case for the array/node-tree path (e.g. an icon-guessed button
+  // built inside a view() content ARRAY, not patched as a bare string).
+  if (b.firstElementChild && b.firstElementChild.classList.contains('bx-icon')) {
+    const aIcon = a.querySelector(':scope > .bx-icon'), bIcon = b.querySelector(':scope > .bx-icon');
+    if (aIcon && aIcon.textContent !== bIcon.textContent) aIcon.textContent = bIcon.textContent;
+    const aLabel = a.querySelector(':scope > .bx-label'), bLabel = b.querySelector(':scope > .bx-label');
+    if (bLabel) { if (aLabel) { if (aLabel.textContent !== bLabel.textContent) aLabel.textContent = bLabel.textContent; } else a.appendChild(bLabel); }
+    else if (aLabel) aLabel.remove();
+    return;
+  }
   if (b.dataset.hasContent && !b.children.length) { if (a.textContent !== b.textContent) a.textContent = b.textContent; return; }
   morphChildren(a, [...b.children]);
 }
@@ -314,6 +333,15 @@ export function mountMachine(root, screen, machine, handlers = {}, opts = {}) {
     const set = new Set(String(tokens).split(',').map(s => s.trim()).filter(Boolean));
     for (const t of set) if (!STATE_TOKENS.includes(t)) throw new Error(`machine: unknown state token '${t}'`);
     if (set.has('actionable')) markActionable(target); else if (target !== el) unmarkActionable(target);
+    // step 3 below (bx-disabled + tab order) only ever runs for a name that
+    // IS a declared top-level trigger -- a sub-node whose clicks route
+    // through a PARENT's trigger (table.js's <name>-page-prev/-next inside
+    // <name>-pager.click, e.g.) needs its own disabled state applied here,
+    // same as 'actionable' just above; step 3 still overwrites this right
+    // after for any name that DOES have its own declared trigger (unchanged
+    // there -- it stays the authoritative source for real controls).
+    if (set.has('disabled')) setActionableDisabled(target, true);
+    else if (set.has('actionable')) setActionableDisabled(target, false);
     for (const t of STATE_TOKENS) {
       if (t === 'actionable' || t === 'disabled') continue;
       if (t === 'hidden') { target.style.visibility = set.has(t) ? 'hidden' : ''; continue; }

@@ -129,4 +129,34 @@ tr.addBlock('machine: C2 -- unknown trigger throws, view naming a missing slot t
    });
 });
 
+tr.addBlock('machine: morph() keeps an icon+label leaf\'s text when it arrives via an array/content patch', (r) => {
+  r.run(() => {
+    // Regression: an icon-bearing node (render.js's `icon` property -- two
+    // plain, unmarked `.bx-icon`/`.bx-label` spans, not real box children)
+    // nested inside a view() patch that's a NODE ARRAY (not a bare string --
+    // paintContent's own string-patch branch already special-cases the
+    // string case) used to go through morphChildren's generic recursion,
+    // which strips a leaf's raw text node as "a previous string paint" and
+    // finds no element child to put back -- silently blanking the button on
+    // its SECOND paint (the first paint builds fresh DOM via render(), so
+    // only a re-paint through morph() ever exercised the bug).
+    const screen = { name: 'root3', box: 'hug', children: [{ name: 'row', box: 'row', content: '' }] };
+    const machine = { initial: 's', states: { s: { 'tick.click': 's' } } };
+    let n = 0;
+    const view = () => ({ row: { content: [
+      { name: 'btn', box: 'hug', icon: '→', content: `go ${n}` },
+    ] } });
+    const host = document.createElement('div');
+    const ctl = mountMachine(host, screen, machine, {}, { view });
+    const btn = () => host.querySelector('[data-name="btn"]');
+    r.check(btn().querySelector('.bx-icon').textContent === '→', 'first paint: icon span has its glyph');
+    r.check(btn().querySelector('.bx-label').textContent === 'go 0', 'first paint: label span has its text');
+    n = 1;
+    ctl.dispatch('tick.click');   // same icon value -> morph() path, not replaceWith
+    r.check(btn().querySelector('.bx-icon').textContent === '→', 'second paint (morph): icon text survives', btn().outerHTML);
+    r.check(btn().querySelector('.bx-label').textContent === 'go 1', 'second paint (morph): label text updates', btn().outerHTML);
+    host.remove();
+  });
+});
+
 await tr.runBlocks();
