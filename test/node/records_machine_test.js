@@ -14,6 +14,7 @@ const fixture = (rel) => JSON.parse(readFileSync(new URL(`../../${rel}`, import.
 const RUN_FX = fixture('content/records/run.json');
 const INGEST_67 = fixture('content/records/artifact/ingest/21_67.json');
 const NLP_67 = fixture('content/records/artifact/nlp-parse/21_67.json');
+const NLP_67_HISTORY = fixture('content/records/history/nlp-parse/21_67.json');
 const M = recordsMachine;
 const RUN_FETCH = { fetch: '/content/records/run.json', ok: 'run.loaded', err: 'run.failed' };
 const go = (s, trigger, payload) => step(M, s, trigger, payload, handlers);
@@ -114,7 +115,7 @@ test('detail.loaded: data.detail set, detailLoading cleared, editText seeded; vi
   const expectedText = editTextFor(INGEST_67);
   assert.equal(r.status.data.editText, expectedText);
   const v = view(r.status);
-  assert.equal(v['detail-title'], 'ingest/21_67', 'shows the selected node path (tree.sel), not something from the artifact payload');
+  assert.equal(v['detail-title'], 'ingest/21_67 · v1', 'shows the selected node path (tree.sel) + version badge -- v1 alone (INGEST_67.version === 1), no "(edited)"');
   assert.deepEqual(v['detail-body'], { content: detailEditor(expectedText) }, 'adapts { value, version } into a real editable field exactly like ui/browse.js would render the same raw content');
   assert.deepEqual(v['btn-save'], { state: 'actionable' }, 'a record is always writable in this v1 -- no per-mount write flag like browse.html');
 });
@@ -125,6 +126,145 @@ test('detail.loaded with a nested/multi-line value (nlp-parse/21_67): matches de
   const expectedText = editTextFor(NLP_67);
   assert.deepEqual(v['detail-body'], { content: detailEditor(expectedText) });
   assert.ok(expectedText.split('\n').length > 5, 'nested object -> multiple lines, not one blob');
+});
+
+test('tree filter: keeps a step iff the step id or one of its records matches, force-opens matches, restores on clear', () => {
+  let s = loaded();
+  // "nlp" matches only the nlp-parse step id -- every one of its records shows
+  let r = go(s, 'tree-filter.input', { value: 'nlp' });
+  assert.equal(r.status.data.filterText, 'nlp');
+  let t = r.status.data[TREE.name];
+  assert.deepEqual(t.nodes.map(n => n.path), ['nlp-parse']);
+  assert.equal(t.nodes[0].open, true, 'a match force-opens');
+  assert.equal(t.nodes[0].children.length, 3);
+
+  // "21_68" matches no step id but one record under every step -- steps kept, narrowed to that one record
+  r = go(s, 'tree-filter.input', { value: '21_68' });
+  t = r.status.data[TREE.name];
+  assert.deepEqual(t.nodes.map(n => n.path).sort(), ['index', 'ingest', 'nlp-parse']);
+  for (const n of t.nodes) assert.deepEqual(n.children.map(c => c.path), [`${n.path}/21_68`]);
+
+  // no match anywhere -- tree empty, not an error
+  r = go(s, 'tree-filter.input', { value: 'zzz' });
+  assert.deepEqual(r.status.data[TREE.name].nodes, []);
+
+  // manual expand survives a rebuild that keeps the step present (prevNodes
+  // carry-over) -- "21_68" matches a record under every step, so all three
+  // stay in the (still filtered/narrowed) list across this filter change.
+  let manual = go(s, 'tree.click', click('ingest')).status;   // open it by hand
+  manual = go(manual, 'tree-filter.input', { value: '21_68' }).status;
+  assert.equal(manual.data[TREE.name].nodes.find(n => n.path === 'ingest').open, true, 'still open (both manually, and force-open while filtering)');
+
+  // a step DROPPED entirely by a filter (no match at all) loses its open
+  // state along with it -- reverts to the default (closed) once the filter
+  // clears and it reappears, same as any node that was never toggled.
+  manual = go(manual, 'tree-filter.input', { value: 'nlp' }).status;   // ingest has no "nlp" anywhere -- dropped
+  assert.equal(manual.data[TREE.name].nodes.find(n => n.path === 'ingest'), undefined);
+  manual = go(manual, 'tree-filter.input', { value: '' }).status;
+  assert.equal(manual.data[TREE.name].nodes.find(n => n.path === 'ingest').open, false);
+});
+
+test('version/edited badge: "· v1" at version 1, "· v2 (edited)" at version > 1', () => {
+  let s = go(loaded(), 'tree.click', click('ingest')).status;
+  s = go(s, 'tree.click', click('ingest/21_67')).status;
+  const v1 = view(go(s, 'detail.loaded', INGEST_67).status);
+  assert.equal(v1['detail-title'], 'ingest/21_67 · v1');
+
+  const v2 = view(go(loaded(), 'detail.loaded', NLP_67).status);
+  assert.ok(v2['detail-title'].endsWith(' · v2 (edited)'), v2['detail-title']);
+});
+
+test('tags chips (EPIC-TAGS lineage): rendered as atom/chip nodes when detail.tags is present, empty otherwise', () => {
+  const withTags = view(go(loaded(), 'detail.loaded', NLP_67).status);
+  assert.deepEqual(withTags['tags-row'], { content: [
+    { extends: 'atom/chip', content: 'pipeline=bundestag-unified' },
+    { extends: 'atom/chip', content: 'session=21_67' },
+  ] });
+  const noTags = view(go(loaded(), 'detail.loaded', INGEST_67).status);
+  assert.deepEqual(noTags['tags-row'], { content: [] });
+});
+
+test('Diff: disabled at version 1, fetches + toggles history at version > 1, cached on re-toggle', () => {
+  const atV1 = go(loaded(), 'detail.loaded', INGEST_67).status;
+  assert.deepEqual(view(atV1)['btn-diff'], { content: 'Diff', state: 'disabled' });
+  assert.deepEqual(go(atV1, 'btn-diff.click'), { status: atV1, effects: [] }, 'version 1 -- no history to diff against, a no-op');
+
+  let s = go(loaded(), 'tree.click', click('nlp-parse')).status;
+  s = go(s, 'tree.click', click('nlp-parse/21_67')).status;
+  s = go(s, 'detail.loaded', NLP_67).status;
+  assert.deepEqual(view(s)['btn-diff'], { content: 'Diff', state: 'actionable' });
+
+  const on = go(s, 'btn-diff.click');
+  assert.equal(on.status.data.diffMode, true);
+  assert.deepEqual(on.effects, [{ fetch: '/content/records/history/nlp-parse/21_67.json', ok: 'history.loaded', err: 'history.failed' }]);
+  assert.deepEqual(view(on.status)['btn-diff'], { content: 'Back', state: 'actionable' });
+  assert.equal(view(on.status)['detail-body'].content, 'Loading history…');
+
+  const loadedHist = go(on.status, 'history.loaded', NLP_67_HISTORY);
+  assert.deepEqual(loadedHist.status.data.history.entries, NLP_67_HISTORY.history);
+  const diffView = view(loadedHist.status)['detail-body'].content;
+  assert.ok(Array.isArray(diffView) && diffView.length > 1, 'diff rows rendered, not a bare string');
+  assert.ok(diffView[0].content.includes('v1') && diffView[0].content.includes('v2'), diffView[0].content);
+  const rowTexts = diffView.slice(1).map(x => x.content);
+  assert.ok(rowTexts.some(t => t.startsWith('~ meta.model')), JSON.stringify(rowTexts));
+  assert.ok(rowTexts.some(t => t.startsWith('+ entities.0.text')), JSON.stringify(rowTexts));
+
+  // toggle off, then back on -- history is cached, no second fetch
+  const off = go(loadedHist.status, 'btn-diff.click');
+  assert.equal(off.status.data.diffMode, false);
+  const backOn = go(off.status, 'btn-diff.click');
+  assert.equal(backOn.status.data.diffMode, true);
+  assert.deepEqual(backOn.effects, [], 'history already cached for this record -- no re-fetch');
+
+  // a fresh tree selection drops the cached history/diffMode
+  const reselected = go(backOn.status, 'tree.click', click('nlp-parse/21_68')).status;
+  assert.equal(reselected.data.diffMode, false);
+  assert.equal(reselected.data.history, null);
+});
+
+test('Diff: history.failed shows a message, not a crash', () => {
+  let s = go(loaded(), 'tree.click', click('nlp-parse')).status;
+  s = go(s, 'tree.click', click('nlp-parse/21_67')).status;
+  s = go(s, 'detail.loaded', NLP_67).status;
+  const on = go(s, 'btn-diff.click').status;
+  const failed = go(on, 'history.failed', { error: 'HTTP 404' });
+  assert.equal(view(failed.status)['detail-body'].content, 'No history for this artifact -- HTTP 404');
+});
+
+test('"Re-run..." emits rerun.open with {run_id, stepId}; disabled/no-op with nothing selected', () => {
+  const s0 = loaded();
+  assert.deepEqual(view(s0)['btn-rerun'], { state: 'disabled' });
+  assert.deepEqual(go(s0, 'btn-rerun.click'), { status: s0, effects: [] });
+
+  let s = go(s0, 'tree.click', click('ingest')).status;
+  s = go(s, 'tree.click', click('ingest/21_67')).status;
+  assert.deepEqual(view(s)['btn-rerun'], { state: 'actionable' });
+  const r = go(s, 'btn-rerun.click');
+  assert.deepEqual(r.effects, [{ emit: 'rerun.open', payload: { run_id: FIXTURE_RUN_ID, stepId: 'ingest' } }]);
+  assert.deepEqual(r.status.data, s.data, 'a pure cross-link -- no local data change');
+});
+
+test('?sel=/?step_id=+?record_id= deep-link restore: initialData(runId, pendingSel) opens the step, preselects, and starts the SAME fetch a click would', () => {
+  const withRecord = init(M, initialData(FIXTURE_RUN_ID, 'nlp-parse/21_67'));
+  const r = go(withRecord.status, 'run.loaded', RUN_FX);
+  assert.equal(r.status.data.pendingSel, null, 'consumed exactly once');
+  assert.equal(r.status.data[TREE.name].sel, 'nlp-parse/21_67');
+  assert.equal(r.status.data[TREE.name].nodes.find(n => n.path === 'nlp-parse').open, true);
+  assert.equal(r.status.data.detailLoading, true);
+  assert.deepEqual(r.effects, [{ fetch: '/content/records/artifact/nlp-parse/21_67.json', ok: 'detail.loaded', err: 'detail.failed' }]);
+
+  // step_id alone (no record_id): opens the folder, no selection/fetch
+  const stepOnly = init(M, initialData(FIXTURE_RUN_ID, 'ingest'));
+  const r2 = go(stepOnly.status, 'run.loaded', RUN_FX);
+  assert.equal(r2.status.data[TREE.name].sel, null);
+  assert.equal(r2.status.data[TREE.name].nodes.find(n => n.path === 'ingest').open, true);
+  assert.deepEqual(r2.effects, []);
+
+  // an unknown step/record -- silently ignored, no crash
+  const bogus = init(M, initialData(FIXTURE_RUN_ID, 'nope/21_67'));
+  const r3 = go(bogus.status, 'run.loaded', RUN_FX);
+  assert.equal(r3.status.data[TREE.name].sel, null);
+  assert.deepEqual(r3.effects, []);
 });
 
 test('detail.failed: detailLoading cleared, error set, tree left completely undisturbed', () => {

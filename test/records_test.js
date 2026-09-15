@@ -53,20 +53,30 @@ tr.addBlock('records: expand a step -- its 3 record children are already there, 
   });
 });
 
-tr.addBlock('records: click a record -- detail populates, pretty JSON renders as multiple NBSP-indented rows', (r) => {
+tr.addBlock('records: click a record -- detail populates, pretty JSON in a real editable textarea', (r) => {
   r.run(async () => {
      const file = q(nodeSel('ingest/21_67'));
      r.check(!!file, 'ingest/21_67 row present');
      file.click();
-     r.check(await until(() => text('detail-title') === 'ingest/21_67', 3000), 'detail-title shows the selected path', text('detail-title'));
+     r.check(await until(() => text('detail-title') === 'ingest/21_67 · v1', 3000), 'detail-title shows the selected path + version badge', text('detail-title'));
      r.check(file.classList.contains('bx-selected'), 'clicked record row has bx-selected');
-     r.check(await until(() => q('detail-body').textContent.includes('record_id'), 3000), 'detail-body populated once the artifact fetch resolves', text('detail-body'));
-     const body = q('detail-body');
-     const lines = [...body.children];
-     r.check(lines.length > 3, 'JSON renders as multiple distinct rows, not one blob', lines.length);
-     r.check(lines[0].textContent.trim() === '{', 'first row is the opening brace', lines[0].textContent);
-     const indented = lines.find(el => el.textContent.startsWith(' '));
-     r.check(!!indented, 'an indented line starts with NBSP (U+00A0), not a plain space', indented && JSON.stringify(indented.textContent));
+     // A textarea's CONTENT lives in its `.value`, never reflected into
+     // `.textContent`/innerHTML -- checking textContent here would always
+     // read empty regardless of the real content. And a real <textarea>
+     // renders whitespace NATIVELY (unlike filetree.js's div rows) --
+     // ui/browse.js's own detailBody comment: "no NBSP-indent workaround
+     // needed anymore, gone now that this is one real form field, not N
+     // box-model rows". Both stale assumptions from before "real edit +
+     // Save" replaced a plain multi-row text display with one genuine
+     // <textarea>, 2026-09-12.
+     const field = () => q('detail-editor');
+     r.check(await until(() => !!field() && field().value.includes('record_id'), 3000), 'detail-editor populated once the artifact fetch resolves', field() && field().value);
+     r.check(field().tagName === 'TEXTAREA', 'a real <textarea>, editable (field:"textarea")', field().tagName);
+     const lines = field().value.split('\n');
+     r.check(lines.length > 3, 'pretty-printed JSON -- multiple lines, not one blob', lines.length);
+     r.check(lines[0].trim() === '{', 'first line is the opening brace', lines[0]);
+     const indented = lines.find(l => l.startsWith('  '));
+     r.check(!!indented, 'an indented line (plain spaces -- the textarea renders whitespace natively)', indented && JSON.stringify(indented));
   });
 });
 
@@ -85,6 +95,49 @@ tr.addBlock('records: a record with no fixture file fails cleanly -- stays ready
      r.check(await until(() => window.__ctl.status.data.error != null, 3000), 'missing fixture -> data.error populated', window.__ctl.status.data.error);
      r.check(state() === 'ready', 'machine stays in ready, does not crash/demote to error', state());
      r.check(text('detail-body') === 'Select a record', 'detail-body falls back cleanly instead of showing stale/broken content', text('detail-body'));
+  });
+});
+
+tr.addBlock('records: tree filter narrows/re-opens; Diff toggles a real history diff; tags chips render; Re-run emits', (r) => {
+  r.run(async () => {
+     const filterField = q('tree-filter');
+     r.check(!!filterField && filterField.tagName === 'INPUT', 'tree-filter is a real <input>', filterField && filterField.tagName);
+     filterField.value = 'nlp';
+     filterField.dispatchEvent(new Event('input', { bubbles: true }));
+     await settled();
+     r.check(!!q(nodeSel('nlp-parse')), 'nlp-parse step still present');
+     r.check(!q(nodeSel('ingest')), 'ingest step filtered out (no match anywhere)');
+     r.check(text(nodeSel('nlp-parse')).startsWith('▾'), 'a match force-opens', text(nodeSel('nlp-parse')));
+
+     const nlpRecord = q(nodeSel('nlp-parse/21_67'));
+     r.check(!!nlpRecord, 'nlp-parse/21_67 row visible while filtered');
+     nlpRecord.click();
+     r.check(await until(() => text('detail-title').startsWith('nlp-parse/21_67'), 3000), 'record selected while filtered', text('detail-title'));
+     r.check(await until(() => text('detail-title').includes('v2 (edited)'), 3000), 'version 2 shows the "(edited)" callout', text('detail-title'));
+
+     r.check(text('tags-row').includes('pipeline=bundestag-unified'), 'tags chip rendered from detail.tags', text('tags-row'));
+
+     const diffBtn = q('btn-diff');
+     r.check(!diffBtn.classList.contains('bx-disabled'), 'Diff enabled at version > 1');
+     diffBtn.click();
+     r.check(await until(() => text('btn-diff') === 'Back', 2000), 'Diff button flips to "Back"', text('btn-diff'));
+     r.check(await until(() => text('detail-body').includes('→'), 3000), 'a real diff renders once history resolves', text('detail-body'));
+     r.check(text('detail-body').includes('meta.model'), 'a changed leaf path shows up', text('detail-body'));
+     diffBtn.click();
+     r.check(text('btn-diff') === 'Diff', 'toggles back to the editor');
+     r.check(!!q('detail-editor'), 'the real editable field is back');
+
+     const rerunBtn = q('btn-rerun');
+     r.check(!rerunBtn.classList.contains('bx-disabled'), 'Re-run enabled once a record is selected');
+     const before = window.__emitted.length;
+     rerunBtn.click();
+     const rerun = window.__emitted.at(-1);
+     r.check(window.__emitted.length === before + 1 && rerun[0] === 'rerun.open' && rerun[1].stepId === 'nlp-parse', 'Re-run emits rerun.open with the current stepId', JSON.stringify(rerun));
+
+     filterField.value = '';
+     filterField.dispatchEvent(new Event('input', { bubbles: true }));
+     await settled();
+     r.check(!!q(nodeSel('ingest')), 'clearing the filter brings ingest back');
   });
 });
 
@@ -126,7 +179,11 @@ tr.addBlock('records: error path -- failed run fetch -> error, retry re-issues i
 });
 
 tr.addBlock('records: fit (C10) -- root does not scroll, tree/detail sized, content fits', (r) => {
-  r.run(() => {
+  r.run(async () => {
+     // Yield a frame before measuring -- see browse_test.js's matching fit
+     // block for why: a synchronous fit-check right after a preceding
+     // block's DOM mutations can read a stale, not-yet-reflowed layout box.
+     await new Promise(requestAnimationFrame);
      const el = root();
      r.check(el.scrollWidth <= el.clientWidth, 'root: no horizontal overflow', `${el.scrollWidth} > ${el.clientWidth}`);
      r.check(el.scrollHeight <= el.clientHeight, 'root: no vertical overflow', `${el.scrollHeight} > ${el.clientHeight}`);
@@ -137,6 +194,8 @@ tr.addBlock('records: fit (C10) -- root does not scroll, tree/detail sized, cont
      const cr = c.getBoundingClientRect();
      const tb = q('tree').getBoundingClientRect();
      r.check(tb.left >= cr.left - 1 && tb.right <= cr.right + 1, 'tree inside content width', `${tb.left},${tb.right} vs ${cr.left},${cr.right}`);
+     const ttb = q('tree-tools').getBoundingClientRect();
+     r.check(ttb.left >= cr.left - 1 && ttb.right <= cr.right + 1, 'tree-tools inside content width', `${ttb.left},${ttb.right} vs ${cr.left},${cr.right}`);
      const d = q('detail');
      r.check(d.scrollWidth <= d.clientWidth, 'detail: scrollWidth <= clientWidth (NBSP-indented long lines still clip, not overflow)', `${d.scrollWidth} > ${d.clientWidth}`);
   });

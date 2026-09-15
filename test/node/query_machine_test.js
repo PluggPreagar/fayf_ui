@@ -145,6 +145,7 @@ test('query.loaded (grouped result): builds a dynamic table spec + synthetic-__i
   assert.deepEqual(r.status.data.resultsSpec, {
     name: 'results', rowKey: '__i',
     columns: GROUPED_FX.columns.map(c => ({ key: c, label: c })),
+    filterable: true, exportable: true, exportName: 'query-results', paging: 'pages', pageSize: 25,
   });
   assert.deepEqual(r.status.data.results.rows, GROUPED_FX.rows.map((row, i) => ({ __i: i, party: row.party, count: cellText(row.count) })));
   const v = view(r.status);

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { step, init, validateMachine } from '../../ui/machine.js';
-import { ROW_H, windowOf, sortRows, tableInit, tableHandlers, tableView } from '../../ui/table.js';
+import { ROW_H, windowOf, sortRows, tableInit, tableHandlers, tableView, filterRows, toCSV } from '../../ui/table.js';
 
 // C11: table = pure sub-controller on status.data[spec.name]. JSON in, JSON
 // out -- no DOM. The browser half (test/table_test.js) proves the paint.
@@ -208,4 +208,123 @@ test('composition: tiny machine + tableHandlers via step(); emit surfaces; view 
   assert.deepEqual(v.runs.content.slice(2, -1).map(x => x.name), ['runs-row-1', 'runs-row-2', 'runs-row-4', 'runs-row-3']);
   assert.equal(v['runs-row-2'].state, 'actionable, selected');
   assert.equal(s.data.runs.sel, null, 'initial status untouched through the whole drive');
+});
+
+// ---- opt-in: filterable / exportable / paging (ground-truth parity for a
+// results table that used to have all three) -- SPEC above stays untouched
+// (no filterable/exportable/paging), so every test above proves the opt-in
+// additions are invisible to a consumer that doesn't ask for them.
+
+test('filterRows: substring match in ANY column, case-insensitive; empty text -> input unchanged', () => {
+  const cols = SPEC.columns;
+  assert.deepEqual(filterRows(ROWS, cols, 'BETA').map(r => r.id), [2], 'matches Beta via name, case-insensitive');
+  assert.deepEqual(filterRows(ROWS, cols, 'done').map(r => r.id), [1, 4]);
+  assert.deepEqual(filterRows(ROWS, cols, '  ').map(r => r.id), [1, 2, 3, 4], 'blank/whitespace-only -> no filter');
+  assert.equal(filterRows(ROWS, cols, ''), ROWS, 'no filter -> same array, not a copy');
+  assert.deepEqual(filterRows(ROWS, cols, 'zzz'), []);
+});
+
+test('toCSV: header + rows, RFC4180-ish quoting for comma/quote/newline/semicolon', () => {
+  const cols = [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }];
+  assert.equal(toCSV(cols, [{ a: 1, b: 'x' }, { a: 2, b: 'y' }]), 'A,B\n1,x\n2,y');
+  assert.equal(toCSV(cols, [{ a: 'a,b', b: 'he said "hi"' }]), 'A,B\n"a,b","he said ""hi"""');
+  assert.equal(toCSV(cols, [{ a: 'line1\nline2', b: 'x;y' }]), 'A,B\n"line1\nline2","x;y"');
+  assert.equal(toCSV(cols, [{ a: null, b: undefined }]), 'A,B\n,');
+  assert.equal(toCSV([{ key: 'c' }], [{ c: 1 }]), 'c\n1', 'label falls back to key');
+});
+
+const FEP_SPEC = { name: 'results', rowKey: '__i', columns: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }],
+  filterable: true, exportable: true, exportName: 'query-results', paging: 'pages', pageSize: 2 };
+const fepRows = (n) => Array.from({ length: n }, (_, i) => ({ __i: i, a: `row${i}`, b: i % 2 ? 'odd' : 'even' }));
+
+test('tableInit: filter/page only present when spec opts in', () => {
+  assert.deepEqual(tableInit(SPEC, ROWS), { rows: ROWS, sort: null, sel: null, window: { scrollTop: 0, clientHeight: 0 } });
+  const t = tableInit(FEP_SPEC, fepRows(5));
+  assert.equal(t.filter, '');
+  assert.equal(t.page, 1);
+  const filterOnly = tableInit({ ...FEP_SPEC, paging: undefined }, []);
+  assert.equal(filterOnly.filter, '');
+  assert.equal('page' in filterOnly, false, 'paging not opted in -> no page key');
+});
+
+test('tableHandlers: opt-in trigger keys only appear when the spec asks for them', () => {
+  assert.deepEqual(Object.keys(tableHandlers(SPEC)).sort(), ['runs.click', 'runs.scroll']);
+  assert.deepEqual(Object.keys(tableHandlers(FEP_SPEC)).sort(),
+    ['results-filter.input', 'results-pager.click', 'results-tools.click', 'results.click', 'results.scroll']);
+});
+
+test('<name>-filter.input: sets filter text, restarts paging at page 1', () => {
+  const H2 = tableHandlers(FEP_SPEC);
+  let s = { state: 'ready', data: { results: { ...tableInit(FEP_SPEC, fepRows(5)), page: 3 } } };
+  const r = H2['results-filter.input'](s, { name: 'results-filter', event: 'input', value: 'odd' });
+  assert.equal(r.status.data.results.filter, 'odd');
+  assert.equal(r.status.data.results.page, 1);
+});
+
+test('<name>-tools.click: CSV/JSON export emits filtered+sorted (ALL pages), never touches status', () => {
+  const H2 = tableHandlers(FEP_SPEC);
+  const s = { state: 'ready', data: { results: { ...tableInit(FEP_SPEC, fepRows(5)), filter: 'odd', sort: { key: 'a', dir: 'desc' } } } };
+  const path = (n) => ({ name: 'results-tools', event: 'click', target: n, path: [n, 'results-tools', 'root'] });
+  const csv = H2['results-tools.click'](s, path('results-export-csv'));
+  assert.equal(csv.status, s, 'export is a pure read, status untouched');
+  assert.deepEqual(csv.effects, [{ emit: 'results.export', payload: {
+    format: 'csv', filename: 'query-results.csv', mime: 'text/csv', text: 'A,B\nrow3,odd\nrow1,odd' } }]);
+  const json = H2['results-tools.click'](s, path('results-export-json'));
+  assert.deepEqual(JSON.parse(json.effects[0].payload.text), [{ __i: 3, a: 'row3', b: 'odd' }, { __i: 1, a: 'row1', b: 'odd' }]);
+  assert.equal(json.effects[0].payload.filename, 'query-results.json');
+  assert.equal(json.effects[0].payload.mime, 'application/json');
+  const noHit = H2['results-tools.click'](s, { name: 'results-tools', event: 'click', target: 'x', path: ['results-tools', 'root'] });
+  assert.equal(noHit.effects, undefined, 'a click elsewhere in the tools row is a no-op');
+});
+
+test('<name>-pager.click: prev/next clamp to [1, lastPage] against the FILTERED count', () => {
+  const H2 = tableHandlers(FEP_SPEC);
+  const path = (n) => ({ name: 'results-pager', event: 'click', target: n, path: [n, 'results-pager', 'root'] });
+  let s = { state: 'ready', data: { results: { ...tableInit(FEP_SPEC, fepRows(5)), page: 1 } } };
+  let r = H2['results-pager.click'](s, path('results-page-prev'));
+  assert.equal(r.status.data.results.page, 1, 'already at page 1, prev clamps');
+  r = H2['results-pager.click'](s, path('results-page-next'));
+  assert.equal(r.status.data.results.page, 2);
+  // 5 rows, pageSize 2 -> 3 pages unfiltered; filtered to the 2 "odd" rows -> 1 page only
+  s = { state: 'ready', data: { results: { ...tableInit(FEP_SPEC, fepRows(5)), filter: 'odd', page: 1 } } };
+  r = H2['results-pager.click'](s, path('results-page-next'));
+  assert.equal(r.status.data.results.page, 1, 'next clamps to the filtered lastPage, not the unfiltered one');
+});
+
+test('tableView: paging="pages" -> exactly one page of rows, no spacers, <name>-pager patched', () => {
+  const t = { ...tableInit(FEP_SPEC, fepRows(5)), page: 2 };
+  const v = tableView(FEP_SPEC, t);
+  assert.deepEqual(v.results.content.map(c => c.name ?? c.box), ['results-head', 'results-row-2', 'results-row-3']);
+  assert.deepEqual(v['results-pager'].content[0], { box: 'hug', content: '3–4 of 5' });
+  assert.deepEqual(v['results-page-prev'], { state: 'actionable' });
+  assert.deepEqual(v['results-page-next'], { state: 'actionable' });
+  const last = { ...tableInit(FEP_SPEC, fepRows(5)), page: 3 };
+  const vLast = tableView(FEP_SPEC, last);
+  assert.equal(vLast.results.content.length, 2, 'head + the single leftover row');
+  assert.deepEqual(vLast['results-page-next'], { state: 'disabled' });
+  const first = { ...tableInit(FEP_SPEC, fepRows(5)), page: 1 };
+  assert.deepEqual(tableView(FEP_SPEC, first)['results-page-prev'], { state: 'disabled' });
+});
+
+test('tableView: filterable narrows rows/paging/count; exportable adds CSV/JSON buttons', () => {
+  const t = { ...tableInit(FEP_SPEC, fepRows(5)), filter: 'odd' };
+  const v = tableView(FEP_SPEC, t);
+  assert.deepEqual(v.results.content.map(c => c.name), ['results-head', 'results-row-1', 'results-row-3']);
+  const tools = v['results-tools'].content;
+  assert.equal(tools[0].name, 'results-filter');
+  assert.equal(tools[0].content, 'odd');
+  assert.deepEqual(tools[1], { box: 'fill' });
+  assert.deepEqual(tools[2], { box: 'hug', content: '2 of 5' });
+  assert.deepEqual(tools.map(x => x.name ?? null).slice(3), ['results-export-csv', 'results-export-json']);
+  assert.deepEqual(v['results-export-csv'], { state: 'actionable' });
+  assert.deepEqual(v['results-export-json'], { state: 'actionable' });
+  // no filter text yet -> no count span, just filter field + spacer + export buttons
+  const empty = tableView(FEP_SPEC, tableInit(FEP_SPEC, fepRows(5)));
+  assert.equal(empty['results-tools'].content.length, 4);
+});
+
+test('tableView: a spec with none of filterable/exportable/paging never touches <name>-tools/-pager', () => {
+  const v = tableView(SPEC, tableInit(SPEC, ROWS));
+  assert.equal('runs-tools' in v, false);
+  assert.equal('runs-pager' in v, false);
 });

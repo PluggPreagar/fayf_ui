@@ -121,7 +121,12 @@ export function cellText(v) {
 function buildResults(payload) {
   const rows = asList(payload && payload.rows);
   const cols = (payload && payload.columns && payload.columns.length) ? payload.columns : deriveColumns(rows);
-  const spec = { name: RESULTS.name, rowKey: '__i', columns: cols.map(c => ({ key: c, label: c })) };
+  // filterable/exportable/paging: ground-truth parity (fayf_processor's old
+  // DataTable widget had all three: `filterable:true, export:true,
+  // exportName:'query-results', paging:'pages', pageSize:25` -- see
+  // ui/table.js's own header for what each opt-in flag does).
+  const spec = { name: RESULTS.name, rowKey: '__i', columns: cols.map(c => ({ key: c, label: c })),
+    filterable: true, exportable: true, exportName: 'query-results', paging: 'pages', pageSize: 25 };
   const built = rows.map((row, i) => {
     const out = { __i: i };
     for (const c of cols) out[c] = cellText(row[c]);
@@ -184,6 +189,20 @@ export function makeHandlers(urls = FIXTURE_URLS) {
     'results.scroll': (s, p) => {
       const spec = s.data.resultsSpec;
       return spec ? tableHandlers(spec)[`${spec.name}.scroll`](s, p) : { status: s };
+    },
+    // filterable/exportable/paging (see buildResults' spec) -- same
+    // look-up-the-dynamic-spec-at-call-time pattern as click/scroll above.
+    'results-filter.input': (s, p) => {
+      const spec = s.data.resultsSpec;
+      return spec ? tableHandlers(spec)[`${spec.name}-filter.input`](s, p) : { status: s };
+    },
+    'results-tools.click': (s, p) => {
+      const spec = s.data.resultsSpec;
+      return spec ? tableHandlers(spec)[`${spec.name}-tools.click`](s, p) : { status: s };
+    },
+    'results-pager.click': (s, p) => {
+      const spec = s.data.resultsSpec;
+      return spec ? tableHandlers(spec)[`${spec.name}-pager.click`](s, p) : { status: s };
     },
 
     'btn-refresh.click': (s) => ({ status: s, effects: [{ fetch: urls.runs, ok: 'runs.loaded', err: 'runs.failed' }] }),

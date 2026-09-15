@@ -143,8 +143,57 @@ tr.addBlock('query: nav + theme emit', (r) => {
   });
 });
 
+tr.addBlock('query: results table is filterable/exportable/paged (ground-truth parity)', (r) => {
+  r.run(async () => {
+     // A synthetic 30-row payload dispatched directly (bypassing fetch, same
+     // determinism `run-picker` block's injected `io` already relies on) --
+     // real fixtures only ever have 3-4 rows, not enough to exercise a real
+     // second page.
+     const rows = Array.from({ length: 30 }, (_, i) => ({ id: i, party: i % 2 ? 'AfD' : 'SPD', name: `row ${i}` }));
+     window.__ctl.dispatch('query.loaded', { columns: ['id', 'party', 'name'], rows, total: 30 });
+     await settled();
+     r.check(await until(() => !!q('results-head'), 1000), 'results table rendered from the synthetic payload');
+     r.check(rowsOf('results').length === 25, 'one page = pageSize (25) rows, not all 30', rowsOf('results').length);
+     r.check(!!q('results-filter') && q('results-filter').tagName === 'INPUT', 'results-tools carries a real filter <input>');
+     r.check(!!q('results-export-csv') && !!q('results-export-json'), 'results-tools carries CSV + JSON export buttons');
+     r.check(text('results-pager').includes('1') && text('results-pager').includes('30'), 'results-pager shows a 1..N of 30 range', text('results-pager'));
+     r.check(q('results-page-prev').classList.contains('bx-disabled'), 'page 1: Prev disabled');
+     r.check(!q('results-page-next').classList.contains('bx-disabled'), 'page 1: Next enabled (30 > 25)');
+
+     q('results-page-next').click();
+     await settled();
+     r.check(rowsOf('results').length === 5, 'page 2: the 5 leftover rows', rowsOf('results').length);
+     r.check(q('results-page-next').classList.contains('bx-disabled'), 'page 2 (last): Next disabled');
+     r.check(!q('results-page-prev').classList.contains('bx-disabled'), 'page 2: Prev enabled');
+
+     const field = q('results-filter');
+     field.value = 'AfD';
+     field.dispatchEvent(new Event('input', { bubbles: true }));
+     await settled();
+     r.check(rowsOf('results').every(row => row.textContent.includes('AfD')), 'filtering to "AfD" leaves only matching rows');
+     r.check(q('results-page-prev').classList.contains('bx-disabled'), 'a new filter restarts paging at page 1 (Prev disabled again)');
+     r.check(text('results-tools').includes('of 30'), 'results-tools shows the filtered/total match count', text('results-tools'));
+
+     const before = window.__emitted.length;
+     q('results-export-csv').click();
+     const exportEvt = window.__emitted.at(-1);
+     r.check(window.__emitted.length === before + 1 && exportEvt[0] === 'results.export', 'CSV button emits results.export', JSON.stringify(exportEvt));
+     r.check(exportEvt[1].format === 'csv' && exportEvt[1].mime === 'text/csv' && exportEvt[1].filename === 'query-results.csv', 'csv export payload shape (spec.exportName wins over the bare table name)', JSON.stringify(exportEvt[1]));
+     r.check(exportEvt[1].text.split('\n').length === 16, 'csv text: header + the 15 filtered AfD rows', exportEvt[1].text.split('\n').length);
+
+     field.value = '';
+     field.dispatchEvent(new Event('input', { bubbles: true }));
+     await settled();
+     r.check(rowsOf('results').length === 25, 'clearing the filter restores the full (paged) row count', rowsOf('results').length);
+  });
+});
+
 tr.addBlock('query: fit (C10) -- root does not scroll, content fits', (r) => {
-  r.run(() => {
+  r.run(async () => {
+     // Yield a frame before measuring -- see browse_test.js's matching fit
+     // block for why: a synchronous fit-check right after a preceding
+     // block's DOM mutations can read a stale, not-yet-reflowed layout box.
+     await new Promise(requestAnimationFrame);
      const el = root();
      r.check(el.scrollWidth <= el.clientWidth, 'root: no horizontal overflow', `${el.scrollWidth} > ${el.clientWidth}`);
      r.check(el.scrollHeight <= el.clientHeight, 'root: no vertical overflow', `${el.scrollHeight} > ${el.clientHeight}`);
@@ -153,7 +202,7 @@ tr.addBlock('query: fit (C10) -- root does not scroll, content fits', (r) => {
      const c = q('content');
      r.check(c.scrollWidth <= c.clientWidth, 'content: scrollWidth <= clientWidth', `${c.scrollWidth} > ${c.clientWidth}`);
      const cr = c.getBoundingClientRect();
-     const out = ['run-picker', 'example', 'fql-row', 'btn-run', 'results'].filter(n => {
+     const out = ['run-picker', 'example', 'fql-row', 'btn-run', 'results-tools', 'results', 'results-pager'].filter(n => {
        const b = q(n).getBoundingClientRect();
        return b.left < cr.left - 1 || b.right > cr.right + 1;
      });

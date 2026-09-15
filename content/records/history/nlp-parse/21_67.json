@@ -1,0 +1,3 @@
+{ "history": [
+  { "ts": "2026-09-10T12:00:00Z", "version": 1, "value": { "record_id": "21_67", "step": "nlp-parse", "tokens": ["Es", "folgt", "die", "Tagesordnung"], "entities": [], "meta": { "lang": "de", "model": "spacy-de-sm" } } }
+] }

@@ -58,6 +58,7 @@
         { "name": "content", "box": "stack, fill, w:3/12, pad:3, gap:3, scroll, solid, rounded",
           "children": [
             { "name": "content-title", "extends": "atom/text.title", "content": "Records" },
+            { "name": "tree-tools", "box": "row, mid, gap:2, hug", "content": "" },
             { "name": "tree", "box": "stack, gap:1, fill", "content": "" } ] },
         { "name": "detail-splitter", "box": "fixed, w:6, bare" },
         { "name": "detail", "box": "stack, fill, w:8/12, pad:3, gap:2, scroll, solid, rounded",
@@ -65,7 +66,10 @@
             { "name": "detail-head", "box": "row, mid, between, gap:1",
               "children": [
                 { "name": "detail-title", "extends": "atom/text.title", "box": "fill, clip", "content": "Detail" },
+                { "name": "btn-rerun", "extends": "atom/button", "box": "hug, disabled", "content": "Re-run…" },
+                { "name": "btn-diff", "extends": "atom/button", "box": "hug, disabled", "content": "Diff" },
                 { "name": "btn-save", "extends": "atom/button.primary", "box": "hug, disabled", "content": "Save" } ] },
+            { "name": "tags-row", "box": "row, mid, gap:1, hug", "content": "" },
             { "name": "save-msg", "box": "hug", "content": "" },
             { "name": "detail-body", "box": "stack, gap:0, fill", "content": "Select a record" } ] },
         { "name": "inspect-splitter", "box": "fixed, w:6, bare" },

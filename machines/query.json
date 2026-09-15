@@ -8,6 +8,7 @@
       "fql.input": "ready",
       "btn-run.click": "ready", "query.loaded": "ready", "query.failed": "ready",
       "results.click": "ready", "results.scroll": "ready",
+      "results-filter.input": "ready", "results-tools.click": "ready", "results-pager.click": "ready",
       "btn-refresh.click": "ready", "btn-theme.click": "ready",
       "nav-dashboard.click": "ready", "nav-pipelines.click": "ready", "nav-graph.click": "ready",
       "nav-records.click": "ready", "nav-issues.click": "ready", "nav-browse.click": "ready",
