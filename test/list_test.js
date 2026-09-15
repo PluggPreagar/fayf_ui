@@ -223,8 +223,11 @@ tr.addBlock('list: fit (C10) -- root does not scroll, tables sized, content fits
      // immediately after a preceding block's DOM mutations can read a
      // stale, not-yet-reflowed layout box otherwise (found live: every
      // measurement below came back tiny at a real 1280px viewport,
-     // self-correcting the instant anything else triggered a reflow).
-     await new Promise(requestAnimationFrame);
+     // self-correcting the instant anything else triggered a reflow). A
+     // real setTimeout, not requestAnimationFrame -- rAF never reliably
+     // fires in this harness's backgrounded/headless tab (found live: it
+     // hung this block forever, never reaching a single check below).
+     await new Promise((ok) => setTimeout(ok, 50));
      const el = root();
      r.check(el.scrollWidth <= el.clientWidth, 'root: no horizontal overflow', `${el.scrollWidth} > ${el.clientWidth}`);
      r.check(el.scrollHeight <= el.clientHeight, 'root: no vertical overflow', `${el.scrollHeight} > ${el.clientHeight}`);

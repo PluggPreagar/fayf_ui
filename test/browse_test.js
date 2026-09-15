@@ -186,8 +186,11 @@ tr.addBlock('browse: fit (C10) -- root does not scroll, tree/detail sized, conte
      // stale pre-removal layout box can still be cached (found live: every
      // measurement below came back tiny -- e.g. content 81 > 24 -- at a
      // real 1280px viewport, self-correcting the instant anything else
-     // triggered a reflow afterward).
-     await new Promise(requestAnimationFrame);
+     // triggered a reflow afterward). A real setTimeout, not
+     // requestAnimationFrame -- rAF never reliably fires in this harness's
+     // backgrounded/headless tab (found live: it hung this block forever,
+     // never reaching a single check below).
+     await new Promise((ok) => setTimeout(ok, 50));
      const el = root();
      r.check(el.scrollWidth <= el.clientWidth, 'root: no horizontal overflow', `${el.scrollWidth} > ${el.clientWidth}`);
      r.check(el.scrollHeight <= el.clientHeight, 'root: no vertical overflow', `${el.scrollHeight} > ${el.clientHeight}`);

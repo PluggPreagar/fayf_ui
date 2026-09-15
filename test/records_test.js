@@ -180,10 +180,13 @@ tr.addBlock('records: error path -- failed run fetch -> error, retry re-issues i
 
 tr.addBlock('records: fit (C10) -- root does not scroll, tree/detail sized, content fits', (r) => {
   r.run(async () => {
-     // Yield a frame before measuring -- see browse_test.js's matching fit
-     // block for why: a synchronous fit-check right after a preceding
-     // block's DOM mutations can read a stale, not-yet-reflowed layout box.
-     await new Promise(requestAnimationFrame);
+     // Yield before measuring -- see browse_test.js's matching fit block for
+     // why: a synchronous fit-check right after a preceding block's DOM
+     // mutations can read a stale, not-yet-reflowed layout box. A real
+     // setTimeout, not requestAnimationFrame -- rAF never reliably fires in
+     // this harness's backgrounded/headless tab (found live: it hung this
+     // block forever, never reaching a single check below).
+     await new Promise((ok) => setTimeout(ok, 50));
      const el = root();
      r.check(el.scrollWidth <= el.clientWidth, 'root: no horizontal overflow', `${el.scrollWidth} > ${el.clientWidth}`);
      r.check(el.scrollHeight <= el.clientHeight, 'root: no vertical overflow', `${el.scrollHeight} > ${el.clientHeight}`);
