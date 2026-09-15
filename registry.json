@@ -1681,6 +1681,49 @@
           "name": "sentences",
           "box": "stack, fill, gap:1, pad:2, scroll, solid, rounded",
           "content": "Pick a Rede to see its text."
+         },
+         {
+          "name": "panel-col",
+          "box": "stack, fixed, w:280, gap:2",
+          "children": [
+           {
+            "name": "panel-actions",
+            "box": "row, mid, gap:1, hug",
+            "children": [
+             {
+              "name": "btn-suggest",
+              "extends": "atom/button",
+              "content": "Neuer Satz"
+             }
+            ]
+           },
+           {
+            "name": "panel",
+            "box": "stack, fill, gap:1, pad:2, scroll, solid, rounded",
+            "content": "Pick a Rede to see records."
+           },
+           {
+            "name": "panel-msg",
+            "box": "hug",
+            "content": ""
+           },
+           {
+            "name": "export-row",
+            "box": "row, mid, gap:1, hug",
+            "children": [
+             {
+              "name": "annotated-by-host",
+              "box": "fill",
+              "content": ""
+             },
+             {
+              "name": "btn-export",
+              "extends": "atom/button",
+              "content": "Export"
+             }
+            ]
+           }
+          ]
          }
         ]
        },
@@ -2976,8 +3019,18 @@
         "content": "Runs"
        },
        {
+        "name": "runs-tools",
+        "box": "row, mid, gap:2, hug",
+        "content": ""
+       },
+       {
         "name": "runs",
         "box": "stack, scroll, fixed, h:320, solid, rounded",
+        "content": ""
+       },
+       {
+        "name": "runs-pager",
+        "box": "row, mid, gap:2, hug",
         "content": ""
        }
       ]
@@ -3671,8 +3724,18 @@
         "content": "Results"
        },
        {
+        "name": "results-tools",
+        "box": "row, mid, gap:2, hug",
+        "content": ""
+       },
+       {
         "name": "results",
         "box": "stack, fill, scroll, solid, rounded",
+        "content": ""
+       },
+       {
+        "name": "results-pager",
+        "box": "row, mid, gap:2, hug",
         "content": ""
        }
       ]
@@ -3946,6 +4009,11 @@
         "content": "Records"
        },
        {
+        "name": "tree-tools",
+        "box": "row, mid, gap:2, hug",
+        "content": ""
+       },
+       {
         "name": "tree",
         "box": "stack, gap:1, fill",
         "content": ""
@@ -3971,12 +4039,29 @@
           "content": "Detail"
          },
          {
+          "name": "btn-rerun",
+          "extends": "atom/button",
+          "box": "hug, disabled",
+          "content": "Re-run…"
+         },
+         {
+          "name": "btn-diff",
+          "extends": "atom/button",
+          "box": "hug, disabled",
+          "content": "Diff"
+         },
+         {
           "name": "btn-save",
           "extends": "atom/button.primary",
           "box": "hug, disabled",
           "content": "Save"
          }
         ]
+       },
+       {
+        "name": "tags-row",
+        "box": "row, mid, gap:1, hug",
+        "content": ""
        },
        {
         "name": "save-msg",
