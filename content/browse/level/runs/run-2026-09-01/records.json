@@ -1,0 +1,8 @@
+{ "truncated": false, "entries": [
+  { "type": "file", "name": "nlp-parse_1a2b3c4d5e6f7890.json", "path": "run-2026-09-01/records/nlp-parse_1a2b3c4d5e6f7890.json" },
+  { "type": "file", "name": "nlp-parse_2b3c4d5e6f789012.json", "path": "run-2026-09-01/records/nlp-parse_2b3c4d5e6f789012.json" },
+  { "type": "file", "name": "nlp-parse_3c4d5e6f78901234.json", "path": "run-2026-09-01/records/nlp-parse_3c4d5e6f78901234.json" },
+  { "type": "file", "name": "ingest_4d5e6f7890123456.json", "path": "run-2026-09-01/records/ingest_4d5e6f7890123456.json" },
+  { "type": "file", "name": "ingest_5e6f789012345678.json", "path": "run-2026-09-01/records/ingest_5e6f789012345678.json" },
+  { "type": "file", "name": "manifest.json", "path": "run-2026-09-01/records/manifest.json" }
+] }

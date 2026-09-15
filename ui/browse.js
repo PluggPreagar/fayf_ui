@@ -32,13 +32,27 @@
 // calls `splitMountPath` (below) on a filetree path the same way.
 //
 // status.data = { tree: filetreeStatus, detail: null | fileResponse,
-//                  detailLoading, error, editText, saveMsg }
+//                  detailLoading, error, editText, saveMsg, truncated,
+//                  deepLink: null | string }
 //   `tree.sel` (inside the filetree sub-status) is the selected file's path
 //   -- used for detail-title, since the raw file response has no path field
 //   of its own ({ format, content, hash, writable }).
+//   `truncated`: the LAST level fetched hit the server's own entry cap
+//     (backend/api/browse.py's MAX_TREE_ENTRIES) -- a per-paint transient
+//     flag, not remembered per-node (a real per-directory badge would need
+//     filetree.js's own node shape to carry it; this is the "OLD frontend"
+//     wart-parity level of fix, not a from-scratch redesign).
+//   `deepLink`: "<mount>/<sub/path...>" still left to walk down (issue: "no
+//     ?mount=&path=&at= deep-link restoration") -- consumed progressively,
+//     one level at a time, by mounts.loaded then level.loaded below (this
+//     tree is lazy/N-level, unlike ui/records.js's fully-known-upfront one,
+//     so restoring a nested selection needs a real fetch per level, not one
+//     handler doing it all at mount). The `&at=` JSON-drill-path half of
+//     that old param trio has no home yet -- see this file's own "still
+//     deferred" note further down.
 import browseMachine from '../machines/browse.json' with { type: 'json' };
 import { mountMachine } from './machine.js';
-import { filetreeInit, filetreeHandlers, filetreeView, setChildren, setError } from './filetree.js';
+import { filetreeInit, filetreeHandlers, filetreeView, setChildren, setError, setOpen } from './filetree.js';
 
 export { browseMachine };
 
@@ -55,9 +69,17 @@ const NAV = ['dashboard', 'pipelines', 'graph', 'records', 'issues', 'browse', '
 const NODE_PREFIX = `${TREE.name}-node-`;
 
 // Pure. status.data at mount: nothing loaded, tree empty (no mounts yet).
-export function initialData() {
+// `deepLink` (?mount=&path= combined into one "<mount>/<sub/path...>"
+// string, or just "<mount>" -- ui/records.js's own `pendingSel` uses the
+// same seed-before-mount shape) restores a shared/bookmarked location; the
+// consumer's own last-used-mount memory (OLD: localStorage
+// infopedia-browse-mount) is a BROWSER concern, not this pure controller's
+// -- same layering call ui/query.js's/ui/list.js's own URL-sync already
+// made, left to whichever app mounts this (fayf_processor's browse.html
+// watches status.data.tree.nodes for the open top-level mount itself).
+export function initialData(deepLink = null) {
   return { [TREE.name]: filetreeInit(TREE, []), detail: null, detailLoading: false, error: null,
-    editText: '', saveMsg: '' };
+    editText: '', saveMsg: '', truncated: false, deepLink };
 }
 
 const withData = (s, patch) => ({ ...s, data: { ...s.data, ...patch } });
@@ -84,6 +106,58 @@ function findNode(nodes, path) {
     if (n.children) { const f = findNode(n.children, path); if (f) return f; }
   }
   return null;
+}
+
+// Pure. Ported verbatim from fayf_processor's own retired frontend/browse.js
+// groupArtefactEntries (issue: "hundreds of flat per-record artefact files
+// ... no longer auto-group into collapsible synthetic folders"): a run
+// directory's flat per-record dump (`<prefix>_<hash>.<ext>`, hundreds of
+// them) collapses into one collapsed synthetic folder per prefix, de-noising
+// the tree -- but only once at least 2 files share a prefix (a lone
+// `<prefix>_<hash>.<ext>` file is just a file, not worth a group of one).
+// Client-side only, no server round-trip: this level's response already
+// has every entry in hand.
+const ARTEFACT_RE = /^(.+)_[0-9a-f]{8,}\.[^.]+$/;
+export function groupArtefactEntries(entries) {
+  const counts = {};
+  for (const e of entries) {
+    if (e.type !== 'file') continue;
+    const m = ARTEFACT_RE.exec(e.name);
+    if (m) counts[m[1]] = (counts[m[1]] || 0) + 1;
+  }
+  const groups = {};
+  const out = [];
+  for (const e of entries) {
+    const m = e.type === 'file' ? ARTEFACT_RE.exec(e.name) : null;
+    const prefix = (m && counts[m[1]] >= 2) ? m[1] : null;
+    if (prefix === null) { out.push(e); continue; }
+    if (!groups[prefix]) { groups[prefix] = { kind: 'group', name: prefix, children: [] }; out.push(groups[prefix]); }
+    groups[prefix].children.push(e);
+  }
+  return out;
+}
+
+// Pure. `entries` (raw level-fetch entries, possibly already grouped by
+// groupArtefactEntries above) -> filetree node shape, every path namespaced
+// under `basePath` (the directory this level belongs to). A `group` entry's
+// own path is synthetic (nothing on the real filesystem matches it) but its
+// CHILDREN keep their real paths (`${basePath}/${realName}`) so opening one
+// still hits the right file -- only ITS POSITION in the rendered tree is
+// nested, matching OLD's own "grouping is a view, not a rename" behaviour.
+// A group's `children` are handed to filetree.js's setChildren PRE-POPULATED
+// (that function now passes an incoming `children` array through as given)
+// -- no server round-trip for a group's own members, they were already in
+// this same response.
+function mapEntries(entries, basePath) {
+  return entries.map(e => {
+    if (e.kind === 'group') {
+      return {
+        name: `${e.name} (${e.children.length})`, path: `${basePath}/${e.name}`, kind: 'dir',
+        children: e.children.map(c => ({ name: c.name, path: `${basePath}/${c.name}`, kind: 'file' })),
+      };
+    }
+    return { name: e.name, path: `${basePath}/${e.name}`, kind: e.type === 'dir' ? 'dir' : 'file' };
+  });
 }
 
 // filetree handlers, wrapped: filetreeHandlers' own click keeps its pure
@@ -118,24 +192,77 @@ function selectingTree(urls) {
   };
 }
 
+// Pure. First step of a deepLink walk: open the target mount (if it's a
+// real one) and, if there's more path left to walk, kick off its level
+// fetch (same effect shape a real click on that mount would produce).
+// `deepLink` split on the FIRST '/': the mount name, then whatever's left.
+function startDeepLink(tree, deepLink, urls) {
+  const [mountName, ...rest] = deepLink.split('/');
+  if (!findNode(tree.nodes, mountName)) return { tree, deepLink: null, effects: [] };
+  const opened = setOpen(tree, mountName, true);
+  if (!rest.length) return { tree: opened, deepLink: null, effects: [] };
+  return {
+    tree: { ...opened, pendingPath: mountName },
+    deepLink: rest.join('/'),
+    effects: [{ fetch: urls.level(mountName), ok: 'level.loaded', err: 'level.failed' }],
+  };
+}
+
+// Pure. Next step, called once a level this walk was waiting on has landed
+// (`tree` already has that level's children spliced in) -- descend into the
+// next segment: open it if it's a dir and fetch ITS level (or stop, out of
+// path, if this was the last segment), or select+fetch it if it's a file
+// (same effect a real file click produces). Any segment that doesn't
+// resolve (a stale/bad link) just stops the walk quietly -- never a crash,
+// never an error state for what is, after all, an optional convenience.
+function continueDeepLink(tree, basePath, deepLink, urls) {
+  const [seg, ...rest] = deepLink.split('/');
+  const childPath = `${basePath}/${seg}`;
+  const child = findNode(tree.nodes, childPath);
+  if (!child) return { tree, deepLink: null, effects: [], select: false };
+  if (child.kind === 'file') return { tree: { ...tree, sel: childPath }, deepLink: null, effects: [{ fetch: urls.file(childPath), ok: 'file.loaded', err: 'file.failed' }], select: true };
+  const opened = setOpen(tree, childPath, true);
+  if (!rest.length) return { tree: opened, deepLink: null, effects: [], select: false };
+  return {
+    tree: { ...opened, pendingPath: childPath },
+    deepLink: rest.join('/'),
+    effects: [{ fetch: urls.level(childPath), ok: 'level.loaded', err: 'level.failed' }],
+    select: false,
+  };
+}
+
 export function makeHandlers(urls = FIXTURE_URLS) {
   return {
-    'mounts.loaded': (s, p) => ({ status: withData(s, { [TREE.name]: filetreeInit(TREE, asList(p)) }) }),
+    'mounts.loaded': (s, p) => {
+      const tree = filetreeInit(TREE, asList(p));
+      if (!s.data.deepLink) return { status: withData(s, { [TREE.name]: tree }) };
+      const r = startDeepLink(tree, s.data.deepLink, urls);
+      return { status: withData(s, { [TREE.name]: r.tree, deepLink: r.deepLink }), effects: r.effects };
+    },
     'mounts.failed': (s, p) => ({ status: withData(s, { error: p && p.error }) }),
     ...selectingTree(urls),
     'level.loaded': (s, p) => {
       const t = s.data[TREE.name];
       const pendingPath = t.pendingPath;
-      const entries = (p && p.entries) || [];
-      const mapped = entries.map(e => ({ name: e.name, path: `${pendingPath}/${e.name}`, kind: e.type === 'dir' ? 'dir' : 'file' }));
-      const t2 = setChildren(t, pendingPath, mapped);
-      return { status: withData(s, { [TREE.name]: { ...t2, pendingPath: null } }) };
+      const rawEntries = (p && p.entries) || [];
+      const mapped = mapEntries(groupArtefactEntries(rawEntries), pendingPath);
+      const t2 = { ...setChildren(t, pendingPath, mapped), pendingPath: null };
+      const truncated = !!(p && p.truncated);
+      if (!s.data.deepLink) return { status: withData(s, { [TREE.name]: t2, truncated }) };
+      const r = continueDeepLink(t2, pendingPath, s.data.deepLink, urls);
+      const patch = { [TREE.name]: r.tree, truncated, deepLink: r.deepLink };
+      if (r.select) Object.assign(patch, { detail: null, detailLoading: true });
+      return { status: withData(s, patch), effects: r.effects };
     },
     'level.failed': (s, p) => {
       const t = s.data[TREE.name];
       const pendingPath = t.pendingPath;
       const t2 = setError(t, pendingPath, (p && p.error) || 'failed to load');
-      return { status: withData(s, { [TREE.name]: { ...t2, pendingPath: null } }) };
+      // A failed level strands whatever deepLink was still counting on it --
+      // no silent retry loop, no crash, just stop walking (same "quiet
+      // no-op on a bad/stale link" discipline continueDeepLink's own
+      // unresolved-segment branch already applies).
+      return { status: withData(s, { [TREE.name]: { ...t2, pendingPath: null }, deepLink: null }) };
     },
     'file.loaded': (s, p) => ({ status: withData(s, { detail: p, detailLoading: false, editText: detailBody(p), saveMsg: '' }) }),
     'file.failed': (s, p) => ({ status: withData(s, { detailLoading: false, error: p && p.error }) }),
@@ -200,9 +327,15 @@ export function view(s) {
   const mountCount = t ? t.nodes.length : 0;
   const selPath = t && t.sel != null ? t.sel : null;
   const writable = !!(d.detail && d.detail.writable);
+  // Server-truncation warning (issue: "no server-truncation warning" --
+  // OLD's own "List capped -- ..." message) -- a transient, LAST-level-only
+  // flag (see this file's own status.data doc comment for why it isn't
+  // per-directory), so it only ever shows right after a level that actually
+  // hit the cap, not "forever once any directory anywhere was ever capped".
+  const truncNote = d.truncated ? ' — list capped, showing partial results' : '';
   const patches = {
     'crumb-page': 'Browse',
-    'status-text': loading ? 'loading…' : s.state === 'error' ? `failed: ${d.error}` : `${mountCount} mounts`,
+    'status-text': loading ? 'loading…' : s.state === 'error' ? `failed: ${d.error}` : `${mountCount} mounts${truncNote}`,
     'detail-title': selPath || 'No file open',
     'detail-body': { content: d.detail ? detailEditor(d.editText) : (d.detailLoading ? 'Loading…' : 'Select a file') },
     'btn-save': { state: writable ? 'actionable' : 'disabled' },
@@ -223,5 +356,5 @@ export function view(s) {
 
 // Browser. `root` = the already-rendered screens/browse element.
 export function mountBrowse(root, reg, opts = {}) {
-  return mountMachine(root, root, browseMachine, makeHandlers(opts.urls || FIXTURE_URLS), { reg, view, data: initialData(), ...opts });
+  return mountMachine(root, root, browseMachine, makeHandlers(opts.urls || FIXTURE_URLS), { reg, view, data: initialData(opts.deepLink), ...opts });
 }

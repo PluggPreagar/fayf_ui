@@ -69,20 +69,30 @@ tr.addBlock('browse: expand a SUBdirectory 2 levels deep -- proves real recursio
   });
 });
 
-tr.addBlock('browse: click a file -- detail populates, pretty JSON renders as multiple NBSP-indented rows', (r) => {
+tr.addBlock('browse: click a file -- detail populates, pretty JSON in a real editable textarea', (r) => {
   r.run(async () => {
+     // A textarea's CONTENT lives in its `.value`, never reflected into
+     // `.textContent`/innerHTML -- checking textContent here would always
+     // read empty regardless of the real content. And a real <textarea>
+     // renders whitespace NATIVELY (unlike filetree.js's div rows) --
+     // ui/browse.js's own detailBody comment: "no NBSP-indent workaround
+     // needed anymore, gone now that this is one real form field, not N
+     // box-model rows". Both stale assumptions from before "real edit +
+     // Save" replaced a plain multi-row text display with one genuine
+     // <textarea>, 2026-09-12.
      const file = q(nodeSel('runs/run-2026-09-01/result.json'));
      r.check(!!file, 'result.json row present');
      file.click();
      r.check(await until(() => text('detail-title') === 'runs/run-2026-09-01/result.json', 3000), 'detail-title shows the selected path', text('detail-title'));
      r.check(file.classList.contains('bx-selected'), 'clicked file row has bx-selected');
-     r.check(await until(() => q('detail-body').textContent.includes('run_id'), 3000), 'detail-body populated once the file fetch resolves', text('detail-body'));
-     const body = q('detail-body');
-     const lines = [...body.children];
-     r.check(lines.length > 3, 'JSON renders as multiple distinct rows, not one blob', lines.length);
-     r.check(lines[0].textContent.trim() === '{', 'first row is the opening brace', lines[0].textContent);
-     const indented = lines.find(el => el.textContent.startsWith(' '));
-     r.check(!!indented, 'an indented line starts with NBSP (U+00A0), not a plain space', indented && JSON.stringify(indented.textContent));
+     const field = () => q('detail-editor');
+     r.check(await until(() => !!field() && field().value.includes('run_id'), 3000), 'detail-editor populated once the file fetch resolves', field() && field().value);
+     r.check(field().tagName === 'TEXTAREA', 'a real <textarea>, editable (field:"textarea")', field().tagName);
+     const lines = field().value.split('\n');
+     r.check(lines.length > 3, 'pretty-printed JSON -- multiple lines, not one blob', lines.length);
+     r.check(lines[0].trim() === '{', 'first line is the opening brace', lines[0]);
+     const indented = lines.find(l => l.startsWith('  '));
+     r.check(!!indented, 'an indented line (plain spaces -- the textarea renders whitespace natively)', indented && JSON.stringify(indented));
   });
 });
 
@@ -95,6 +105,36 @@ tr.addBlock('browse: collapsing hides children; re-expanding does not re-fetch (
      dir.click(); await settled();
      r.check(!!q(nodeSel('runs/run-2026-09-01/logs')), 'children reappear immediately on re-expand (already loaded, no fetch wait needed)');
      r.check(!!q(nodeSel('runs/run-2026-09-01/logs/stdout.log')), 'grandchild (level 3) still there too -- nothing lost by collapsing');
+  });
+});
+
+tr.addBlock('browse: artefact-file grouping -- a real level with >=2 shared-prefix files collapses into a synthetic folder', (r) => {
+  r.run(async () => {
+     const recordsDir = q(nodeSel('runs/run-2026-09-01/records'));
+     r.check(!!recordsDir, 'records dir row present (added alongside logs/result.json)');
+     recordsDir.click();
+     r.check(await until(() => !!q(nodeSel('runs/run-2026-09-01/records/manifest.json')), 3000), 'ungrouped file appears', !!q(nodeSel('runs/run-2026-09-01/records/manifest.json')));
+     // The group's own tree path is synthetic (`<dir>/nlp-parse`, nothing on
+     // the real filesystem matches it) -- its ROW carries a data-name for
+     // that synthetic path, found the same way as any other row.
+     const nlpGroupRow = q(nodeSel('runs/run-2026-09-01/records/nlp-parse'));
+     r.check(!!nlpGroupRow, 'nlp-parse group folder row present');
+     r.check(nlpGroupRow.textContent.includes('nlp-parse (3)'), 'group label carries the member count', nlpGroupRow.textContent);
+     r.check(!q(nodeSel('runs/run-2026-09-01/records/ingest_4d5e6f7890123456.json')), 'a grouped file is not its own top-level row (nested under the group instead)');
+     nlpGroupRow.click();
+     r.check(await until(() => !!q(nodeSel('runs/run-2026-09-01/records/nlp-parse_1a2b3c4d5e6f7890.json')), 1000), 'expanding the group reveals its members immediately -- pre-populated, no fetch wait');
+     q(nodeSel('runs/run-2026-09-01/records/nlp-parse_1a2b3c4d5e6f7890.json')).click();
+     r.check(await until(() => text('detail-title') === 'runs/run-2026-09-01/records/nlp-parse_1a2b3c4d5e6f7890.json', 3000), 'a grouped file opens by its REAL path, same as any other file', text('detail-title'));
+  });
+});
+
+tr.addBlock('browse: ?mount=&path= deep-link (mountBrowse opts.deepLink) restores a nested selection on a fresh mount', (r) => {
+  r.run(async () => {
+     const ctl = window.__mount(undefined, 'runs/run-2026-09-01/records/manifest.json');
+     const el = ctl.el;
+     r.check(await until(() => text('detail-title', el) === 'runs/run-2026-09-01/records/manifest.json', 3000), 'deep-linked file selected + loaded on a fresh mount', text('detail-title', el));
+     r.check(!!q(nodeSel('runs/run-2026-09-01/records/manifest.json'), el), 'its row is present (every ancestor dir auto-opened along the way)');
+     el.parentNode.remove();
   });
 });
 
@@ -137,7 +177,17 @@ tr.addBlock('browse: error path -- failed mounts fetch -> error, retry re-issues
 });
 
 tr.addBlock('browse: fit (C10) -- root does not scroll, tree/detail sized, content fits', (r) => {
-  r.run(() => {
+  r.run(async () => {
+     // The previous block removes its own throwaway retry-test mount
+     // (el2.parentNode.remove()) synchronously, then this block re-queries
+     // root() immediately in the same tick -- yield a frame first so the
+     // browser has actually committed that removal's reflow before reading
+     // clientWidth/scrollWidth off the real page's root; without this, a
+     // stale pre-removal layout box can still be cached (found live: every
+     // measurement below came back tiny -- e.g. content 81 > 24 -- at a
+     // real 1280px viewport, self-correcting the instant anything else
+     // triggered a reflow afterward).
+     await new Promise(requestAnimationFrame);
      const el = root();
      r.check(el.scrollWidth <= el.clientWidth, 'root: no horizontal overflow', `${el.scrollWidth} > ${el.clientWidth}`);
      r.check(el.scrollHeight <= el.clientHeight, 'root: no vertical overflow', `${el.scrollHeight} > ${el.clientHeight}`);

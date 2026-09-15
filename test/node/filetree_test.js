@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { filetreeInit, filetreeHandlers, filetreeView, setChildren, setLoading, setError } from '../../ui/filetree.js';
+import { filetreeInit, filetreeHandlers, filetreeView, setChildren, setLoading, setError, setOpen } from '../../ui/filetree.js';
 
 // C11: filetree = pure sub-controller on status.data[spec.name], same
 // pattern as ui/table.js/ui/tree.js (test/node/table_test.js, tree_test.js).
@@ -100,6 +100,33 @@ test('setChildren: splices at a NESTED node (2 levels deep), clears loading, doe
   const t3 = setChildren(t2, 'runs/run-1/x.log', []);
   const x = t3.nodes[0].children.find(n => n.path === 'runs/run-1').children.find(n => n.path === 'runs/run-1/x.log');
   assert.deepEqual(x.children, [], 'an empty dir: children [] not null');
+});
+
+test('setChildren: a child\'s OWN `children` passes through as given (a consumer synthesizing a pre-populated group, ui/browse.js\'s own artefact grouping) instead of always resetting to null', () => {
+  let t = withRunsChildren();
+  t = { ...t, nodes: t.nodes.map(n => n.path === 'runs' ? { ...n, open: true } : n) };
+  const t2 = setChildren(t, 'runs/run-1', [
+    { name: 'plain.log', path: 'runs/run-1/plain.log', kind: 'file' },   // omits children -- still defaults to null
+    { name: 'nlp-parse (2)', path: 'runs/run-1/nlp-parse', kind: 'dir', children: [
+      { name: 'nlp-parse_aaaaaaaa.json', path: 'runs/run-1/nlp-parse_aaaaaaaa.json', kind: 'file' },
+      { name: 'nlp-parse_bbbbbbbb.json', path: 'runs/run-1/nlp-parse_bbbbbbbb.json', kind: 'file' },
+    ] },
+  ]);
+  const run1 = t2.nodes[0].children.find(n => n.path === 'runs/run-1');
+  assert.equal(run1.children.find(n => n.path === 'runs/run-1/plain.log').children, null, 'omitted -- still the old default');
+  const group = run1.children.find(n => n.path === 'runs/run-1/nlp-parse');
+  assert.equal(group.open, false, 'a group starts closed like any other dir -- only its CHILDREN are pre-populated');
+  assert.deepEqual(group.children.map(c => c.path), ['runs/run-1/nlp-parse_aaaaaaaa.json', 'runs/run-1/nlp-parse_bbbbbbbb.json'], 'pre-populated, no fetch needed to see them');
+});
+
+test('setOpen: forces a dir\'s open flag at any depth, does not mutate input', () => {
+  let t = withRunsChildren();
+  const before = JSON.stringify(t);
+  const t2 = setOpen(t, 'runs/run-1', true);
+  assert.equal(JSON.stringify(t), before, 'input untouched');
+  assert.equal(t2.nodes[0].children.find(n => n.path === 'runs/run-1').open, true);
+  const t3 = setOpen(t2, 'runs/run-1', false);
+  assert.equal(t3.nodes[0].children.find(n => n.path === 'runs/run-1').open, false);
 });
 
 test('setLoading: sets/clears loading at any depth, does not mutate input', () => {

@@ -31,16 +31,18 @@ mountInspectorToggle(el, { sourceId: 'screens/browse', provenance, target: el, i
 window.__emitted = [];
 const onEmit = (t, p) => window.__emitted.push([t, p]);
 window.__ctl = mountBrowse(el, reg, { onEmit });
-// Second, independent mount for the error-path test: injected io, its own
-// container off the body flex flow so `body > .bx` keeps the viewport.
-window.__mount = (io) => {
+// Second, independent mount for the error-path/deep-link tests: injected
+// io and/or a deepLink ("<mount>/<sub/path...>", ui/browse.js's own
+// initialData/mountBrowse opts), its own container off the body flex flow
+// so `body > .bx` keeps the viewport.
+window.__mount = (io, deepLink) => {
   const container = document.createElement('div');
   container.className = 'browse-mount';
   container.style.cssText = 'position:absolute;left:0;top:0;width:1200px;height:800px;visibility:hidden;display:flex';
   document.body.appendChild(container);
   const root = render(resolve(reg['screens/browse'], reg));
   container.appendChild(root);
-  return mountBrowse(root, reg, { io, onEmit });
+  return mountBrowse(root, reg, { io, deepLink, onEmit });
 };
 document.body.dataset.ready = '1';
 </script>

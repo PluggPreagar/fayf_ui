@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { init, step, validateMachine } from '../../ui/machine.js';
-import { browseMachine, makeHandlers, handlers, view, initialData, TREE, detailBody, detailEditor, splitMountPath } from '../../ui/browse.js';
+import { browseMachine, makeHandlers, handlers, view, initialData, TREE, detailBody, detailEditor, splitMountPath, groupArtefactEntries } from '../../ui/browse.js';
+import { filetreeView } from '../../ui/filetree.js';
 
 // The browse (files explorer) flow as JSON in, JSON out (C11): machines/browse.json
 // + pure handlers + pure view, on the shipped fixtures. No DOM.
@@ -15,6 +16,8 @@ const RESULT_FILE = fixture('content/browse/file/runs/run-2026-09-01/result.json
 const BACKEND_LEVEL = fixture('content/browse/level/backend.json');
 const CONFIG_LEVEL = fixture('content/browse/level/backend/config.json');
 const SETTINGS_FILE = fixture('content/browse/file/backend/config/settings.yaml.json');
+const RECORDS_LEVEL = fixture('content/browse/level/runs/run-2026-09-01/records.json');
+const NLP_RECORD_FILE = fixture('content/browse/file/runs/run-2026-09-01/records/nlp-parse_1a2b3c4d5e6f7890.json.json');
 const M = browseMachine;
 const MOUNTS_FETCH = { fetch: '/content/browse/mounts.json', ok: 'mounts.loaded', err: 'mounts.failed' };
 const go = (s, trigger, payload) => step(M, s, trigger, payload, handlers);
@@ -125,6 +128,135 @@ test('level.failed: sets error on the pending node, clears pendingPath, loading'
   const runs = t.nodes.find(n => n.path === 'runs');
   assert.equal(runs.error, 'HTTP 500');
   assert.equal(runs.loading, false);
+});
+
+test('level.failed: filetreeView surfaces the error inline (not silently invisible)', () => {
+  let s = go(loaded(), 'tree.click', click('runs')).status;
+  s = go(s, 'level.failed', { error: 'HTTP 500' }).status;
+  const v = filetreeView(TREE, s.data[TREE.name]);
+  const row = v[TREE.name].content.find(r => r.name === nodeName('runs'));
+  assert.ok(row.content.includes('failed: HTTP 500') && row.content.includes('click to retry'), row.content);
+});
+
+test('groupArtefactEntries: >=2 shared prefixes group, a lone one does not, non-matching files pass through', () => {
+  const entries = [
+    { type: 'file', name: 'nlp-parse_1a2b3c4d5e6f7890.json' },
+    { type: 'file', name: 'nlp-parse_2b3c4d5e6f789012.json' },
+    { type: 'file', name: 'ingest_4d5e6f7890123456.json' },
+    { type: 'file', name: 'manifest.json' },
+    { type: 'dir', name: 'sub' },
+  ];
+  const out = groupArtefactEntries(entries);
+  assert.equal(out.length, 4, 'nlp-parse group + lone ingest file + manifest.json + sub dir');
+  const group = out.find(e => e.kind === 'group');
+  assert.equal(group.name, 'nlp-parse');
+  assert.deepEqual(group.children.map(c => c.name), ['nlp-parse_1a2b3c4d5e6f7890.json', 'nlp-parse_2b3c4d5e6f789012.json']);
+  assert.ok(out.some(e => e.name === 'ingest_4d5e6f7890123456.json' && !e.kind), 'a lone-prefix file stays ungrouped');
+  assert.ok(out.some(e => e.name === 'manifest.json'), 'no hash suffix -- never matches, passes through');
+  assert.ok(out.some(e => e.name === 'sub' && e.type === 'dir'), 'a real dir is untouched');
+});
+
+test('level.loaded: a level with groupable artefact files renders a synthetic, PRE-POPULATED (no extra fetch) group folder', () => {
+  let s = go(loaded(), 'tree.click', click('runs')).status;
+  s = go(s, 'level.loaded', RUNS_LEVEL).status;
+  s = go(s, 'tree.click', click('runs/run-2026-09-01')).status;
+  s = go(s, 'level.loaded', RUN1_LEVEL).status;
+  s = go(s, 'tree.click', click('runs/run-2026-09-01/records')).status;
+  const r = go(s, 'level.loaded', RECORDS_LEVEL);
+  const t = r.status.data[TREE.name];
+  assert.equal(t.pendingPath, null);
+  const records = t.nodes.find(n => n.path === 'runs').children.find(n => n.path === 'runs/run-2026-09-01')
+    .children.find(n => n.path === 'runs/run-2026-09-01/records');
+  const nlpGroup = records.children.find(n => n.name.startsWith('nlp-parse'));
+  assert.equal(nlpGroup.name, 'nlp-parse (3)', 'label carries the member count');
+  assert.equal(nlpGroup.kind, 'dir');
+  assert.ok(Array.isArray(nlpGroup.children), 'children already populated -- no fetch needed to see them');
+  assert.equal(nlpGroup.children.length, 3);
+  assert.deepEqual(nlpGroup.children.map(c => c.path).sort(), [
+    'runs/run-2026-09-01/records/nlp-parse_1a2b3c4d5e6f7890.json',
+    'runs/run-2026-09-01/records/nlp-parse_2b3c4d5e6f789012.json',
+    'runs/run-2026-09-01/records/nlp-parse_3c4d5e6f78901234.json',
+  ], 'group members keep their REAL path -- only their tree POSITION is synthetic');
+  const ingestGroup = records.children.find(n => n.name.startsWith('ingest'));
+  assert.equal(ingestGroup.name, 'ingest (2)');
+  const manifest = records.children.find(n => n.path === 'runs/run-2026-09-01/records/manifest.json');
+  assert.equal(manifest.kind, 'file', 'an ungrouped file stays a plain file leaf');
+
+  // opening the group + clicking a member fetches the member's REAL path, no
+  // different from any other file -- the group node's actual `path` is
+  // `<base>/<prefix>`, not its display name (which carries the count).
+  const groupPath = nlpGroup.path;
+  const s2 = go(r.status, 'tree.click', click(groupPath)).status;
+  assert.equal(s2.data[TREE.name].nodes.find(n => n.path === 'runs').children.find(n => n.path === 'runs/run-2026-09-01')
+    .children.find(n => n.path === 'runs/run-2026-09-01/records').children.find(n => n.path === groupPath).open, true);
+  assert.equal(s2.data[TREE.name].pendingPath, null, 'expanding a pre-populated group never starts a fetch');
+  const fileClick = go(s2, 'tree.click', click(nlpGroup.children[0].path));
+  assert.deepEqual(fileClick.effects, [
+    { emit: 'tree.select', payload: nlpGroup.children[0] },
+    { fetch: `/content/browse/file/${nlpGroup.children[0].path}.json`, ok: 'file.loaded', err: 'file.failed' },
+  ]);
+});
+
+test('level.loaded: truncated flag surfaces in status-text; cleared by the next non-truncated level', () => {
+  let s = go(loaded(), 'tree.click', click('runs')).status;
+  const r1 = go(s, 'level.loaded', { ...RUNS_LEVEL, truncated: true });
+  assert.equal(r1.status.data.truncated, true);
+  assert.ok(view(r1.status)['status-text'].includes('capped'), view(r1.status)['status-text']);
+  let s2 = go(r1.status, 'tree.click', click('runs/run-2026-09-01')).status;
+  const r2 = go(s2, 'level.loaded', RUN1_LEVEL);   // this fixture has no truncated:true
+  assert.equal(r2.status.data.truncated, false);
+  assert.ok(!view(r2.status)['status-text'].includes('capped'));
+});
+
+test('?mount=&path= deep-link (initialData\'s deepLink): walks mounts.loaded -> level.loaded -> level.loaded, selects + fetches the final file', () => {
+  const target = 'runs/run-2026-09-01/records/manifest.json';
+  const s0 = init(M, initialData(target));
+  const r1 = go(s0.status, 'mounts.loaded', MOUNTS_FX);
+  assert.equal(r1.status.data[TREE.name].nodes.find(n => n.path === 'runs').open, true, 'mount opened immediately');
+  assert.deepEqual(r1.effects, [{ fetch: '/content/browse/level/runs.json', ok: 'level.loaded', err: 'level.failed' }]);
+  assert.equal(r1.status.data.deepLink, 'run-2026-09-01/records/manifest.json');
+
+  const r2 = go(r1.status, 'level.loaded', RUNS_LEVEL);
+  assert.equal(r2.status.data[TREE.name].nodes.find(n => n.path === 'runs').children.find(n => n.path === 'runs/run-2026-09-01').open, true);
+  assert.deepEqual(r2.effects, [{ fetch: '/content/browse/level/runs/run-2026-09-01.json', ok: 'level.loaded', err: 'level.failed' }]);
+  assert.equal(r2.status.data.deepLink, 'records/manifest.json');
+
+  const r3 = go(r2.status, 'level.loaded', RUN1_LEVEL);
+  assert.deepEqual(r3.effects, [{ fetch: '/content/browse/level/runs/run-2026-09-01/records.json', ok: 'level.loaded', err: 'level.failed' }]);
+  assert.equal(r3.status.data.deepLink, 'manifest.json');
+
+  const r4 = go(r3.status, 'level.loaded', RECORDS_LEVEL);
+  assert.equal(r4.status.data.deepLink, null, 'fully consumed');
+  assert.equal(r4.status.data[TREE.name].sel, target, 'the final file is selected, same as a real click');
+  assert.equal(r4.status.data.detailLoading, true);
+  assert.deepEqual(r4.effects, [{ fetch: `/content/browse/file/${target}.json`, ok: 'file.loaded', err: 'file.failed' }]);
+
+  const r5 = go(r4.status, 'file.loaded', { format: 'json', content: '{"count":5}', hash: 'hm', writable: false });
+  assert.equal(view(r5.status)['detail-title'], target);
+});
+
+test('deep-link to just a mount (no sub-path): opens it, no fetch, no dangling deepLink', () => {
+  const s0 = init(M, initialData('backend'));
+  const r = go(s0.status, 'mounts.loaded', MOUNTS_FX);
+  assert.equal(r.status.data[TREE.name].nodes.find(n => n.path === 'backend').open, true);
+  assert.equal(r.status.data.deepLink, null);
+  assert.deepEqual(r.effects, []);
+});
+
+test('deep-link to an unknown mount: silently ignored, no crash, tree still builds normally', () => {
+  const s0 = init(M, initialData('nope/x/y'));
+  const r = go(s0.status, 'mounts.loaded', MOUNTS_FX);
+  assert.equal(r.status.data.deepLink, null);
+  assert.deepEqual(r.effects, []);
+  assert.equal(r.status.data[TREE.name].nodes.length, MOUNTS_FX.length);
+});
+
+test('deep-link where an intermediate segment fails to load: the walk stops quietly, no crash, no stuck deepLink', () => {
+  const s0 = init(M, initialData('runs/nope-here/x'));
+  const r1 = go(s0.status, 'mounts.loaded', MOUNTS_FX);
+  const r2 = go(r1.status, 'level.loaded', RUNS_LEVEL);   // 'nope-here' isn't in RUNS_LEVEL's entries
+  assert.equal(r2.status.data.deepLink, null);
+  assert.deepEqual(r2.effects, []);
 });
 
 test('clicking a file: issues a file.loaded-bound fetch, does NOT touch pendingPath, sets detailLoading', () => {

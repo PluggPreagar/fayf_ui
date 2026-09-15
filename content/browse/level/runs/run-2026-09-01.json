@@ -1,4 +1,5 @@
 { "entries": [
   { "type": "dir", "name": "logs", "path": "run-2026-09-01/logs", "has_children": true },
+  { "type": "dir", "name": "records", "path": "run-2026-09-01/records", "has_children": true },
   { "type": "file", "name": "result.json", "path": "run-2026-09-01/result.json" }
 ] }

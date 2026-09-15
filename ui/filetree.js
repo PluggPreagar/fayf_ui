@@ -107,13 +107,21 @@ export function filetreeView(spec, t) {
   const walk = (nodes, depth) => {
     for (const node of nodes) {
       const key = `${name}-node-${encodeURIComponent(node.path)}`;
+      // A failed level-load (setError below) used to leave no visible
+      // trace at all -- the only "retry" was collapsing and re-expanding
+      // a node that looked identical to one that had simply never been
+      // opened. Surfacing the message inline makes both the failure AND
+      // its fix (toggle closed, toggle open again -- `open` flips true,
+      // `children` is still null, selectingTree's own wrapper re-fires
+      // the fetch) discoverable without new machinery.
+      const label = node.error ? `${node.name} (failed: ${node.error} -- click to retry)` : node.name;
       rows.push({
         name: key, box: 'row, mid, gap:1, clip, pad:1, bare, fixed, h:22',
         // Regular spaces collapse under default `white-space:normal` (every
         // depth rendered flush-left, no visible indent -- issue #71); NBSP
         // (U+00A0) doesn't collapse. Same fix shape as browse.js's detail
         // pane (ui/browse.js's own leading-space substitution).
-        content: '  '.repeat(depth) + glyphOf(node) + node.name,
+        content: '  '.repeat(depth) + glyphOf(node) + label,
       });
       patches[key] = { state: 'actionable' + (node.kind === 'file' && t.sel != null && String(t.sel) === String(node.path) ? ', selected' : '') };
       if (node.kind === 'dir' && node.open && node.children) walk(node.children, depth + 1);
@@ -126,17 +134,31 @@ export function filetreeView(spec, t) {
 // Pure helpers for the consumer's wrapper to splice an async result into the
 // tree (walks t.nodes recursively to find the node by `path`; returns a NEW
 // `t`, input untouched -- same purity discipline as tableInit/tableHandlers).
-// children = [{ name, path, kind }, ...] already mapped into filetree's node
-// shape by the CALLER (the raw API/fixture response shape is the consumer's
-// problem, not this sub-controller's -- same "pure data in, pure data out"
-// boundary table.js/tree.js keep).
+// children = [{ name, path, kind, children? }, ...] already mapped into
+// filetree's node shape by the CALLER (the raw API/fixture response shape is
+// the consumer's problem, not this sub-controller's -- same "pure data in,
+// pure data out" boundary table.js/tree.js keep). A child's own `children`
+// passes through AS GIVEN instead of always resetting to null -- every
+// existing caller omits it (a real dir/file always starts unfetched, `null`
+// is exactly right), but a consumer synthesizing a group node with its
+// members already in hand (ui/browse.js's own artefact-file grouping, no
+// server round-trip needed for those) can hand them over pre-populated.
 export function setChildren(t, path, children) {
-  const mapped = children.map(c => ({ name: c.name, path: c.path, kind: c.kind, open: false, loading: false, error: null, children: null }));
+  const mapped = children.map(c => ({ name: c.name, path: c.path, kind: c.kind, open: false, loading: false, error: null, children: c.children ?? null }));
   return { ...t, nodes: mapNode(t.nodes, path, n => ({ ...n, children: mapped, loading: false })) };
 }
 
 export function setLoading(t, path, loading) {
   return { ...t, nodes: mapNode(t.nodes, path, n => ({ ...n, loading })) };
+}
+
+// Pure. Force a dir's `open` flag -- a consumer driving expansion from
+// something OTHER than a real click (a deep-link restore walking down a
+// path level by level, e.g.) needs this the same way it needs setChildren/
+// setLoading/setError for the rest of that walk; filetreeHandlers' own
+// click-driven toggle never needed a standalone setter before now.
+export function setOpen(t, path, open) {
+  return { ...t, nodes: mapNode(t.nodes, path, n => ({ ...n, open })) };
 }
 
 export function setError(t, path, message) {
