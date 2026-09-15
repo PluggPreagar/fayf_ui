@@ -1,8 +1,9 @@
 // test/annotate_test.js -- annotate.html (S6, docs/superpowers/plans/2026-09-11-workspace-dashboard.md).
-// STORY-17.1 scope only (read-only Session -> Rede -> paragraph/sentence
-// drill-down + coverage badge) -- see ui/annotate.js's header for the full
-// list of deferred stories (record editing, slot form, D4 anchor mode,
-// delete, fresh-suggestion, gold export -- all stay on the old ui-kit page).
+// Covers STORY-17.1 (read-only Session -> Rede -> paragraph/sentence
+// drill-down + coverage badge) PLUS the record panel: 17.2 (suggestions +
+// take-over), 17.4 (delete), 17.5 (Neuer Satz), 17.6 (gold export) -- see
+// ui/annotate.js's header for the still-deferred stories (slot-form editor,
+// D4 anchor mode, manual create -- all stay on the old ui-kit page).
 // The node suite proves handlers/view pure; this proves the browser half: 1
 // fetch (runs, tolerated on failure) -> ready immediately, session chips
 // (child runs labeled against their parent), picking a session fetches +
@@ -12,7 +13,10 @@
 // coverage data), all 4 badge kinds render correctly, a tree row click emits
 // paragraph.jump with the right index (scrollIntoView is a page-level
 // concern, not asserted here), single-select toggle-clear on both pickers,
-// refresh, nav/theme, fit (C10), luna skin, C2.
+// a sentence click populates the record panel (accepted/triage rows, each
+// with its own take-over chip), confirm/delete/take-over all mutate the
+// panel live, "Neuer Satz" appends a fresh candidate, gold export swaps the
+// panel to findings and back, refresh, nav/theme, fit (C10), luna skin, C2.
 const tr = new TestRunner({ stopOnError: false });
 const rawCheck = tr.check.bind(tr);
 tr.check = (cond, label, got = null, tag = null) => rawCheck(cond, label, got == null ? null : `${label} -- got ${got}`, tag);
@@ -111,6 +115,75 @@ tr.addBlock('annotate: tree row click emits paragraph.jump with the right index'
      await settled();
      const last = window.__emitted.at(-1);
      r.check(!!last && last[0] === 'paragraph.jump' && last[1].index === 1, 'tree-P1 click -> emit paragraph.jump {index:1}', JSON.stringify(last));
+  });
+});
+
+tr.addBlock('annotate: sentence click populates the record panel -- accepted record + triage candidate, each with its own take-over chip', (r) => {
+  r.run(async () => {
+     // Carries over from the previous block: session + rede-1 already picked,
+     // tree/sentences already rendered (this file's own established
+     // carry-over convention between sequential blocks on one mounted page).
+     // The PREVIOUS block re-selected rede-1 fresh (a new annotate fetch) but
+     // only waited for the segment-derived tree rows, not for annotate
+     // itself to land -- wait for it HERE (the fixture always has REC-01)
+     // before relying on it below, or a sentence click can race an
+     // in-flight fetch and see an empty record list.
+     r.check(await until(() => qa('[data-name^="tree-P"]').length === 3), 'sanity: tree still rendered from the previous block');
+     r.check(await until(() => text('panel').includes('REC-01')), 'annotate data (records) has landed before exercising the panel', text('panel'));
+     r.check(text('panel').startsWith('Satz wählen für Vorschläge.'), 'panel prompt before any sentence is selected (record list still shown below it)', text('panel'));
+     r.check(q('btn-suggest').classList.contains('bx-disabled'), '"Neuer Satz" disabled without a selection');
+
+     q('sentence-P0/S0').click();
+     await settled();
+     r.check(!q('btn-suggest').classList.contains('bx-disabled'), '"Neuer Satz" enabled once a sentence is selected');
+     r.check(!!q('panel-confirm-REC-01'), 'accepted record REC-01 has a confirm chip', text('panel'));
+     r.check(text('panel-confirm-REC-01') === 'Übernehmen', 'confirm chip labeled "Übernehmen" while still vorgeschlagen');
+     r.check(!!q('panel-delete-REC-01'), 'accepted record REC-01 has a delete chip');
+
+     q('sentence-P2/S0').click();
+     await settled();
+     r.check(!!q('panel-take-triage-0'), 'the one triage entry at P2/S0 has a take-over chip', text('panel'));
+
+     q('sentence-P1/S1').click();
+     await settled();
+     r.check(text('panel').includes('Keine Vorschläge für diesen Satz.'), 'an "offen" sentence with no candidates shows the empty state', text('panel'));
+  });
+});
+
+tr.addBlock('annotate: confirm/delete mutate the panel live', (r) => {
+  r.run(async () => {
+     q('sentence-P0/S0').click();
+     await until(() => !!q('panel-confirm-REC-01'));
+     q('panel-confirm-REC-01').click();
+     r.check(await until(() => text('panel-confirm-REC-01') === 'Bestätigt'), 'confirm chip relabels once bestaetigt', text('panel-confirm-REC-01'));
+     q('panel-delete-REC-01').click();
+     r.check(await until(() => !q('panel-confirm-REC-01')), 'record gone from the panel after delete');
+  });
+});
+
+tr.addBlock('annotate: "Neuer Satz" appends a fresh candidate with its own take-over chip', (r) => {
+  r.run(async () => {
+     q('sentence-P1/S1').click();
+     await settled();
+     q('btn-suggest').click();
+     r.check(await until(() => !!q('panel-take-fresh-0')), 'a fresh candidate chip appears after "Neuer Satz"', text('panel'));
+     q('panel-take-fresh-0').click();
+     r.check(await until(() => !q('panel-take-fresh-0')), 'taking it over clears the fresh-suggestion listing');
+  });
+});
+
+tr.addBlock('annotate: gold export swaps the panel to findings, "Zurück" restores it', (r) => {
+  r.run(async () => {
+     r.check(q('btn-export').classList.contains('bx-disabled') === false, '"Export" enabled once annotate is loaded');
+     const nameField = q('annotated-by');
+     nameField.value = 'Peter';
+     nameField.dispatchEvent(new Event('input', { bubbles: true }));
+     await settled();
+     q('btn-export').click();
+     r.check(await until(() => !!q('panel-export-back'), 3000), 'panel swaps to export findings', text('panel'));
+     r.check(text('panel').includes('Gültig'), 'no errors/warnings on the fixture data -- reports valid', text('panel'));
+     q('panel-export-back').click();
+     r.check(await until(() => !q('panel-export-back')), 'back restores the normal panel');
   });
 });
 

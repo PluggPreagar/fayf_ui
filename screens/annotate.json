@@ -67,7 +67,19 @@
                 { "name": "tree", "box": "stack, fixed, w:220, gap:1, pad:2, scroll, solid, rounded",
                   "content": "Pick a Rede to see its paragraphs." },
                 { "name": "sentences", "box": "stack, fill, gap:1, pad:2, scroll, solid, rounded",
-                  "content": "Pick a Rede to see its text." } ] },
+                  "content": "Pick a Rede to see its text." },
+                { "name": "panel-col", "box": "stack, fixed, w:280, gap:2",
+                  "children": [
+                    { "name": "panel-actions", "box": "row, mid, gap:1, hug",
+                      "children": [
+                        { "name": "btn-suggest", "extends": "atom/button", "content": "Neuer Satz" } ] },
+                    { "name": "panel", "box": "stack, fill, gap:1, pad:2, scroll, solid, rounded",
+                      "content": "Pick a Rede to see records." },
+                    { "name": "panel-msg", "box": "hug", "content": "" },
+                    { "name": "export-row", "box": "row, mid, gap:1, hug",
+                      "children": [
+                        { "name": "annotated-by-host", "box": "fill", "content": "" },
+                        { "name": "btn-export", "extends": "atom/button", "content": "Export" } ] } ] } ] },
             { "name": "legend", "box": "hug",
               "content": "Legend: ✓ Record erfasst · s Übersprungen (Skip) · ⚠ nur Triage (L3) · · offen -- read-only progress hint, v1 has no hover tooltip" } ] } ] },
     { "name": "status-bar", "extends": "component/shell-status",

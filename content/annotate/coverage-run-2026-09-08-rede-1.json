@@ -1,1 +1,6 @@
-{ "records": [ { "src": ["P0/S0"] } ], "l3": [ { "src": "P1/S0" } ], "skips": [ { "src": ["P0/S1"] } ] }
+{ "records": [ { "id": "REC-01", "src": ["P0/S0"], "annotation_status": "vorgeschlagen",
+                 "typ": "aussage", "agent": "Bundesregierung", "praedikat": "IST", "objekt": "zustaendig" } ],
+  "l3": [ { "src": "P1/S0" } ],
+  "skips": [ { "src": ["P0/S1"] } ],
+  "triage": [ { "src": "P2/S0", "slot": "objekt", "vorschlag": "unklar", "grund": "kein passendes Ziel gefunden" } ],
+  "speaker_code": "REC" }
