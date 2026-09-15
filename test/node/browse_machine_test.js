@@ -235,12 +235,38 @@ test('?mount=&path= deep-link (initialData\'s deepLink): walks mounts.loaded -> 
   assert.equal(view(r5.status)['detail-title'], target);
 });
 
-test('deep-link to just a mount (no sub-path): opens it, no fetch, no dangling deepLink', () => {
+test('deep-link to just a mount (no sub-path): opens it AND fetches its level, no dangling deepLink', () => {
+  // A bare mount-only deep link (or last-mount restore, its most common
+  // caller) still needs its own children loaded -- opening it with no
+  // fetch would leave a permanently-empty expanded node (found live: the
+  // real fayf_processor browse page, restoring "pipelines" as the last
+  // mount, opened it with zero children forever).
   const s0 = init(M, initialData('backend'));
   const r = go(s0.status, 'mounts.loaded', MOUNTS_FX);
   assert.equal(r.status.data[TREE.name].nodes.find(n => n.path === 'backend').open, true);
+  assert.equal(r.status.data[TREE.name].pendingPath, 'backend');
   assert.equal(r.status.data.deepLink, null);
-  assert.deepEqual(r.effects, []);
+  assert.deepEqual(r.effects, [{ fetch: '/content/browse/level/backend.json', ok: 'level.loaded', err: 'level.failed' }]);
+});
+
+test('deep-link ending at a directory (not a file): opens it AND fetches its level too', () => {
+  // Same bug class as the bare-mount case above, one level deeper --
+  // continueDeepLink's own "last segment" branch had the identical gap.
+  const target = 'runs/run-2026-09-01';
+  const s0 = init(M, initialData(target));
+  const r1 = go(s0.status, 'mounts.loaded', MOUNTS_FX);
+  assert.deepEqual(r1.effects, [{ fetch: '/content/browse/level/runs.json', ok: 'level.loaded', err: 'level.failed' }]);
+  assert.equal(r1.status.data.deepLink, 'run-2026-09-01');
+
+  const r2 = go(r1.status, 'level.loaded', RUNS_LEVEL);
+  assert.equal(r2.status.data[TREE.name].nodes.find(n => n.path === 'runs').children.find(n => n.path === target).open, true);
+  assert.equal(r2.status.data[TREE.name].pendingPath, target);
+  assert.equal(r2.status.data.deepLink, null, 'fully consumed -- this WAS the last segment');
+  assert.deepEqual(r2.effects, [{ fetch: `/content/browse/level/${target}.json`, ok: 'level.loaded', err: 'level.failed' }]);
+
+  const r3 = go(r2.status, 'level.loaded', RUN1_LEVEL);
+  assert.equal(r3.status.data[TREE.name].nodes.find(n => n.path === 'runs').children.find(n => n.path === target).children.length > 0,
+    true, 'the directory\'s own children actually landed, not left null forever');
 });
 
 test('deep-link to an unknown mount: silently ignored, no crash, tree still builds normally', () => {

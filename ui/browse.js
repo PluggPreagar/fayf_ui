@@ -193,28 +193,34 @@ function selectingTree(urls) {
 }
 
 // Pure. First step of a deepLink walk: open the target mount (if it's a
-// real one) and, if there's more path left to walk, kick off its level
-// fetch (same effect shape a real click on that mount would produce).
-// `deepLink` split on the FIRST '/': the mount name, then whatever's left.
+// real one) and kick off its level fetch (same effect shape a real click on
+// that mount would produce) -- ALWAYS, not just when there's more path left
+// to walk: a bare mount-only deep link (or last-mount restore, its most
+// common caller) still needs its own children loaded to show anything under
+// an opened-but-empty node, same as a real click's own open+children-null
+// guard in selectingTree above. `deepLink` split on the FIRST '/': the
+// mount name, then whatever's left (null once this WAS the last segment --
+// level.loaded then just applies the children and stops, no further walk).
 function startDeepLink(tree, deepLink, urls) {
   const [mountName, ...rest] = deepLink.split('/');
   if (!findNode(tree.nodes, mountName)) return { tree, deepLink: null, effects: [] };
   const opened = setOpen(tree, mountName, true);
-  if (!rest.length) return { tree: opened, deepLink: null, effects: [] };
   return {
     tree: { ...opened, pendingPath: mountName },
-    deepLink: rest.join('/'),
+    deepLink: rest.length ? rest.join('/') : null,
     effects: [{ fetch: urls.level(mountName), ok: 'level.loaded', err: 'level.failed' }],
   };
 }
 
 // Pure. Next step, called once a level this walk was waiting on has landed
 // (`tree` already has that level's children spliced in) -- descend into the
-// next segment: open it if it's a dir and fetch ITS level (or stop, out of
-// path, if this was the last segment), or select+fetch it if it's a file
-// (same effect a real file click produces). Any segment that doesn't
-// resolve (a stale/bad link) just stops the walk quietly -- never a crash,
-// never an error state for what is, after all, an optional convenience.
+// next segment: open it if it's a dir and fetch ITS level too (ALWAYS, same
+// reasoning as startDeepLink above -- a dir that's the walk's LAST segment
+// still needs its own children loaded, not just the "open" flag flipped),
+// or select+fetch it if it's a file (same effect a real file click
+// produces). Any segment that doesn't resolve (a stale/bad link) just stops
+// the walk quietly -- never a crash, never an error state for what is,
+// after all, an optional convenience.
 function continueDeepLink(tree, basePath, deepLink, urls) {
   const [seg, ...rest] = deepLink.split('/');
   const childPath = `${basePath}/${seg}`;
@@ -222,10 +228,9 @@ function continueDeepLink(tree, basePath, deepLink, urls) {
   if (!child) return { tree, deepLink: null, effects: [], select: false };
   if (child.kind === 'file') return { tree: { ...tree, sel: childPath }, deepLink: null, effects: [{ fetch: urls.file(childPath), ok: 'file.loaded', err: 'file.failed' }], select: true };
   const opened = setOpen(tree, childPath, true);
-  if (!rest.length) return { tree: opened, deepLink: null, effects: [], select: false };
   return {
     tree: { ...opened, pendingPath: childPath },
-    deepLink: rest.join('/'),
+    deepLink: rest.length ? rest.join('/') : null,
     effects: [{ fetch: urls.level(childPath), ok: 'level.loaded', err: 'level.failed' }],
     select: false,
   };
